@@ -1,8 +1,10 @@
-%Parse SHARAD EDR Auxillary Files
-%Michael Christoffersen
-%April 2016
-%Parses SHARAD EDR auxillary files according to the format specified in:
-%http://pds-geosciences.wustl.edu/mro/mro-m-sharad-3-edr-v1/mrosh_0003/label/auxiliary.fmt
+function [ t_aux ] = auxparse( aux_file_name,length,aux_output_name )
+%function [ t_aux ] = auxparse( aux_file_name, length, aux_output_name)
+%   Parse SHARAD EDR Auxillary Files
+%   Michael Christoffersen
+%   April 2016
+%   Parses SHARAD EDR auxillary files according to the format specified in:
+%   http://pds-geosciences.wustl.edu/mro/mro-m-sharad-3-edr-v1/mrosh_0003/label/auxiliary.fmt
 
 %Variables
 aux_file_name = './rawdata/e_0480001_001_ss19_700_a_a.dat'; %name and path to auxillary data file
