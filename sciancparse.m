@@ -1,15 +1,17 @@
-%Parse the ancillary data in SHARAD science files
-%Michael Christoffersen
-%April 2016
-%Parses the ancillary data in SHARAD science files according to the format
-%specified in:
-%http://pds-geosciences.wustl.edu/mro/mro-m-sharad-3-edr-v1/mrosh_0003/label/science_ancillary.fmt
+function [ t_anc ] = sciancparse( anc_file_name,length,bitmode,anc_output_name )
+%function [ t_anc ] = sciancparse( anc_file_name, length, bitmode, anc_output_name )
+%   Parse the ancillary data in SHARAD science files
+%   Michael Christoffersen
+%   April 2016
+%   Parses the ancillary data in SHARAD science files according to the format
+%   specified in:
+%   http://pds-geosciences.wustl.edu/mro/mro-m-sharad-3-edr-v1/mrosh_0003/label/science_ancillary.fmt
 
 %Variables
-anc_file_name = './rawdata/e_0592101_001_ss19_700_a_s.dat'; %name and path to ancillary (science) data file
-length = 24509; %how many rows to parse, max value is length of file
-width = 3786; %Width in bytes of the ancillary table 8bit=3786 6bit=2886 4bit=?
-anc_output_name = '0592101_anc_info.xls';
+%anc_file_name = './rawdata/e_0592101_001_ss19_700_a_s.dat'; %name and path to ancillary (science) data file
+%length = 24509; %how many rows to parse, max value is length of file
+%width = 3786; %Width in bytes of the ancillary table 8bit=3786 6bit=2886 4bit=?
+%anc_output_name = '0592101_anc_info.xls';
 
 %% Parse SHARAD Ancillary Data
 
