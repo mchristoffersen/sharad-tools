@@ -1,6 +1,6 @@
 function [ B ] = edr_complex_mult( A,length )
 %function [ B ] = edr_complex_mult( A )
-%   Takes input A of a decompressed vector of SHARAD and each trace by
+%   Takes input A of a decompressed vector of SHARAD data and multiplies each trace by
 %   the complex exponential e^(2*pi*i*f*t) where f is a frequency and t is
 %   a time vector, both specified in:
 %   http://pds-geosciences.wustl.edu/mro/mro-m-sharad-3-edr-v1/mrosh_0003/calib/calinfo.txt
