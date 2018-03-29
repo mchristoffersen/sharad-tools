@@ -1,0 +1,50 @@
+PDS_VERSION_ID                = PDS3
+
+/* File characteristics */
+RECORD_TYPE                   = FIXED_LENGTH
+RECORD_BYTES                  = 28684
+FILE_RECORDS                  = 3600
+
+/* Pointers to objects in file */
+^IMAGE                             = "S_00387102_RGRAM.IMG"
+
+/* Identification data elements */
+DATA_SET_ID                        = "MRO-M-SHARAD-5-RADARGRAM-V1.0"
+PRODUCT_ID                         = "S_00387102_RGRAM"
+INSTRUMENT_HOST_ID                 = "MRO"
+INSTRUMENT_HOST_NAME               = "MARS RECONNAISSANCE ORBITER"
+INSTRUMENT_ID                      = "SHARAD"
+INSTRUMENT_NAME                    = "SHALLOW RADAR"
+TARGET_NAME                        = "MARS"
+ORBIT_NUMBER                       = 3871
+MRO:START_SUB_SPACECRAFT_LONGITUDE = 235.09216 <DEGREE>
+MRO:START_SUB_SPACECRAFT_LATITUDE  = 63.327610 <DEGREE>
+MRO:STOP_SUB_SPACECRAFT_LONGITUDE  = 61.007130 <DEGREE>
+MRO:STOP_SUB_SPACECRAFT_LATITUDE   = 60.567550 <DEGREE>
+START_TIME                         = 2007-05-25T02:16:53.804
+STOP_TIME                          = 2007-05-25T02:34:35.711
+SPACECRAFT_CLOCK_START_COUNT       = "UNK"
+SPACECRAFT_CLOCK_STOP_COUNT        = "UNK"
+PRODUCT_CREATION_TIME              = 2014-12-27T12:00:00
+PRODUCT_VERSION_ID                 = "2"
+PRODUCER_FULL_NAME                 = "BRUCE A. CAMPBELL"
+PRODUCER_INSTITUTION_NAME          = "SMITHSONIAN INSTITUTION"
+
+/* Descriptive data elements                         */
+/* SYNTHETIC_APERTURE_DURATION     = 8.774 <SECOND>  */
+/* MULTILOOK_DOPPLER_BANDWIDTH     = 0.4 <HERTZ>     */
+/* NUMBER_OF_LOOKS                 = 7               */
+/* CHIRP_FREQUENCY_ENVELOPE        = LINEAR          */
+/* RANGE_COMPRESSION_WINDOW        = HANN            */
+/* AZIMUTH_PROCESSING_WINDOW       = HANN            */
+
+/* Image information */
+OBJECT                         = IMAGE
+ LINES                         = 3600
+ LINE_SAMPLES                  = 7171
+ SAMPLE_TYPE                   = PC_REAL
+ SAMPLE_BITS                   = 32
+ DESCRIPTION                   = "Radar backscatter power."
+END_OBJECT                     = IMAGE
+
+END
