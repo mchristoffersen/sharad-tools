@@ -116,7 +116,7 @@ def main():
                 count += 1
                 #end time for individual line 
                 t2 = time.time()    
-                print('First-return processing of rgram #' + str(count) + '; ' + file_number + ' done!\tRuntime: ' + str((t2 - t1)/60) + ' minutes')
+                print('First-return processing of rgram #' + str(count) + '; ' + file_number + ' done!\tRuntime: ' + str(t2 - t1) + ' seconds')
             else:
                 print('\n First-return processing of rgram #' + file_number + ' already completed! Moving to next line!\n')
                 
