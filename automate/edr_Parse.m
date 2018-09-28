@@ -22,7 +22,7 @@ function [ A ] = edr_parse( sci_file,length,r,skip )
 %   This parsing method needs to be modified for each data resolution (4,6,8 bit)
 
 args = nargin(); %counts number of input arguments
-scidata = fopen(sci_file,'r','l'); %open science data file
+scidata = fopen(sci_file,'r','b'); %open science data file
 A = zeros(length,3600);%Create matrix to store parsed data
 
 res = num2str(r);

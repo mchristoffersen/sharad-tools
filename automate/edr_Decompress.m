@@ -20,23 +20,17 @@ function [ B ] = edr_Decompress( A,n,r,anc_file )
 
 args = nargin(); %number of input arguments
 [i,j] = size(A);
-B = zeros(size(A));
 
 if(args == 3)
     %Decompress SHARAD data - static scaling
     l = ceil(log2(n));
     s = l-r+8;
-    [i,j]=size(A);
-    B = zeros(i,j);
-    for n=1:i
-       for m=1:j
-          B(n,m) = (A(n,m)*(2^s))/n;
-       end
-    end
+    B = A.*((2^s)/n);
 end
 
 if(args == 4)
     %Decompress SHARAD data - dynamic scaling
+    B = zeros(size(A));
     anc = fopen(anc_file,'r','b');
     fseek(anc,56,'bof');
     SDI_BIT_FIELD = fread(sciancdata, [traces,1],'uint16',width-2);
