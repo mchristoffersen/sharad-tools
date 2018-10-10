@@ -1,0 +1,4 @@
+python=2.7.15
+numpy=1.14.4
+pillow=5.1.0
+scipy=1.1.0
