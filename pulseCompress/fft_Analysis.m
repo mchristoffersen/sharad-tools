@@ -1,16 +1,16 @@
 clc; clear all; close all;
 
 
-% dt = (3/80)*10^(-6);
+% dt = ;
 % fs = 1/dt;
 % N = 4096;
 % rl = 1/fs*N;
 
 
 %construct frequency spectrum for reference chirp
-fs = ((80/3)*10^(6))/4096;
 N = 2048;
-dt = 1/fs;
+dt = (3/80)*10^(-6);
+fs = 1/dt;
 rl = 1/fs*N;
 f = zeros(1,N);
 time_vec = 0:dt:(N-1)*dt;
@@ -54,8 +54,8 @@ tx_avg = randi([-40,60]);
 rx_avg = randi([-40,60]);
 
 %set random temps without certain range for testing
-chirp_freq1 = chirp_unpack(tx_avg,rx_avg);
-chirp_freq2 = conj(chirp_unpack(tx_avg,rx_avg));
+chirp_freq1 = chirp_Unpack(tx_avg,rx_avg);
+chirp_freq2 = conj(chirp_Unpack(tx_avg,rx_avg));
 
 %% test pulse compression of reference chirp with itself. this should produce a nice response
 chirp_t1 = ifft(chirp_freq1); %convert chirp back to time domain

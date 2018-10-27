@@ -9,7 +9,7 @@ function [ chirp ] = chirp_Unpack( tx_avg, rx_avg )
 %find the appropriate reference chirp based on the average receiver and
 %transmitter temps for the lin
 
-calibRoot = '../calib/';
+calibRoot = 'calib/';
 calibName = 'reference_chirp';
 ext = '.dat';
 TxCalNames = ["m20tx","m15tx","m10tx","m05tx"...,
