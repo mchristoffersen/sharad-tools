@@ -1,0 +1,457 @@
+    OBJECT                   = COLUMN
+      NAME                   = SCET_BLOCK_WHOLE
+      COLUMN_NUMBER          = 1
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 1
+      BYTES                  = 4
+      DESCRIPTION            = "Spacecraft clock count at the time of data
+                                block acquisition, whole seconds part."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SCET_BLOCK_FRAC
+      COLUMN_NUMBER          = 2
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 5
+      BYTES                  = 2
+      DESCRIPTION            = "Spacecraft clock count at the time of data
+                                block acquisition, fractional seconds part."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = EPHEMERIS_TIME
+      COLUMN_NUMBER          = 3
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 7
+      BYTES                  = 8
+      UNIT                   = SECONDS
+      DESCRIPTION            = "Seconds elapsed since Jan, 1, 2000, 12:00 UTC
+                                corresponding to SCET_BLOCK."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = GEOMETRY_EPOCH
+      COLUMN_NUMBER          = 4
+      DATA_TYPE              = DATE
+      START_BYTE             = 15
+      BYTES                  = 23
+      DESCRIPTION            = "Time, corresponding to SCET_BLOCK, at which
+                                the geometrical and position parameters are
+                                computed, expressed in UTC."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SOLAR_LONGITUDE
+      COLUMN_NUMBER          = 5
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 38
+      BYTES                  = 8
+      UNIT                   = DEGREES
+      DESCRIPTION            = "Value of the angle between the body-Sun line
+                                at the time of interest and the body-Sun line
+                                at the vernal equinox. This provides a measure
+                                of season on a target body, with values of 0
+                                to 90 degrees representing northern spring, 90
+                                to 180 degrees representing northern summer,
+                                180 to 270 degrees representing northern
+                                autumn and 270 to 360 degrees representing
+                                northern winter."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = ORBIT_NUMBER
+      COLUMN_NUMBER          = 6
+      DATA_TYPE              = MSB_INTEGER
+      START_BYTE             = 46
+      BYTES                  = 4
+      DESCRIPTION            = "Number of the orbital revolution of the
+                                spacecraft around Mars."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = X_MARS_SC_POSITION_VECTOR
+      COLUMN_NUMBER          = 7
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 50
+      BYTES                  = 8
+      UNIT                   = KILOMETERS
+      DESCRIPTION            = "X component of the position vector from Mars
+                                center to the spacecraft expressed in the
+                                planetocentric IAU 2000 reference frame, and
+                                corrected for light time and stellar
+                                aberration."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = Y_MARS_SC_POSITION_VECTOR
+      COLUMN_NUMBER          = 8
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 58
+      BYTES                  = 8
+      UNIT                   = KILOMETERS
+      DESCRIPTION            = "Y component of the position vector from Mars
+                                center to the spacecraft expressed in the
+                                planetocentric IAU 2000 reference frame, and
+                                corrected for light time and stellar
+                                aberration."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = Z_MARS_SC_POSITION_VECTOR
+      COLUMN_NUMBER          = 9
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 66
+      BYTES                  = 8
+      UNIT                   = KILOMETERS
+      DESCRIPTION            = "Z component of the position vector from Mars
+                                center to the spacecraft expressed in the
+                                planetocentric IAU 2000 reference frame, and
+                                corrected for light time and stellar
+                                aberration."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SPACECRAFT_ALTITUDE
+      COLUMN_NUMBER          = 10
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 74
+      BYTES                  = 8
+      UNIT                   = KILOMETERS
+      DESCRIPTION            = "distance from the spacecraft to the IAU 2000
+                                Mars ellipsoid measured normal to the
+                                surface."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SUB_SC_EAST_LONGITUDE
+      COLUMN_NUMBER          = 11
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 82
+      BYTES                  = 8
+      UNIT                   = DEGREES
+      DESCRIPTION            = "IAU 2000 longitude of the sub spacecraft point
+                                that is the point on Mars that lies directly
+                                beneath the spacecraft."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SUB_SC_PLANETOCENTRIC_LATITUDE
+      COLUMN_NUMBER          = 12
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 90
+      BYTES                  = 8
+      UNIT                   = DEGREES
+      DESCRIPTION            = "IAU 2000 planetocentric latitude of the sub
+                                spacecraft point that is the point on Mars
+                                that lies directly beneath the spacecraft."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SUB_SC_PLANETOGRAPHIC_LATITUDE
+      COLUMN_NUMBER          = 13
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 98
+      BYTES                  = 8
+      UNIT                   = DEGREES
+      DESCRIPTION            = "IAU 2000 planetographic latitude of the sub
+                                spacecraft point that is the point on Mars
+                                that lies directly beneath the spacecraft."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = X_MARS_SC_VELOCITY_VECTOR
+      COLUMN_NUMBER          = 14
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 106
+      BYTES                  = 8
+      UNIT                   = "KILOMETERS/SECOND"
+      DESCRIPTION            = "X component of the velocity vector of the
+                                spacecraft w.r.t. the center of Mars expressed
+                                in the planetocentric IAU 2000 reference
+                                frame, and corrected for light time and
+                                stellar aberration."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = Y_MARS_SC_VELOCITY_VECTOR
+      COLUMN_NUMBER          = 15
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 114
+      BYTES                  = 8
+      UNIT                   = "KILOMETERS/SECOND"
+      DESCRIPTION            = "Y component of the velocity vector of the
+                                spacecraft w.r.t. the center of Mars expressed
+                                in the planetocentric IAU 2000 reference
+                                frame, and corrected for light time and
+                                stellar aberration."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = Z_MARS_SC_VELOCITY_VECTOR
+      COLUMN_NUMBER          = 16
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 122
+      BYTES                  = 8
+      UNIT                   = "KILOMETERS/SECOND"
+      DESCRIPTION            = "Z component of the velocity vector of the
+                                spacecraft w.r.t. the center of Mars expressed
+                                in the planetocentric IAU 2000 reference
+                                frame, and corrected for light time and
+                                stellar aberration."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = MARS_SC_RADIAL_VELOCITY
+      COLUMN_NUMBER          = 17
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 130
+      BYTES                  = 8
+      UNIT                   = "KILOMETERS/SECOND"
+      DESCRIPTION            = "Radial component of the velocity vector of the
+                                spacecraft w.r.t. the center of Mars expressed
+                                in the planetocentric IAU 2000 reference
+                                frame, and corrected for light time and
+                                stellar aberration."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = MARS_SC_TANGENTIAL_VELOCITY
+      COLUMN_NUMBER          = 18
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 138
+      BYTES                  = 8
+      UNIT                   = "KILOMETERS/SECOND"
+      DESCRIPTION            = "Tangential component of the velocity vector of
+                                the spacecraft w.r.t. the center of Mars
+                                expressed in the planetocentric IAU 2000
+                                reference frame, and corrected for light time
+                                and stellar aberration."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = LOCAL_TRUE_SOLAR_TIME
+      COLUMN_NUMBER          = 19
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 146
+      BYTES                  = 8
+      UNIT                   = "DECIMAL HOURS"
+      DESCRIPTION            = "Angle between the meridian passing through the
+                                sub-spacecraft point and the meridian passing
+                                through the subsolar point of Mars, expressed
+                                on a '24 hour' clock. 12.000 corresponds to an
+                                angle of 0 degrees, while 00.000 corresponds
+                                to an angle of 180 degrees."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SOLAR_ZENITH_ANGLE
+      COLUMN_NUMBER          = 20
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 154
+      BYTES                  = 8
+      UNIT                   = DEGREES
+      DESCRIPTION            = "Angle between the nadir at the sub-spacecraft
+                                point and a vector from the sub-spacecraft
+                                point to the Sun."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SC_PITCH_ANGLE
+      COLUMN_NUMBER          = 21
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 162
+      BYTES                  = 8
+      UNIT                   = DEGREES
+      DESCRIPTION            = "Spacecraft pitch angle in the reference frame
+                                with the Z axis co-aligned with the center of
+                                Mars - spacecraft position vector and the X
+                                axis in the plane containing the Z axis and
+                                the spacecraft velocity vector w.r.t. Mars."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SC_YAW_ANGLE
+      COLUMN_NUMBER          = 22
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 170
+      BYTES                  = 8
+      UNIT                   = DEGREES
+      DESCRIPTION            = "Spacecraft yaw angle in the reference frame
+                                with the Z axis co-aligned with the center of
+                                Mars - spacecraft position vector and the X
+                                axis in the plane containing the Z axis and
+                                the spacecraft velocity vector w.r.t. Mars."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SC_ROLL_ANGLE
+      COLUMN_NUMBER          = 23
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 178
+      BYTES                  = 8
+      UNIT                   = DEGREES
+      DESCRIPTION            = "Spacecraft roll angle in the reference frame
+                                with the Z axis co-aligned with the center of
+                                Mars - spacecraft position vector and the X
+                                axis in the plane containing the Z axis and
+                                the spacecraft velocity vector w.r.t. Mars."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = MRO_SAMX_INNER_GIMBAL_ANGLE
+      COLUMN_NUMBER          = 24
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 186
+      BYTES                  = 8
+      UNIT                   = DEGREES
+      DESCRIPTION            = "Inner gimbal angle of the MRO solar array in
+                                the -X direction."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = MRO_SAMX_OUTER_GIMBAL_ANGLE
+      COLUMN_NUMBER          = 25
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 194
+      BYTES                  = 8
+      UNIT                   = DEGREES
+      DESCRIPTION            = "Outer gimbal angle of the MRO solar array in
+                                the -X direction."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = MRO_SAPX_INNER_GIMBAL_ANGLE
+      COLUMN_NUMBER          = 26
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 202
+      BYTES                  = 8
+      UNIT                   = DEGREES
+      DESCRIPTION            = "Inner gimbal angle of the MRO solar array in
+                                the +X direction."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = MRO_SAPX_OUTER_GIMBAL_ANGLE
+      COLUMN_NUMBER          = 27
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 210
+      BYTES                  = 8
+      UNIT                   = DEGREES
+      DESCRIPTION            = "Outer gimbal angle of the MRO solar array in
+                                the +X direction."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = MRO_HGA_INNER_GIMBAL_ANGLE
+      COLUMN_NUMBER          = 28
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 218
+      BYTES                  = 8
+      UNIT                   = DEGREES
+      DESCRIPTION            = "Inner gimbal angle of the MRO high gain
+                                antenna."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = MRO_HGA_OUTER_GIMBAL_ANGLE
+      COLUMN_NUMBER          = 29
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 226
+      BYTES                  = 8
+      UNIT                   = DEGREES
+      DESCRIPTION            = "Outer gimbal angle of the MRO high gain
+                                antenna."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = DES_TEMP
+      COLUMN_NUMBER          = 30
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 234
+      BYTES                  = 4
+      UNIT                   = CELSIUS
+      DESCRIPTION            = "Internal DES Temperature."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = DES_5V
+      COLUMN_NUMBER          = 31
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 238
+      BYTES                  = 4
+      UNIT                   = VOLTS
+      DESCRIPTION            = "DES Digital 5V Supply."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = DES_12V
+      COLUMN_NUMBER          = 32
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 242
+      BYTES                  = 4
+      UNIT                   = VOLTS
+      DESCRIPTION            = "DES Analog 12V Supply."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = DES_2V5
+      COLUMN_NUMBER          = 33
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 246
+      BYTES                  = 4
+      UNIT                   = VOLTS
+      DESCRIPTION            = "DES Digital 2V5 Supply."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = RX_TEMP
+      COLUMN_NUMBER          = 34
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 250
+      BYTES                  = 4
+      UNIT                   = CELSIUS
+      DESCRIPTION            = "Internal RX Temperature."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = TX_TEMP
+      COLUMN_NUMBER          = 35
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 254
+      BYTES                  = 4
+      UNIT                   = CELSIUS
+      DESCRIPTION            = "Internal TFE Temperature"
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = TX_LEV
+      COLUMN_NUMBER          = 36
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 258
+      BYTES                  = 4
+      UNIT                   = WATTS
+      DESCRIPTION            = "TFE output power level."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = TX_CURR
+      COLUMN_NUMBER          = 37
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 262
+      BYTES                  = 4
+      UNIT                   = AMPERE
+      DESCRIPTION            = "TFE primary power current (measured internally
+                                to TFE)."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = CORRUPTED_DATA_FLAG
+      COLUMN_NUMBER          = 38
+      DATA_TYPE              = MSB_INTEGER
+      START_BYTE             = 266
+      BYTES                  = 2
+      VALID_MAXIMUM          = 1
+      VALID_MINIMUM          = 0
+      DESCRIPTION            = "This flag which is set to one when the current
+                                data block is corrupted."
+    END_OBJECT               = COLUMN

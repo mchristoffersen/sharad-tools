@@ -1,0 +1,27 @@
+    ^ANCILLARY_STRUCTURE     = "SCIENCE_ANCILLARY.FMT"
+
+    OBJECT                   = COLUMN
+      NAME                   = SCIENCE_DATA
+      DATA_TYPE              = MSB_BIT_STRING
+      START_BYTE             = 187
+      BYTES                  = 1800
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = ECHO_SAMPLES
+        BIT_DATA_TYPE        = MSB_INTEGER
+        START_BIT            = 1
+        BITS                 = 4
+        ITEMS                = 3600
+        ITEM_BITS            = 4
+        DESCRIPTION          = "Array of 3600 samples of SHARAD echo return.
+                                Each integer value is an antenna voltage
+                                estimate at a particular instant in time.
+                                These estimates are proportional to voltage
+                                but are expressed in data numbers and need to
+                                be converted to engineering units. The timing
+                                of the samples and other relevant SHARAD
+                                instrument parameters are included in the
+                                ancillary data segment of each Data Block."
+      END_OBJECT             = BIT_COLUMN
+
+    END_OBJECT               = COLUMN
