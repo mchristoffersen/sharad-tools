@@ -13,7 +13,7 @@ def open_Chirp(chirp, TxTemp, RxTemp):
     """
 
     if chirp == 'calib':
-        calibRoot = '../calib/'
+        calibRoot = '../../calib/'
         calibName = 'reference_chirp'
         ext = '.dat'
         TxCalNames = ['m20tx', 'm15tx', 'm10tx', 'm05tx',

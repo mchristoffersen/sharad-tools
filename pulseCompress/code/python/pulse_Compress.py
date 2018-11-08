@@ -184,13 +184,13 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
     return
 
 if __name__ == '__main__':
-    data_path = '/media/anomalocaris/Swaps/MARS/orig/supl/SHARAD/EDR/edr_test/' 
+    data_path = '/mnt/d/MARS/orig/supl/SHARAD/EDR/edr_test/' 
     lbl_file = sys.argv[1]
     lblName = data_path + lbl_file
     runName = lbl_file.rstrip('_a.lbl')
     auxName = data_path + runName + '_a_a.dat'
     EDRName = data_path + runName + '_a_s.dat'
-    chirp = 'calib'
+    chirp = 'ideal'
     presumFac = 8           # presum factor for radargram visualization; actual data is not presummed
     #if (not os.path.isfile(data_path + 'processed/data/geom/' + runName + '_geom.csv')):
     main(EDRName, auxName, lblName, chirp = chirp, presumFac = presumFac)
