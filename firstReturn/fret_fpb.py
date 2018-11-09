@@ -9,11 +9,12 @@ import os, sys, time, math
 from PIL import Image
 import numpy as np
 import scipy.misc
+import matplotlib.pyplot as plt
 
 def main():
     
     # set path of directory
-    path = '/home/anomalocaris/Desktop/hebrus_valles_sn/'
+    path = '/mnt/d/MARS/code/sharad-tools/firstReturn/fret_test'
     print('\n----------------------------------------------------------------')
 
     # keep count of the number of rgrams processed
@@ -35,7 +36,6 @@ def main():
                 imarray = imarray.reshape(r,int(c))
 
                 #imarray = imarray[:,0:100:1]	# decrease the imarray to make testing faster
-
                 (r,c) = imarray.shape   
                 C = np.empty((r,c))	# create empty criteria array to localize surface echo for each trace
                 gradient = np.gradient(imarray, axis = 0) # find gradient of each trace in RGRAM
@@ -48,7 +48,15 @@ def main():
                 C[100:r,:] = imarray[100:r,:]*gradient[99:r-1,:]
 
                 C_max = np.argmax(C, axis = 0)	# find indices of max critera seletor for each column
-                fret_index = np.zeros((r,c))	# create empty fret index and power arrays
+                maxAmp = np.argmax(imarray, axis = 0) # also find the max power (or amplitude) in each trace to compare with fret algorithm
+
+                # scale image array by max pixel to create jpg output with fret index
+                dB = 20 * np.log10(imarray / .01)
+                imarrayScale = ((dB / np.amax(dB)) * 255) + 200 
+                print(np.amax(imarrayScale))
+                print(imarrayScale.shape)
+                imarrayScale[ np.where(imarrayScale < 100) ] = 0
+                fret_index = np.zeros((r,c,3), 'uint8')	# create empty fret index and power arrays
                 fret_db = np.empty((c,1))
 
                 # open geom nav file for rgram to append surface echo power to each trace
@@ -56,32 +64,41 @@ def main():
                 
                 (head,tail) = os.path.split(root)
                 
-                nav_file = np.genfromtxt(path + '/PDS/geom/' + '/' + file_name.rstrip('rgram') + 'geom.tab', delimiter = ',', dtype = str)
+                nav_file = np.genfromtxt(path + '/data/geom/' + tail + '/' + file_name.rstrip('rgram') + 'geom.tab', delimiter = ',', dtype = str)
 
                 #nav_file = nav_file[0:100:1,:]	# decrease the imarray to make testing faster 
 
-                # vectirized first return array and first return power out
-                # attach max criteria indices for each column to first return array - make white
-                fret_index[C_max_ind, np.arange(c)] = 255    
-                fret_pow = imarray[C_max_ind, np.arange(c)]
+                # create fret index image - show scaled radargram as base
+                fret_index[:,:,0] = fret_index[:,:,1] = fret_index[:,:,2] = imarrayScale[:,:]
+
+                # indicate max power along track as red
+                fret_index[maxAmp, np.arange(c),0:2] = 0
+                fret_index[maxAmp, np.arange(c),0] = 255  
+
+                # make index given by fret algorithm yellow
+                fret_index[C_max, np.arange(c),0] = fret_index[C_max, np.arange(c),1] = 255 
+                fret_index[C_max, np.arange(c),2] = 0
+
+                # record power in dB for data given by fret algorithm
+                fret_pow = imarray[C_max, np.arange(c)]
                 fret_db = np.reshape((np.log10(fret_pow)*10),(c,1))
-                
+
                 # append fret values to a new column in geom.tab file. this should be the 11th column
                 # if fret has already been run and it is being re-run, overwrite 11th column
                 # save new nav file as file_name.geom2.tab where fret is 11th column 
                 if nav_file.shape[1] == 10:
-                nav_file = np.append(nav_file, fret_db, 1)
+                    nav_file = np.append(nav_file, fret_db, 1)
 
                 else:
-                nav_file[:,10] = fret_db[:,0]
+                    nav_file[:,10] = fret_db[:,0]
 
                 # output files  
-                np.savetxt(path + '/PDS/geom/' + file_name.rstrip('rgram') + 'geom2.tab', nav_file, delimiter = ',', newline = '\n', fmt= '%s')
-                np.savetxt(root + '/' + file_name + '_fret_db.txt', fret_db, delimiter=',', newline = '\n', comments = '', header = 'PDB', fmt='%.8f')
+                np.savetxt(path + '/out/geom/' + file_name.rstrip('rgram') + 'geom2.tab', nav_file, delimiter = ',', newline = '\n', fmt= '%s')
+                np.savetxt(path + '/out/' + file_name + '_fret_db.txt', fret_db, delimiter=',', newline = '\n', comments = '', header = 'PDB', fmt='%.8f')
 
                 # convert RGRAM array and fret array to images and save
-                fret_array = Image.fromarray(fret_index)
-                scipy.misc.imsave(root + '/' + file_name + '_fret_array.jpg', fret_array)
+                fret_array = Image.fromarray(fret_index, 'RGB')
+                scipy.misc.imsave(path + '/out/' + file_name + '_fret_array.jpg', fret_array)
                 
                 # update the counter to keep track of lines processed
                 count += 1
