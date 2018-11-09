@@ -16,11 +16,11 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
     """
     This python script is used to pulse compress raw SHARAD EDRs to return chirp compressed science record. Output should be complex voltage.
 
-    Much of this code was adapted from Matthew Perry's FrankenRDR work, along with Michael Chrostoffersen's sharad-tools. Certain packages were directly updated from their work (ie. readLBL, readAnc, readAux). This code simply aims to pulse compress the raw data, without performing any other processing steps.
+    This code was adapted from Matthew Perry's FrankenRDR work, along with Michael Chrostoffersen's sharad-tools. Certain packages were directly updated from their work (ie. readLBL, readAnc, readAux). This code simply aims to pulse compress the raw data, without performing any other processing steps.
 
     github: b-tober
 
-    Written by: Brandon S. Tober
+    Updated by: Brandon S. Tober
     Date: 23Aug2018
 
     Example call:
@@ -168,14 +168,12 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
         geomData[_i,4] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
 
     # convert complex-valued voltage return to power values
-    pow_out = np.power(np.abs(EDRData), 2)
-    print(EDRData)
-    sys.exit()
+    ampOut = np.abs(EDRData)
     # create radargrams from presummed data to visualize output, also save data
-    #rgram(EDRData_presum, data_path, runName + '_' + chirp, rel = True)
-    #np.savetxt(data_path + 'processed/data/geom/' + runName + '_' + chirp + '_geom.csv', geomData, delimiter = ',', newline = '\n',fmt = '%s')
-    #np.save(data_path + 'processed/data/rgram/comp/' + runName + '_' + chirp + '_comp.npy', EDRData)
-    #np.save(data_path + 'processed/data/rgram/' + runName + '_' + chirp + '_pow.npy', pow_out)
+    rgram(EDRData_presum, data_path, runName + '_' + chirp, rel = True)
+    np.savetxt(data_path + 'processed/data/geom/' + runName + '_' + chirp + '_geom.csv', geomData, delimiter = ',', newline = '\n',fmt = '%s')
+    np.save(data_path + 'processed/data/rgram/comp/' + runName + '_' + chirp + '_comp.npy', EDRData)
+    np.save(data_path + 'processed/data/rgram/' + runName + '_' + chirp + '_amp.npy', ampOut)
 
     t1 = time.time()    # End time
     print('--------------------------------')
@@ -184,13 +182,13 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
     return
 
 if __name__ == '__main__':
-    data_path = '/mnt/d/MARS/orig/supl/SHARAD/EDR/edr_test/' 
+    data_path = '/media/anomalocaris/Swaps/MARS/orig/supl/SHARAD/EDR/edr_test/' 
     lbl_file = sys.argv[1]
     lblName = data_path + lbl_file
     runName = lbl_file.rstrip('_a.lbl')
     auxName = data_path + runName + '_a_a.dat'
     EDRName = data_path + runName + '_a_s.dat'
-    chirp = 'ideal'
+    chirp = 'calib'
     presumFac = 8           # presum factor for radargram visualization; actual data is not presummed
     #if (not os.path.isfile(data_path + 'processed/data/geom/' + runName + '_geom.csv')):
     main(EDRName, auxName, lblName, chirp = chirp, presumFac = presumFac)

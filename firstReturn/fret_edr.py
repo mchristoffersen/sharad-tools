@@ -11,25 +11,26 @@ import math
 import numpy as np
 import scipy.misc
 import time
+import matplotlib.pyplot as plt
 
 def main():
     
     # set path of directory
     #path = '/disk/qnap-2/MARS/orig/supl/SHARAD/EDR/hebrus_valles_sn/'
-    path = '/media/anomalocaris/Swaps/Google_Drive/MARS/orig/supl/SHARAD/EDR/hebrus_valles_sn/'
+    path = '/media/anomalocaris/Swaps/MARS/code/sharad-tools/firstReturn/fret_test/EDR/'
     print('\n----------------------------------------------------------------')
 
     # keep count of the number of rgrams processed
     count = 0       
 
     t0 = time.time()    # start time
-    for root, dirs, files in os.walk(path + 'processed/data/rgram/'):
+    for root, dirs, files in os.walk(path + 'data/rgram/'):
         for file in files:
-            if file.endswith('pow.npy'):
-                file_name = file.rstrip('_pow.npy)')
-                if (not os.path.isfile(path + 'processed/data/geom/' + file_name + '_geom2.csv')):
+            if file.endswith('amp.npy'):
+                file_name = file.rstrip('_amp.npy)')
+                if (not os.path.isfile(path + 'out/geom/' + file_name + '_geom2.csv')):
                     print('\nComputing first return for observation: ' + file_name + '\n')
-                    imarray = np.load(path + 'processed/data/rgram/' + file)
+                    imarray = np.load(path + 'data/rgram/' + file)
 
                     #imarray = imarray[:,0:100:1]	# decrease the imarray to make testing faster
 
@@ -46,19 +47,34 @@ def main():
                     
                     # find indices of max critera seletor for each column
                     C_max_ind = np.argmax(C, axis = 0)	
-                    # create empty fret index and power arrays
-                    fret_index = np.zeros((r,c))
+                    maxAmp = np.argmax(imarray, axis = 0) # also find the max power (or amplitude) in each trace to compare with fret algorithm
+                    
+                    # scale image array by max pixel to create jpg output with fret index
+                    dB = 10 * np.log10(imarray / .01)
+                    imarrayScale = ((dB / np.amax(dB)) * 255)
+                    imarrayScale[ np.where(imarrayScale > 50) ] = 255
+                    fret_index = np.zeros((r,c,3), 'uint8')	# create empty fret index and power arrays
+                    fret_db = np.empty((c,1))
 
                     # open geom nav file for rgram to append surface echo power to each trace                
-                    nav_file = np.genfromtxt(path + 'processed/data/geom/' + file_name + '_geom.csv', delimiter = ',', dtype = str)
+                    nav_file = np.genfromtxt(path + 'data/geom/' + file_name + '_geom.csv', delimiter = ',', dtype = str)
 
                     #nav_file = nav_file[0:100:1,:]	# decrease the imarray to make testing faster 
 
-                    # vectirized first return array and first return power out
-                    # attach max criteria indices for each column to first return array - make white
-                    fret_index[C_max_ind, np.arange(c)] = 255    
-                    fret_pow = imarray[C_max_ind, np.arange(c)]
-                    fret_db = np.reshape((np.log10(fret_pow)*10),(c,1))
+                    # create fret index image - show scaled radargram as base
+                    fret_index[:,:,0] = fret_index[:,:,1] = fret_index[:,:,2] = imarrayScale[:,:]
+
+                    # indicate max power along track as red
+                    fret_index[maxAmp, np.arange(c),0:2] = 0
+                    fret_index[maxAmp, np.arange(c),0] = 255  
+
+                    # make index given by fret algorithm yellow
+                    fret_index[C_max_ind, np.arange(c),0] = fret_index[C_max_ind, np.arange(c),1] = 255 
+                    fret_index[C_max_ind, np.arange(c),2] = 0
+
+                    # record power in dB for data given by fret algorithm
+                    fret_amp = imarray[C_max_ind, np.arange(c)]
+                    fret_db = 20 * (np.reshape((np.log10(fret_amp)),(c,1)))
 
                     # append fret values to geom.tab file. this should be the 6th column
                     # if fret has already been run and it is being re-run, overwrite 6th column with new fret values
@@ -68,28 +84,14 @@ def main():
                     else:
                         nav_file[:,6] = fret_db[:,0]
                         
-                    np.savetxt(path + 'processed/data/geom/' + file_name + '_geom2.csv', nav_file, delimiter = ',', newline = '\n', fmt= '%s')
-                    np.savetxt(path + '/processed/data/fret/' + file_name + '_fret_db.txt', fret_db, delimiter=',', newline = '\n', comments = '', header = 'PDB', fmt='%.8f')
+                    np.savetxt(path + 'out/geom/' + file_name + '_geom2.csv', nav_file, delimiter = ',', newline = '\n', fmt= '%s')
+                    np.savetxt(path + 'out/fret/' + file_name + '_fret_db.txt', fret_db, delimiter=',', newline = '\n', comments = '', header = 'PDB', fmt='%.8f')
 
-                    # convert fret array to image and save
-                    # presum data by factor for visualization purposes
-                    presumFac = 32
-                    presumCols = int(np.ceil(c/presumFac))
-                    C_max_ind_presum = np.zeros(presumCols)
-                    C_max_ind_presum_int = np.zeros((presumCols),dtype = int)
-                    fret_presum = np.zeros((r, presumCols))
 
-                    for _i in range(presumCols - 1):
-                        C_max_ind_presum[_i] = int(np.mean(C_max_ind[presumFac*_i:presumFac*(_i+1)]))
-
-                    # account for traces left if number of traces is not divisible by presumFac
-                    C_max_ind_presum[-1] = int(np.mean(C_max_ind[presumFac*(_i+1):-1]))
-
-                    C_max_ind_presum_int[:] = C_max_ind_presum[:]
-                    fret_presum[C_max_ind_presum_int, np.arange(presumCols)] = 255
 
                     try:
-                        scipy.misc.imsave(path + 'processed/data/fret/' + file_name + '_fret.jpg', fret_presum)
+                        fret_array = Image.fromarray(fret_index[:,::32], 'RGB') # downsample by taking every 32nd trace for output fret image
+                        scipy.misc.imsave(path + 'out/fret/' + file_name + '_fret.jpg', fret_array)
                     except Exception as err:
                         print(err)
                     # update the counter to keep track of lines processed

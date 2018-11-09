@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 def main():
     
     # set path of directory
-    path = '/mnt/d/MARS/code/sharad-tools/firstReturn/fret_test'
+    path = '/media/anomalocaris/Swaps/MARS/code/sharad-tools/firstReturn/fret_test/FPB'
     print('\n----------------------------------------------------------------')
 
     # keep count of the number of rgrams processed
@@ -23,7 +23,7 @@ def main():
     t0 = time.time()    # start time
     for root, dirs, files in os.walk(path):
         for file in files:
-            if file.endswith('.img'):
+            if file.endswith('2303_rgram.img'):
                 
                 # convert binary .img PDS RGRAM to numpy array
                 # reshape array with 3600 lines
@@ -52,10 +52,8 @@ def main():
 
                 # scale image array by max pixel to create jpg output with fret index
                 dB = 20 * np.log10(imarray / .01)
-                imarrayScale = ((dB / np.amax(dB)) * 255) + 200 
-                print(np.amax(imarrayScale))
-                print(imarrayScale.shape)
-                imarrayScale[ np.where(imarrayScale < 100) ] = 0
+                imarrayScale = -((dB / np.amax(dB)) * 255)
+                imarrayScale[ np.where(imarrayScale > 175) ] = 255
                 fret_index = np.zeros((r,c,3), 'uint8')	# create empty fret index and power arrays
                 fret_db = np.empty((c,1))
 
@@ -94,11 +92,11 @@ def main():
 
                 # output files  
                 np.savetxt(path + '/out/geom/' + file_name.rstrip('rgram') + 'geom2.tab', nav_file, delimiter = ',', newline = '\n', fmt= '%s')
-                np.savetxt(path + '/out/' + file_name + '_fret_db.txt', fret_db, delimiter=',', newline = '\n', comments = '', header = 'PDB', fmt='%.8f')
+                np.savetxt(path + '/out/fret/' + file_name + '_fret_db.txt', fret_db, delimiter=',', newline = '\n', comments = '', header = 'PDB', fmt='%.8f')
 
                 # convert RGRAM array and fret array to images and save
                 fret_array = Image.fromarray(fret_index, 'RGB')
-                scipy.misc.imsave(path + '/out/' + file_name + '_fret_array.jpg', fret_array)
+                scipy.misc.imsave(path + '/out/fret/' + file_name + '_fret_array.jpg', fret_array)
                 
                 # update the counter to keep track of lines processed
                 count += 1
