@@ -40,6 +40,7 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
     print('--------------------------------')
     print(runName)
     print('--------------------------------')
+    print(lblName)
 
     # extract relecant information from lbl file
     print('Reading label file...')
@@ -74,12 +75,12 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
     print('Number of Records:\t' + format(records))
     print('---- Begin Processing ----')
 
-    # determine average TX and RX temps if using Italian reference chirp
-    txTemp = np.mean(auxDF['TX_TEMP'][:])
-    rxTemp = np.mean(auxDF['RX_TEMP'][:])
+    # determine TX and RX temps if using Italian reference chirp
+    txTemp = auxDF['TX_TEMP'][:]
+    rxTemp = auxDF['RX_TEMP'][:]
     
     # set up empty data arrays to hold Output
-    if chirp =='ideal' or chirp == 'UPB':
+    if chirp =='ideal' or chirp == 'synth' or chirp == 'UPB':
         EDRData = np.zeros((3600,records), complex)
         EDRData_presum = np.zeros((3600, presumCols), complex)
     elif chirp == 'calib':
@@ -87,8 +88,8 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
         EDRData_presum = np.zeros((2048, presumCols), complex)        
     geomData = np.zeros((records,5))
 
-    # read in reference chirp
-    refChirp = open_Chirp(chirp, txTemp, rxTemp)
+    # read in reference chirp as matched filter - this should be imported in Fourier frequency domain, as complex conjugate
+    refChirpMF = open_Chirp(chirp, txTemp, rxTemp)
     print('Reference chirp opened' + ' (type = ' +  chirp + ')')
 
 
@@ -107,7 +108,6 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
     # all data imported and decompressed
     # begin range compression 
     if chirp =='calib':
-        refChirp_conj = np.conj(refChirp)                          # Take the complex conjugate of the reference chirp
         fc = (20.-(80./3.))*1e6                                    #-6.66 MHz
         dt = (3./80.)*1e-6                                           # 0.0375 Microseconds
         t = np.arange(0*dt, 4096*dt, dt)
@@ -121,7 +121,7 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
         
             # shift the data to the right by 6.66 MHz
             sciShift = sciPad * phase_shift
-            sciFFT = np.fft.fft(sciShift) / len(sciShift)
+            sciFFT = np.fft.fft(sciShift)# / len(sciShift)
             # place spectrum in natural ordering
             sciFFT = np.fft.fftshift(sciFFT)
     
@@ -132,23 +132,21 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
             sciFFT_cut = sciFFT[st:en]
 
             # perform chirp compression
-            dechirpData = sciFFT_cut * refChirp_conj
+            dechirpData = sciFFT_cut * refChirpMF
 
             # Inverse Fourier transfrom and fix scaling
-            EDRData[:,_i] = np.fft.ifft(dechirpData)  * dechirpData.shape[0]
+            EDRData[:,_i] = np.fft.ifft(dechirpData)#  * dechirpData.shape[0]
     else:
-        # take complex conjugate of reference chirp fourier transform
-        refChirpComp = np.conj(refChirp)
 
         for _i in range(records):
             # fourier transform of data
-            sciFFT = np.fft.fft(sci[:,_i]) / len(sci[:,_i])
+            sciFFT = np.fft.fft(sci[:,_i])# / len(sci[:,_i])
 
             # multiple Fourier transform of reference chip by that of the data
-            dechirpData = sciFFT * refChirpComp
+            dechirpData = sciFFT * refChirpMF
 
             # inverse fourier transform of dechirped data to place back in time domain
-            EDRData[:,_i] = np.fft.ifft(dechirpData) * len(sci[:,_i])
+            EDRData[:,_i] = np.fft.ifft(dechirpData)# * len(sci[:,_i])
     print('Pulse compression complese')
 
     # presum data by factor or eight for visualization purposes
@@ -168,9 +166,27 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
         geomData[_i,4] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
 
     # convert complex-valued voltage return to power values
+    BruceData = np.fromfile('../../../../../orig/supl/SHARAD/EDR/EDR_pc_bruce/592101000_1_Unif_SLC.raw', dtype = 'complex64')
+    BruceData = BruceData.reshape(3600, int(len(BruceData)/3600))
+    #print(BruceData)
     ampOut = np.abs(EDRData)
-    # create radargrams from presummed data to visualize output, also save data
-    rgram(EDRData_presum, data_path, runName + '_' + chirp, rel = True)
+    print(ampOut)
+    print(np.abs(BruceData))
+    #print(ampOut)
+    #print(np.divide(EDRData,BruceData))
+    plt.subplot(4,1,1)
+    plt.plot(np.abs(np.divide(EDRData,BruceData)[:,1000]))
+    plt.subplot(4,1,2)
+    plt.plot(np.abs(np.divide(EDRData,BruceData)[:,10000]))
+    plt.subplot(4,1,3)
+    plt.plot(np.abs(np.divide(EDRData,BruceData)[:,15000]))
+    plt.subplot(4,1,4)
+    plt.plot(np.abs(np.divide(EDRData,BruceData)[:,24000]))
+    plt.show()
+    sys.exit()
+
+    # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
+    rgram(EDRData[:1800,::32], data_path, runName + '_' + chirp, rel = True)
     np.savetxt(data_path + 'processed/data/geom/' + runName + '_' + chirp + '_geom.csv', geomData, delimiter = ',', newline = '\n',fmt = '%s')
     np.save(data_path + 'processed/data/rgram/comp/' + runName + '_' + chirp + '_comp.npy', EDRData)
     np.save(data_path + 'processed/data/rgram/' + runName + '_' + chirp + '_amp.npy', ampOut)
@@ -182,13 +198,20 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
     return
 
 if __name__ == '__main__':
-    data_path = '/media/anomalocaris/Swaps/MARS/orig/supl/SHARAD/EDR/edr_test/' 
+    data_path = /MARS/orig/supl/SHARAD/EDR/edr_test/
+    if os.getwd().split('/')[1] = 'media':
+        data_path = '/media/anomalocaris/Swaps' + data_path
+    elif os.getwd().split('/')[1] = 'mnt':
+        data_path = '/mnt/d' + data_path
+    else:
+        print('Data path not found')
+        sys.exit()
     lbl_file = sys.argv[1]
     lblName = data_path + lbl_file
     runName = lbl_file.rstrip('_a.lbl')
     auxName = data_path + runName + '_a_a.dat'
     EDRName = data_path + runName + '_a_s.dat'
-    chirp = 'calib'
+    chirp = 'synth'
     presumFac = 8           # presum factor for radargram visualization; actual data is not presummed
     #if (not os.path.isfile(data_path + 'processed/data/geom/' + runName + '_geom.csv')):
     main(EDRName, auxName, lblName, chirp = chirp, presumFac = presumFac)

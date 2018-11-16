@@ -49,7 +49,7 @@ returns = edr_Decompress(rawReturns,n,r); %decompress raw binary data
 
 %% Parse the chirp and combine the real and complex parts - take complex conjugate
 chirpFreq = (chirp_Unpack(txAvg,rxAvg))';
-
+mean(chirpFreq)
 %% Pulse compression steps
 %method from http://pds-geosciences.wustl.edu/mro/mro-m-sharad-3-edr-v1/mroffrsh_0003/calib/calinfo.txt
 %transpose so traces are columns
