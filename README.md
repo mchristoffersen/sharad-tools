@@ -8,5 +8,5 @@ This repo holds tools for working with SHARAD data. Right now there are three:
  ## depthAdjust ##
  A python script to do depth correction on radargrams
  
- ## fret ##
+ ## firstReturn ##
  A set of python sripts for extracting the firt return power (reflectivity) from SHARAD tracks
