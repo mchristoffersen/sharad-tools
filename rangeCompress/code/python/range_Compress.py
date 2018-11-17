@@ -87,9 +87,9 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
         EDRData_presum = np.zeros((3600, presumCols), complex)
         window = np.kaiser(3600, beta)
     elif chirp == 'calib':
-        EDRData = np.zeros((2048,records), complex)
-        EDRData_presum = np.zeros((2048, presumCols), complex)   
-        window = np.kaiser(2048, beta)     
+        EDRData = np.zeros((4096,records), complex)
+        EDRData_presum = np.zeros((4096, presumCols), complex)   
+        window = np.kaiser(4096, beta)     
     geomData = np.zeros((records,5))
  
 
@@ -119,27 +119,37 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
         dt = (3./80.)*1e-6                                           # 0.0375 Microseconds
         t = np.arange(0*dt, 4096*dt, dt)
         phase_shift = np.exp(2*np.pi*1j*fc*t)                    #right shift spectrum when multiplied by zero padded raw data
+        refChirpMF = np.pad(refChirpMF,[(0,0),(0,4096 - refChirpMF.shape[1])], 'constant')      # zeros pad reference chirp to length 4096 prior to range compression
 
         for _i in range(records):
             # check length of the science data
             sciPad = np.zeros(4096, complex)
             sciPad[:len(sci[:,_i])] = sci[:,_i]
 
-        
+            # this commended out block follows to range compression steps perscribed by the PDS documentation for the 
+            # calibrated reference chirps. The only difference is that during the complex exponential multiplication,
+            # (20 - (80/3))MHz is used to shift the data to the right rather than ((80/3) - 20)MHz
             # shift the data to the right by 6.66 MHz
-            sciShift = sciPad * phase_shift
-            sciFFT = np.fft.fft(sciShift)# / len(sciShift)
-            # place spectrum in natural ordering
-            sciFFT = np.fft.fftshift(sciFFT)
+            # sciShift = sciPad * phase_shift
+            # sciFFT = np.fft.fft(sciShift)# / len(sciShift)
+            # # place spectrum in natural ordering
+            # sciFFT = np.fft.fftshift(sciFFT)
     
 
-            # take central 2048 samples
-            st = 1024
-            en = 3072
-            sciFFT_cut = sciFFT[st:en]
+            # # take central 2048 samples
+            # st = 1024
+            # en = 3072
+            # sciFFT_cut = sciFFT[st:en]
 
-            # perform chirp compression
-            dechirpData = (sciFFT_cut * refChirpMF[indices[_i],:]) * window
+            # # perform chirp compression
+            # dechirpData = (sciFFT_cut * refChirpMF[indices[_i],:]) * window
+
+            # alternate method of range compression using italian reference chirps that differs from the PDS documentation steps
+            # both the data and the chirp are padded to 4096 and then multiplied together in the frequency domain
+            sciFFT = np.fft.fft(sciPad)
+            dechirpData = (sciFFT * refChirpMF[indices[_i],:]) * window
+
+
 
             # Inverse Fourier transfrom and fix scaling
             EDRData[:,_i] = np.fft.ifft(dechirpData)#  * dechirpData.shape[0]
@@ -176,6 +186,10 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
     BruceData = np.fromfile('../../../../../orig/supl/SHARAD/EDR/EDR_pc_bruce/592101000_1_Unif_SLC.raw', dtype = 'complex64')
     BruceData = BruceData.reshape(3600, int(len(BruceData)/3600))
     ampOut = np.abs(EDRData)
+    print(ampOut)
+    #plt.plot(ampOut[:,int(recLen/2)])
+    #plt.show()
+    #sys.exit()
 
     # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
     rgram(EDRData[:,::32], data_path, runName + '_' + chirp, rel = True)

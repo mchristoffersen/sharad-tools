@@ -15,7 +15,6 @@ def rgram(data, path, runName, rel = True):
         maxdB = np.amax(dB)
 
     rgram = dB / maxdB * 255
-    print(rgram.shape)
 
     # zero out values below noise floor and clip values greater than maxdB
     rgram[np.where(rgram < 0)] = 0.
