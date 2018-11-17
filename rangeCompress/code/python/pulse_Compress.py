@@ -12,7 +12,7 @@ from read_EDR import EDR_Parse, sci_Decompress
 
 
 
-def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
+def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0):
     """
     This python script is used to pulse compress raw SHARAD EDRs to return chirp compressed science record. Output should be complex voltage.
 
@@ -73,6 +73,7 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
     print('Bits Per Sample:\t' + format(BitsPerSample))
     print('Record Length:\t' + format(recLen))
     print('Number of Records:\t' + format(records))
+    print('Using Kaiser window of beta value:\t' + format(beta))
     print('---- Begin Processing ----')
 
     # determine TX and RX temps if using Italian reference chirp
@@ -80,13 +81,17 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
     rxTemp = auxDF['RX_TEMP'][:]
     
     # set up empty data arrays to hold Output
+     # create kaiser window of specified beta value
     if chirp =='ideal' or chirp == 'synth' or chirp == 'UPB':
         EDRData = np.zeros((3600,records), complex)
         EDRData_presum = np.zeros((3600, presumCols), complex)
+        window = np.kaiser(3600, beta)
     elif chirp == 'calib':
         EDRData = np.zeros((2048,records), complex)
-        EDRData_presum = np.zeros((2048, presumCols), complex)        
+        EDRData_presum = np.zeros((2048, presumCols), complex)   
+        window = np.kaiser(2048, beta)     
     geomData = np.zeros((records,5))
+ 
 
     # read in reference chirp as matched filter - this should be imported in Fourier frequency domain, as complex conjugate
     if chirp == 'calib':
@@ -134,7 +139,7 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
             sciFFT_cut = sciFFT[st:en]
 
             # perform chirp compression
-            dechirpData = sciFFT_cut * refChirpMF[indices[_i],:]
+            dechirpData = (sciFFT_cut * refChirpMF[indices[_i],:]) * window
 
             # Inverse Fourier transfrom and fix scaling
             EDRData[:,_i] = np.fft.ifft(dechirpData)#  * dechirpData.shape[0]
@@ -145,7 +150,7 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
             sciFFT = np.fft.fft(sci[:,_i])# / len(sci[:,_i])
 
             # multiple Fourier transform of reference chip by that of the data
-            dechirpData = sciFFT * refChirpMF
+            dechirpData = (sciFFT * refChirpMF) * window
 
             # inverse fourier transform of dechirped data to place back in time domain
             EDRData[:,_i] = np.fft.ifft(dechirpData)# * len(sci[:,_i])
@@ -174,9 +179,9 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
 
     # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
     rgram(EDRData[:,::32], data_path, runName + '_' + chirp, rel = True)
-    np.savetxt(data_path + 'processed/data/geom/' + runName + '_' + chirp + '_geom.csv', geomData, delimiter = ',', newline = '\n',fmt = '%s')
-    np.save(data_path + 'processed/data/rgram/comp/' + runName + '_' + chirp + '_comp.npy', EDRData)
-    np.save(data_path + 'processed/data/rgram/' + runName + '_' + chirp + '_amp.npy', ampOut)
+    np.savetxt(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n',fmt = '%s')
+    np.save(data_path + 'processed/data/rgram/comp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + windowName + '_SLC_comp.npy', EDRData)
+    np.save(data_path + 'processed/data/rgram/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + windowName + '_SLC_amp.npy', ampOut)
 
     t1 = time.time()    # End time
     print('--------------------------------')
@@ -200,8 +205,20 @@ if __name__ == '__main__':
     EDRName = data_path + runName + '_a_s.dat'
     chirp = 'calib'
     presumFac = 8           # presum factor for radargram visualization; actual data is not presummed
+    beta = 0                # beta value for kaiser window (0 = rectangular, 5 	Similar to a Hamming, 6	Similar to a Hann, 8.6 	Similar to a Blackman)
+    if beta == 0:
+        windowName = 'Unif'
+    elif beta == 5:
+        windowName = 'Hamming'
+    elif bea == 6:
+        windowName = 'Hann'
+    elif beta == 8.6:
+        windowName = 'Blackman'
+    else:
+        print('Unknown window type')
+        sys.exit()
     #if (not os.path.isfile(data_path + 'processed/data/geom/' + runName + '_geom.csv')):
-    main(EDRName, auxName, lblName, chirp = chirp, presumFac = presumFac)
+    main(EDRName, auxName, lblName, chirp = chirp, presumFac = presumFac, beta = beta)
     # for file in os.listdir(data_path):
     #     if file.endswith('.lbl'):
     #         lbl_file = file

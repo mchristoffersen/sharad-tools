@@ -20,7 +20,7 @@ def rgram(data, path, runName, rel = True):
     # zero out values below noise floor and clip values greater than maxdB
     rgram[np.where(rgram < 0)] = 0.
     rgram[np.where(rgram > 255)] = 255.
-    imName = path + 'processed/browse/tiff/' + str(runName) + '.tiff'
+    imName = path + 'processed/browse/tiff/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '.tiff'
     try:
         plt.imsave(imName, rgram, cmap = 'gray')
     except Exception as err:
