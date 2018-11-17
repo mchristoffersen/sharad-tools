@@ -15,6 +15,7 @@ def open_Chirp(chirp, TxTemp, RxTemp):
     """
 
     if chirp == 'calib':
+        calChirpFile = []
         calibRoot = '../../calib/'
         calibName = 'reference_chirp'
         ext = '.dat'
@@ -22,42 +23,53 @@ def open_Chirp(chirp, TxTemp, RxTemp):
                       'p00tx', 'p20tx', 'p40tx', 'p60tx']
         RxCalNames = ['m20rx', 'p00rx', 'p20rx', 'p40rx',
                       'p60rx']
+
+        Tx = [-20, -15, -10, -5, 0, 20, 40, 60]
+        Rx = [-20, 0, 20, 40, 60]
         #
         # Define vectors for Tx and Rx temps
         #
-        Tx = [-20, -15, -10, -5, 0, 20, 40, 60]
-        Rx = [-20, 0, 20, 40, 60]
-        calibChirpFiles = []
-        TxDiff = []
-        RxDiff = []
-        #
-        # Find distance
-        #
-        TxDiff[:] = [abs(x - TxTemp) for x in Tx]
-        RxDiff[:] = [abs(x - RxTemp) for x in Rx]
-        #
-        # Find the indices of the closest Tx and Rx value
-        #
-        calibTx = TxCalNames[TxDiff.index(min(TxDiff))]
-        calibRx = RxCalNames[RxDiff.index(min(RxDiff))]
-        #
-        # Construct File name
-        #
-        calChirpFile = calibRoot + calibName + '_' + \
-                       TxCalNames[TxDiff.index(min(TxDiff))] + '_' + \
-                       RxCalNames[RxDiff.index(min(RxDiff))] + ext
+        for _i in range(len(TxTemp)):
 
-        if os.path.isfile(calChirpFile):
-            calChirp = np.fromfile(calChirpFile, dtype='<f')
-            real = calChirp[:2048]
-            imag = calChirp[2048:]
-            calChirp = real + 1j*imag
-            calChirpConj = np.conj(calChirp)
-            return calChirpConj
+            TxDiff = []#np.zeros(len(TxTemp))
+            RxDiff = []#np.zeros(len(TxTemp))
+            #
+            # Find distance
+            #
+            TxDiff = [abs(x - TxTemp[_i]) for x in Tx]
+            RxDiff = [abs(x - RxTemp[_i]) for x in Rx]
+            #print(TxDiff.index(min(TxDiff)))
 
-        else:
-            print('Calibrated chirp file not found...exiting.')
-            sys.exit()
+            #
+            # Find the indices of the closest Tx and Rx value
+            #
+            #calibTx = TxCalNames[TxDiff.index(min(TxDiff))]
+            #calibRx = RxCalNames[RxDiff.index(min(RxDiff))]
+            #
+            # Construct File name
+            #
+            calChirpFile = calChirpFile + [str(calibRoot + calibName + '_' + \
+                        TxCalNames[TxDiff.index(min(TxDiff))] + '_' + \
+                        RxCalNames[RxDiff.index(min(RxDiff))] + ext)]
+
+        #get the unique chirps required for compression
+        calChirpFiles = list(set(calChirpFile))
+        
+        calChirps = np.empty((len(calChirpFiles),2048), dtype = 'complex64')
+        for _i in range(len(calChirpFiles)):
+            if os.path.isfile(calChirpFiles[_i]):
+                calChirp = np.fromfile(calChirpFile[_i], dtype='<f')
+                real = calChirp[:2048]
+                imag = calChirp[2048:]
+                calChirp = real + 1j*imag
+                calChirpConj = np.conj(calChirp)
+                calChirps[_i,:] = calChirpConj[:]
+
+            else:
+                print('Calibrated chirp file not found...exiting.')
+                sys.exit()
+
+        return calChirps
 
     elif chirp == 'ideal' or chirp == 'synth' or chirp == 'UPB':
     

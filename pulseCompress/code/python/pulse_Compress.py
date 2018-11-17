@@ -91,6 +91,8 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
     # read in reference chirp as matched filter - this should be imported in Fourier frequency domain, as complex conjugate
     refChirpMF = open_Chirp(chirp, txTemp, rxTemp)
     print('Reference chirp opened' + ' (type = ' +  chirp + ')')
+    print(refChirpMF.shape)
+    sys.exit()
 
 
     # read in raw science data and ancil data
@@ -198,10 +200,10 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
     return
 
 if __name__ == '__main__':
-    data_path = /MARS/orig/supl/SHARAD/EDR/edr_test/
-    if os.getwd().split('/')[1] = 'media':
+    data_path = '/MARS/orig/supl/SHARAD/EDR/edr_test/'
+    if os.getcwd().split('/')[1] == 'media':
         data_path = '/media/anomalocaris/Swaps' + data_path
-    elif os.getwd().split('/')[1] = 'mnt':
+    elif os.getcwd().split('/')[1] == 'mnt':
         data_path = '/mnt/d' + data_path
     else:
         print('Data path not found')
@@ -211,7 +213,7 @@ if __name__ == '__main__':
     runName = lbl_file.rstrip('_a.lbl')
     auxName = data_path + runName + '_a_a.dat'
     EDRName = data_path + runName + '_a_s.dat'
-    chirp = 'synth'
+    chirp = 'calib'
     presumFac = 8           # presum factor for radargram visualization; actual data is not presummed
     #if (not os.path.isfile(data_path + 'processed/data/geom/' + runName + '_geom.csv')):
     main(EDRName, auxName, lblName, chirp = chirp, presumFac = presumFac)
