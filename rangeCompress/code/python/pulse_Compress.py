@@ -161,7 +161,7 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
 
     # create geom array with relavant data for each record
     for _i in range(records):
-        geomData[_i,0] = runName.split('_')[1]
+        geomData[_i,0] = runName.split('_')[1] + runName.split('_')[2]
         geomData[_i,1] = int(_i)
         geomData[_i,2] = auxDF['SUB_SC_PLANETOCENTRIC_LATITUDE'][_i]
         geomData[_i,3] = auxDF['SUB_SC_EAST_LONGITUDE'][_i]
