@@ -1,0 +1,886 @@
+    OBJECT                   = COLUMN
+      NAME                   = SCET_BLOCK_WHOLE
+      COLUMN_NUMBER          = 1
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 1
+      BYTES                  = 4
+      DESCRIPTION            = "Spacecraft clock count at the time of data
+                                block start of acquisition, integer seconds
+                                part."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SCET_BLOCK_FRAC
+      COLUMN_NUMBER          = 2
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 5
+      BYTES                  = 2
+      DESCRIPTION            = "Spacecraft clock count at the time of data
+                                block start of acquisition, fractional seconds
+                                part expressed in units of 2^-16 seconds."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = TLM_COUNTER
+      COLUMN_NUMBER          = 3
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 7
+      BYTES                  = 4
+      DESCRIPTION            = "Sequential counter uniquely identifying the
+                                data block in the telemetry flux."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = FMT_LENGTH
+      COLUMN_NUMBER          = 4
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 11
+      BYTES                  = 2
+      DESCRIPTION            = "Length of the data block in bytes as formatted
+                                by the instrument (excluding header and
+                                trailer). Valid values are 1972 for 4-bit
+                                modes, 2872 for 6-bit modes, 3772 for 8-bit
+                                modes."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SPARE
+      COLUMN_NUMBER          = 5
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 13
+      BYTES                  = 2
+      DESCRIPTION            = "All bits are set to 0."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SCET_OST_WHOLE
+      COLUMN_NUMBER          = 6
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 15
+      BYTES                  = 4
+      DESCRIPTION            = "Spacecraft clock count at the start of
+                                execution of the current Operation Sequence
+                                Table, integer seconds part."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SCET_OST_FRAC
+      COLUMN_NUMBER          = 7
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 19
+      BYTES                  = 2
+      DESCRIPTION            = "Spacecraft clock count at the start of
+                                execution of the current Operation Sequence
+                                Table, fractional seconds part expressed in
+                                units of 2^-16 seconds."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SPARE
+      COLUMN_NUMBER          = 8
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 21
+      BYTES                  = 1
+      DESCRIPTION            = "All bits are set to 0."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = OST_LINE_NUMBER
+      COLUMN_NUMBER          = 9
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 22
+      BYTES                  = 1
+      DESCRIPTION            = "Number of the Operation Sequence Table line in
+                                execution."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = OST_LINE
+      COLUMN_NUMBER          = 10
+      DATA_TYPE              = MSB_BIT_STRING
+      START_BYTE             = 23
+      BYTES                  = 16
+      DESCRIPTION            = "Operation Sequence Table line in execution; an
+                                OST line defines the execution of a single
+                                Operation Mode."
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = PULSE_REPETITION_INTERVAL
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 1
+        BITS                 = 4
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table. It is the time between the
+                                transmission of two consecutive pulses, to be
+                                used for the entire duration of the selected
+                                Operation Mode:
+                                - a value of 1 means 1428 microseconds;
+                                - a value of 2 means 1492 microseconds;
+                                - a value of 3 means 1290 microseconds;
+                                - a value of 4 means 2856 microseconds;
+                                - a value of 5 means 2984 microseconds;
+                                - a value of 6 means 2580 microseconds."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = PHASE_COMPENSATION_TYPE
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 5
+        BITS                 = 4
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and is used by on-board
+                                software to select the type of phase shifting
+                                applied to the chirp transmitted by the radar,
+                                to compensate for the pulse-to-pulse echo
+                                shift caused by a surface slope and by the
+                                spacecraft radial motion:
+                                - a value of 0 means no compensation;
+                                - a value of 1 means radial velocity only;
+                                - a value of 2 means surface slope only;
+                                - a value of 3 means radial velocity and
+                                  surface slope."
+
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = SPARE
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 9
+        BITS                 = 2
+        DESCRIPTION          = "All bits are set to 0."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = DATA_TAKE_LENGTH
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 11
+        BITS                 = 22
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and is the duration of the
+                                data take expressed in number of pulse
+                                repetition intervals; it shall be an integer
+                                multiple of the number of pre-summed echoes in
+                                a data block."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = OPERATIVE_MODE
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 33
+        BITS                 = 8
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and is used to select the
+                                Operative Mode of the instrument: a value from
+                                33 to 53 means Subsurface Sounding modes from
+                                01 to 21; a value from 97 to 117 means Receive
+                                Only modes from 01 to 21."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = MANUAL_GAIN_CONTROL
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 41
+        BITS                 = 8
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and is used by on-board
+                                software to set the receiver gain during data
+                                acquisition."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = COMPRESSION_SELECTION
+        BIT_DATA_TYPE        = BOOLEAN
+        START_BIT            = 49
+        BITS                 = 1
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and is used by on-board
+                                software to select either the static scaling
+                                algorithm or the the dynamic scaling algorithm
+                                for the compression of echo samples from 32
+                                bits to 4, 6 or 8 bits:
+                                - a value of 0 means static scaling;
+                                - a value of 1 means dynamic scaling."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = CLOSED_LOOP_TRACKING
+        BIT_DATA_TYPE        = BOOLEAN
+        START_BIT            = 50
+        BITS                 = 1
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and is used by the on-board
+                                software to enable or disable the closed-loop
+                                tracking algorithm, which dynamically
+                                determines the opening of the receiving window
+                                based on the time delay of previous echoes:
+                                - a value of 0 means closed-loop tracking
+                                  disabled;
+                                - a value of 1 means closed-loop tracking
+                                  enabled."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = TRACKING_DATA_STORAGE
+        BIT_DATA_TYPE        = BOOLEAN
+        START_BIT            = 51
+        BITS                 = 1
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and is used by the on-board
+                                software to enable or disable the storage of
+                                radar echoes processed on board for the
+                                closed-loop tracking of the echo:
+                                - a value of 0 means storage of tracking data
+                                  disabled;
+                                - a value of 1 means storage of tracking data
+                                  enabled."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = TRACKING_PRE_SUMMING
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 52
+        BITS                 = 3
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and is the number of radar
+                                echoes to pre-sum before processing them on
+                                board for the closed-loop tracking of the
+                                echo:
+                                - a value of 0 means no pre-summed echoes;
+                                - a value of 1 means  2 pre-summed echoes;
+                                - a value of 2 means  3 pre-summed echoes;
+                                - a value of 3 means  4 pre-summed echoes;
+                                - a value of 4 means  8 pre-summed echoes;
+                                - a value of 5 means 16 pre-summed echoes;
+                                - a value of 6 means 32 pre-summed echoes;
+                                - a value of 7 means 64 pre-summed echoes."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = TRACKING_LOGIC_SELECTION
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 55
+        BITS                 = 1
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and selects the method used to
+                                determine the position of the echo within the
+                                receiving window during closed-loop tracking:
+                                - a value of 0 means use of the threshold
+                                  overshooting method;
+                                - a value of 1 means use of the center of
+                                  gravity method."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = THRESHOLD_LOGIC_SELECTION
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 56
+        BITS                 = 1
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and selects the method for the
+                                determination of the threshold that echo
+                                sample values have to exceed for successful
+                                detection of an echo in closed-loop tracking:
+                                - a value of 0 means threshold evaluated on
+                                  board;
+                                - a value of 1 means threshold set from
+                                  ground."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = SAMPLE_NUMBER
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 57
+        BITS                 = 4 
+        OFFSET               = 1
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and is the minimum number of
+                                echo samples whose value has to exceed the
+                                threshold for successful detection of an echo
+                                in closed-loop tracking:
+                                - a value of 0 means 1 sample;
+                                - a value of 1 means 2 samples;
+                                  ...and so on, until
+                                - a value of 15 means 16 samples."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = SPARE
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 61
+        BITS                 = 1
+        DESCRIPTION          = "All bits are set to 0."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = ALPHA_BETA
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 62
+        BITS                 = 2
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and determines the selection
+                                of a set of coefficients stored in the
+                                Parameter Table for the Kalman filter used to
+                                track the motion of the echo within the
+                                receiving window."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = REFERENCE_BIT
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 64
+        BITS                 = 1
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and selects the refresh logic
+                                of the close-loop tracking algorithm after a
+                                change of instrument operative mode:
+                                - a value of 0 means that algorithm parameters
+                                  are retrieved from the previous mode;
+                                - a value of 1 means that algorithm parameters
+                                  are refreshed and read from the Parameter
+                                  Table."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = THRESHOLD
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 65
+        BITS                 = 8
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and is the first order
+                                coefficient for the evaluation of the
+                                threshold value in closed-loop tracking."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = THRESHOLD_INCREMENT
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 73
+        BITS                 = 8
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and is the first order
+                                coefficient for the evaluation of the
+                                threshold value increment in closed-loop
+                                tracking."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = SPARE
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 81
+        BITS                 = 4
+        DESCRIPTION          = "All bits are set to 0."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = INITIAL_ECHO_VALUE
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 85
+        BITS                 = 3
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and is the first order
+                                coefficient for the prediction of the echo
+                                position in the receiving window during
+                                closed-loop tracking."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = EXPECTED_ECHO_SHIFT
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 88
+        BITS                 = 3
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and is the first order
+                                coefficient for the prediction of the echo
+                                shift in the receiving window during
+                                closed-loop tracking."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = WINDOW_LEFT_SHIFT
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 91
+        BITS                 = 3
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and is the first order
+                                coefficient for the left shift of the tracking
+                                window during closed-loop tracking."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = WINDOW_RIGHT_SHIFT
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 94
+        BITS                 = 3
+        DESCRIPTION          = "This parameter is extracted from the Operation
+                                Sequence Table, and is the first order
+                                coefficient for the right shift of the
+                                tracking window during closed-loop tracking."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = SPARE
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 97
+        BITS                 = 32
+        DESCRIPTION          = "All bits are set to 0."
+      END_OBJECT             = BIT_COLUMN
+
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SPARE
+      COLUMN_NUMBER          = 11
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 39
+      BYTES                  = 1
+      DESCRIPTION            = "All bits are set to 0."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = DATA_BLOCK_ID
+      COLUMN_NUMBER          = 12
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 40
+      BYTES                  = 3
+      DESCRIPTION            = "Order of acquisition of the data block within
+                                the current Operation Sequence Table line."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SCIENCE_DATA_SOURCE_COUNTER
+      COLUMN_NUMBER          = 13
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 43
+      BYTES                  = 2
+      DESCRIPTION            = "Order of acquisition of the data block within
+                                the current Operation Sequence Table line.
+                                This index is incremented only for data
+                                acquired during closed-loop tracking."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = PACKET_SEGMENTATION_AND_FPGA_STATUS
+      COLUMN_NUMBER          = 14
+      DATA_TYPE              = MSB_BIT_STRING
+      START_BYTE             = 45
+      BYTES                  = 2
+      DESCRIPTION            = "Flags describing the segmentation of science
+                                data packets and the status of the Field
+                                Programmable Gate Array of the slave board."
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = SCIENTIFIC_DATA_TYPE
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 1
+        BITS                 = 1
+        DESCRIPTION          = "This field is used to indicate the type of
+                                data acquired:
+                                - a value of 0 means Tracking Data;
+                                - a value of 1 means Science Data."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = SEGMENTATION_FLAG
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 2
+        BITS                 = 2
+        DESCRIPTION          = "This field is used in case of segmentation of
+                                observations in the current Operation Sequence
+                                Table line:
+                                - a value of 0 means that the data block is
+                                  the only one in the current Operation
+                                  Sequence Table line;
+                                - a value of 1 means that the data block is
+                                  the first one in the current Operation
+                                  Sequence Table line;
+                                - a value of 2 means that the data block is
+                                  neither the first nor the last one in the
+                                  current Operation Sequence Table line;
+                                - a value of 3 means that the data block is
+                                  the last one in the current Operation
+                                  Sequence Table line."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = SPARE
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 4
+        BITS                 = 5
+        DESCRIPTION          = "All bits are set to 0."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = SPARE
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 9
+        BITS                 = 4
+        DESCRIPTION          = "All bits are set to 0."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = DMA_ERROR
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 13
+        BITS                 = 1
+        DESCRIPTION          = "Flag used to signal the occurrence of a DMA
+                                Error condition in the Field Programmable Gate
+                                Array of the slave board:
+                                - a value of 0 means no error;
+                                - a value of 1 means DMA Error."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = TC_OVERRUN
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 14
+        BITS                 = 1
+        DESCRIPTION          = "Flag used to signal the occurrence of a
+                                Telecommand Overrun condition in the Field
+                                Programmable Gate Array of the slave board:
+                                - a value of 0 means no error;
+                                - a value of 1 means Telecommand Overrun."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = FIFO_FULL
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 15
+        BITS                 = 1
+        DESCRIPTION          = "Flag used to signal the occurrence of a FIFO
+                                Full condition in the Field Programmable Gate
+                                Array of the slave board:
+                                - a value of 0 means FIFO Full;
+                                - a value of 1 means no error."
+      END_OBJECT             = BIT_COLUMN
+
+      OBJECT                 = BIT_COLUMN
+        NAME                 = TEST
+        BIT_DATA_TYPE        = MSB_UNSIGNED_INTEGER
+        START_BIT            = 16
+        BITS                 = 1
+        DESCRIPTION          = "Flag used in testing the Field Programmable
+                                Gate Array of the slave board."
+      END_OBJECT             = BIT_COLUMN
+
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SPARE
+      COLUMN_NUMBER          = 15
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 47
+      BYTES                  = 1
+      DESCRIPTION            = "All bits are set to 0."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = DATA_BLOCK_FIRST_PRI
+      COLUMN_NUMBER          = 16
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 48
+      BYTES                  = 3
+      DESCRIPTION            = "Value of the Pulse Repetition Interval counter
+                                for the first data block of the current
+                                Operation Sequence Table line."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = TIME_DATA_BLOCK_WHOLE
+      COLUMN_NUMBER          = 17
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 51
+      BYTES                  = 4
+      DESCRIPTION            = "Instrument clock count at the time of data
+                                block acquisition, integer seconds part. The
+                                instrument clock is reset at the start of
+                                execution of a new Operation Sequence Table."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = TIME_DATA_BLOCK_FRAC
+      COLUMN_NUMBER          = 18
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 55
+      BYTES                  = 2
+      DESCRIPTION            = "Instrument clock count at the time of data
+                                block acquisition, fractional seconds part
+                                expressed in units of 2^-16 seconds. The
+                                instrument clock is reset at the start of
+                                execution of a new Operation Sequence Table."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SDI_BIT_FIELD
+      COLUMN_NUMBER          = 19
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 57
+      BYTES                  = 2
+      DESCRIPTION            = "This parameter provides indication of the
+                                position of the most significant bit in the
+                                dynamic scaling of echo samples. It is used in
+                                decompressing echoes on ground."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = TIME_N
+      COLUMN_NUMBER          = 20
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 59
+      BYTES                  = 4
+      UNIT                   = SECONDS
+      DESCRIPTION            = "This parameter is extracted from the Parameter
+                                Table, and is the value of the instrument
+                                clock count identifying the line in the
+                                Orbital Data Table which most closely precedes
+                                in time the instrument clock count for the
+                                data block."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = RADIUS_N
+      COLUMN_NUMBER          = 21
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 63
+      BYTES                  = 4
+      UNIT                   = KILOMETERS
+      DESCRIPTION            = "Spacecraft distance from Mars' center of mass,
+                                read from the line in the Orbital Data Table
+                                whose reference time most closely precedes the
+                                instrument clock count for the data block."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = TANGENTIAL_VELOCITY_N
+      COLUMN_NUMBER          = 22
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 67
+      BYTES                  = 4
+      UNIT                   = "METERS/SECOND"
+      DESCRIPTION            = "Spacecraft tangential velocity with respect to
+                                Mars' center of mass, read from the line in
+                                the Orbital Data Table whose reference time
+                                most closely precedes the instrument clock
+                                count for the data block."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = RADIAL_VELOCITY_N
+      COLUMN_NUMBER          = 23
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 71
+      BYTES                  = 4
+      UNIT                   = "METERS/SECOND"
+      DESCRIPTION            = "Spacecraft radial velocity with respect to
+                                Mars' center of mass, read from the line in
+                                the Orbital Data Table whose reference time
+                                most closely precedes the instrument clock
+                                count for the data block."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = TLP
+      COLUMN_NUMBER          = 24
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 75
+      BYTES                  = 4
+      UNIT                   = KILOMETERS
+      DESCRIPTION            = "Spacecraft position along its ground track,
+                                measured from the beginning of execution of
+                                the current Operation Sequence Table. It has
+                                been read from the line in the Orbital Data
+                                Table whose reference time most closely
+                                precedes the instrument clock count for the
+                                data block."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = TIME_WPF
+      COLUMN_NUMBER          = 25
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 79
+      BYTES                  = 4
+      UNIT                   = SECONDS
+      DESCRIPTION            = "Instrument clock count at which orbital
+                                parameters used in on-board processing are
+                                interpolated from values extracted from the
+                                Orbital Data Table. This clock count is not
+                                the instrument clock count for the data block,
+                                but rather an approximate value which is
+                                refreshed every 64 pulse repetition
+                                intervals."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = DELTA_TIME
+      COLUMN_NUMBER          = 26
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 83
+      BYTES                  = 4
+      UNIT                   = SECONDS
+      DESCRIPTION            = "Parameter used in the linear interpolation of
+                                orbital parameters used in on-board processing
+                                from values extracted from the Orbital Data
+                                Table. It is the difference between TIME_WPF
+                                and TIME_N."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = TLP_INTERPOLATE
+      COLUMN_NUMBER          = 27
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 87
+      BYTES                  = 4
+      UNIT                   = KILOMETERS
+      DESCRIPTION            = "Spacecraft position along its ground track,
+                                measured from the beginning of execution of
+                                the current Operation Sequence Table. It has
+                                been interpolated from values extracted from
+                                the Orbital Data Table at the time TIME_WPF."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = RADIUS_INTERPOLATE
+      COLUMN_NUMBER          = 28
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 91
+      BYTES                  = 4
+      UNIT                   = KILOMETERS
+      DESCRIPTION            = "Spacecraft distance from Mars' center of mass,
+                                interpolated from values extracted from the
+                                Orbital Data Table at TIME_WPF."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = TANGENTIAL_VELOCITY_INTERPOLATE
+      COLUMN_NUMBER          = 29
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 95
+      BYTES                  = 4
+      UNIT                   = "METERS/SECOND"
+      DESCRIPTION            = "Spacecraft tangential velocity with respect to
+                                Mars' center of mass, interpolated from values
+                                extracted from the Orbital Data Table at
+                                TIME_WPF."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = RADIAL_VELOCITY_INTERPOLATE
+      COLUMN_NUMBER          = 30
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 99
+      BYTES                  = 4
+      UNIT                   = "METERS/SECOND"
+      DESCRIPTION            = "Spacecraft radial velocity with respect to
+                                Mars' center of mass, interpolated from values
+                                extracted from the Orbital Data Table at
+                                TIME_WPF."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = END_TLP
+      COLUMN_NUMBER          = 31
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 103
+      BYTES                  = 4
+      UNIT                   = KILOMETERS
+      DESCRIPTION            = "Parameter extracted from the Parameter Table,
+                                and defining the greatest value of the
+                                spacecraft position along its ground track,
+                                measured from the beginning of execution of
+                                the current Operation Sequence Table, for
+                                which the current set of polynomial
+                                coefficients used in computing Mars' planet
+                                radius and terrain slope is still valid."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = S_COEFFS
+      COLUMN_NUMBER          = 32
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 107
+      BYTES                  = 32
+      ITEMS                  = 8
+      ITEM_BYTES             = 4
+      DESCRIPTION            = "Set of coefficients of a polynome used to
+                                estimate the mean slope of the Martian surface
+                                along the ground track of the spacecraft."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = C_COEFFS
+      COLUMN_NUMBER          = 33
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 139
+      BYTES                  = 28
+      ITEMS                  = 7
+      ITEM_BYTES             = 4
+      DESCRIPTION            = "Set of coefficients of a polynome used to
+                                estimate the radius of Mars inclusive of
+                                topography along the ground track of the
+                                spacecraft."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = SLOPE
+      COLUMN_NUMBER          = 34
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 167
+      BYTES                  = 4
+      UNIT                   = RADIANS
+      DESCRIPTION            = "Estimated value of the mean slope of the
+                                Martian surface computed from a set of
+                                polynomial coefficients using
+                                TLP_INTERPOLATE."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = TOPOGRAPHY
+      COLUMN_NUMBER          = 35
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 171
+      BYTES                  = 4
+      UNIT                   = KILOMETERS
+      DESCRIPTION            = "Estimated value of the radius of Mars
+                                inclusive of topography computed from a set of
+                                polynomial coefficients using
+                                TLP_INTERPOLATE."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = PHASE_COMPENSATION_STEP
+      COLUMN_NUMBER          = 36
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 175
+      BYTES                  = 4
+      DESCRIPTION            = "Phase compensation step used in the generation
+                                of the transmitted chirp within the Digital
+                                Chirp Generator."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = RECEIVE_WINDOW_OPENING_TIME
+      COLUMN_NUMBER          = 37
+      DATA_TYPE              = IEEE_REAL
+      START_BYTE             = 179
+      BYTES                  = 4
+      DESCRIPTION            = "Opening time of the receiver, measured from
+                                the start of the transmission of the pulse and
+                                expressed in units of the sampling interval of
+                                the analog-to-digital converter, which is
+                                0.0375 microseconds long."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = RECEIVE_WINDOW_POSITION
+      COLUMN_NUMBER          = 38
+      DATA_TYPE              = MSB_UNSIGNED_INTEGER
+      START_BYTE             = 183
+      BYTES                  = 4
+      DESCRIPTION            = "Opening time of the receiver, measured from
+                                the start of the transmission of the pulse and
+                                expressed in units of the sampling interval of
+                                the analog-to-digital converter, which is
+                                0.0375 microseconds long. It is identical to
+                                RECEIVE_WINDOW_OPENING_TIME, but it refers to
+                                the previous data block."
+    END_OBJECT               = COLUMN
