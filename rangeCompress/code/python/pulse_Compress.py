@@ -173,7 +173,7 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
     ampOut = np.abs(EDRData)
 
     # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
-    rgram(EDRData[:1800,::32], data_path, runName + '_' + chirp, rel = True)
+    rgram(EDRData[:,::32], data_path, runName + '_' + chirp, rel = True)
     np.savetxt(data_path + 'processed/data/geom/' + runName + '_' + chirp + '_geom.csv', geomData, delimiter = ',', newline = '\n',fmt = '%s')
     np.save(data_path + 'processed/data/rgram/comp/' + runName + '_' + chirp + '_comp.npy', EDRData)
     np.save(data_path + 'processed/data/rgram/' + runName + '_' + chirp + '_amp.npy', ampOut)
