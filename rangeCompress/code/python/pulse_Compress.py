@@ -198,9 +198,17 @@ if __name__ == '__main__':
     runName = lbl_file.rstrip('_a.lbl')
     auxName = data_path + runName + '_a_a.dat'
     EDRName = data_path + runName + '_a_s.dat'
-    chirp = 'ideal'
+    chirp = 'calib'
     presumFac = 8           # presum factor for radargram visualization; actual data is not presummed
     #if (not os.path.isfile(data_path + 'processed/data/geom/' + runName + '_geom.csv')):
     main(EDRName, auxName, lblName, chirp = chirp, presumFac = presumFac)
+    # for file in os.listdir(data_path):
+    #     if file.endswith('.lbl'):
+    #         lbl_file = file
+    #         lblName = data_path + lbl_file
+    #         runName = lbl_file.rstrip('_a.lbl')
+    #         auxName = data_path + runName + '_a_a.dat'
+    #         EDRName = data_path + runName + '_a_s.dat'
+    #         main(EDRName, auxName, lblName, chirp = chirp, presumFac = presumFac)
     #else :
     #    print('\n' + runName.split('_')[1] + runName.split('_')[2] + ' already processed!\n')

@@ -69,7 +69,7 @@ def open_Chirp(chirp, TxTemp, RxTemp):
                 sys.exit()
 
         # create list with indices to required reference chirp for each trace in radar data
-        calChirpFiles = [calChirpFilesUnique.index(_i) for _i in calChirpFile]
+        calChirpFiles = [calChirpFilesUnique.index(_i) for _i in calChirpFile]   
 
         return calChirps, calChirpFiles
 
