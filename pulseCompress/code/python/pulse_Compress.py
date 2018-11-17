@@ -89,11 +89,11 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
     geomData = np.zeros((records,5))
 
     # read in reference chirp as matched filter - this should be imported in Fourier frequency domain, as complex conjugate
-    refChirpMF = open_Chirp(chirp, txTemp, rxTemp)
+    if chirp == 'calib':
+        refChirpMF, indices = open_Chirp(chirp, txTemp, rxTemp)
+    else:
+        refChirpMF = open_Chirp(chirp, txTemp, rxTemp)
     print('Reference chirp opened' + ' (type = ' +  chirp + ')')
-    print(refChirpMF.shape)
-    sys.exit()
-
 
     # read in raw science data and ancil data
     sci, ancil = EDR_Parse(EDRName, records, recLen, BitsPerSample)
@@ -134,7 +134,7 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
             sciFFT_cut = sciFFT[st:en]
 
             # perform chirp compression
-            dechirpData = sciFFT_cut * refChirpMF
+            dechirpData = sciFFT_cut * refChirpMF[indices[_i],:]
 
             # Inverse Fourier transfrom and fix scaling
             EDRData[:,_i] = np.fft.ifft(dechirpData)#  * dechirpData.shape[0]
@@ -170,22 +170,7 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None):
     # convert complex-valued voltage return to power values
     BruceData = np.fromfile('../../../../../orig/supl/SHARAD/EDR/EDR_pc_bruce/592101000_1_Unif_SLC.raw', dtype = 'complex64')
     BruceData = BruceData.reshape(3600, int(len(BruceData)/3600))
-    #print(BruceData)
     ampOut = np.abs(EDRData)
-    print(ampOut)
-    print(np.abs(BruceData))
-    #print(ampOut)
-    #print(np.divide(EDRData,BruceData))
-    plt.subplot(4,1,1)
-    plt.plot(np.abs(np.divide(EDRData,BruceData)[:,1000]))
-    plt.subplot(4,1,2)
-    plt.plot(np.abs(np.divide(EDRData,BruceData)[:,10000]))
-    plt.subplot(4,1,3)
-    plt.plot(np.abs(np.divide(EDRData,BruceData)[:,15000]))
-    plt.subplot(4,1,4)
-    plt.plot(np.abs(np.divide(EDRData,BruceData)[:,24000]))
-    plt.show()
-    sys.exit()
 
     # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
     rgram(EDRData[:1800,::32], data_path, runName + '_' + chirp, rel = True)
@@ -213,7 +198,7 @@ if __name__ == '__main__':
     runName = lbl_file.rstrip('_a.lbl')
     auxName = data_path + runName + '_a_a.dat'
     EDRName = data_path + runName + '_a_s.dat'
-    chirp = 'calib'
+    chirp = 'ideal'
     presumFac = 8           # presum factor for radargram visualization; actual data is not presummed
     #if (not os.path.isfile(data_path + 'processed/data/geom/' + runName + '_geom.csv')):
     main(EDRName, auxName, lblName, chirp = chirp, presumFac = presumFac)

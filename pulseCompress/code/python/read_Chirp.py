@@ -11,7 +11,7 @@ def open_Chirp(chirp, TxTemp, RxTemp):
     This was modified from Matt Perry's FrankenRDR readChirp function
 
     Updated by: Brandon S. Tober
-    Last updated: 12Nov2018
+    Last updated: 17Nov2018
     """
 
     if chirp == 'calib':
@@ -38,8 +38,6 @@ def open_Chirp(chirp, TxTemp, RxTemp):
             #
             TxDiff = [abs(x - TxTemp[_i]) for x in Tx]
             RxDiff = [abs(x - RxTemp[_i]) for x in Rx]
-            #print(TxDiff.index(min(TxDiff)))
-
             #
             # Find the indices of the closest Tx and Rx value
             #
@@ -53,12 +51,13 @@ def open_Chirp(chirp, TxTemp, RxTemp):
                         RxCalNames[RxDiff.index(min(RxDiff))] + ext)]
 
         #get the unique chirps required for compression
-        calChirpFiles = list(set(calChirpFile))
+        calChirpFilesUnique = list(set(calChirpFile))
         
-        calChirps = np.empty((len(calChirpFiles),2048), dtype = 'complex64')
-        for _i in range(len(calChirpFiles)):
-            if os.path.isfile(calChirpFiles[_i]):
-                calChirp = np.fromfile(calChirpFile[_i], dtype='<f')
+        calChirps = np.empty((len(calChirpFilesUnique),2048), dtype = 'complex64')
+
+        for _i in range(len(calChirpFilesUnique)):
+            if os.path.isfile(calChirpFilesUnique[_i]):
+                calChirp = np.fromfile(calChirpFilesUnique[_i], dtype='<f')
                 real = calChirp[:2048]
                 imag = calChirp[2048:]
                 calChirp = real + 1j*imag
@@ -69,7 +68,10 @@ def open_Chirp(chirp, TxTemp, RxTemp):
                 print('Calibrated chirp file not found...exiting.')
                 sys.exit()
 
-        return calChirps
+        # create list with indices to required reference chirp for each trace in radar data
+        calChirpFiles = [calChirpFilesUnique.index(_i) for _i in calChirpFile]
+
+        return calChirps, calChirpFiles
 
     elif chirp == 'ideal' or chirp == 'synth' or chirp == 'UPB':
     
@@ -87,33 +89,20 @@ def open_Chirp(chirp, TxTemp, RxTemp):
         arg = 2.0*np.pi*chirpTime*(fHigh+fSlope*chirpTime/2.0)
         idealChirp = np.zeros(3600, complex)
         idealChirp[:int(nSamp)] = np.cos(arg)
-        idealChirpFlip = idealChirp[::-1]
-        idealChirpConj = np.conj(idealChirpFlip)
-        idealChirpFFT = np.fft.fft(idealChirpConj)
-    
+        idealChirpFFT = np.fft.fft(idealChirp)
+        idealChirpConj = np.conj(idealChirpFFT)
+
+        if chirp == 'ideal':
+            return idealChirpConj
 
         # synthetic chirp using scipy.signal chirp generator - this should be the same as the above chirp method
         synthChirp = np.zeros(3600, complex)
         synthChirp[:int(nSamp)] = chirpGen(chirpTime, fHigh, pLen, fLow, method = 'linear')
-        synthChirpFlip = synthChirp[::-1]
-        synthChirpConj = np.conj(synthChirpFlip)
-        synthChirpFFT = np.fft.fft(synthChirpConj)
-
-        # synthetic basebanded chirp
-        j = np.sqrt(-1,dtype = complex)
-        synthChirpBase = np.zeros(3600, complex)
-        synthChirpBase[:int(nSamp)] = np.exp(np.pi*j*(beta/pLen)*np.power(chirpTime,2))
-        synthChirpBaseFlip = synthChirpBase[::-1]
-        synthChirpBaseConj = np.conj(synthChirpBaseFlip)
-        synthChirpBaseFFT = np.fft.fft(synthChirpBaseConj)
-
-        
-
-        if chirp == 'ideal':
-            return idealChirpFFT
-        
+        synthChirpFFT = np.fft.fft(synthChirp)
+        synthChirpConj = np.conj(synthChirpFFT)
+                
         if chirp == 'synth':
-            return synthChirpBaseFFT
+            return synthChirpConj
         
         elif chirp == 'UPB':
             
@@ -124,7 +113,8 @@ def open_Chirp(chirp, TxTemp, RxTemp):
             calChirp = np.zeros(3600, complex)
             calChirp[1800:] = cal_filter
             calChirp = calChirp*idealChirp_FFT
-            return calChirp
+            calChirpConj = np.conj(calChirp)
+            return calChirpConj
 
     else:
         print('Unknown reference chirp type')
