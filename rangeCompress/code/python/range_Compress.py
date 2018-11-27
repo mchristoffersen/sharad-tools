@@ -51,7 +51,7 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
     BitsPerSample = lblDic['INSTR_MODE_ID']['BitsPerSample']
 
     # downsize option for testing purposes
-    #records = int(records / 100)
+    records = int(records / 5)
 
 
     # presumming is just for visualization purposes
@@ -80,22 +80,9 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
     txTemp = auxDF['TX_TEMP'][:]
     rxTemp = auxDF['RX_TEMP'][:]
     
-    # set up empty data arrays to hold Output
-     # create kaiser window of specified beta value
-    if chirp =='ideal' or chirp == 'synth' or chirp == 'UPB':
-        EDRData = np.zeros((3600,records), complex)
-        EDRData_presum = np.zeros((3600, presumCols), complex)
-        window = np.kaiser(3600, beta)
-    elif chirp == 'calib':
-        EDRData = np.zeros((4096,records), complex)
-        EDRData_presum = np.zeros((4096, presumCols), complex)   
-        window = np.kaiser(4096, beta)     
-    geomData = np.zeros((records,5))
- 
-
     # read in reference chirp as matched filter - this should be imported in Fourier frequency domain, as complex conjugate
     if chirp == 'calib':
-        refChirpMF, indices = open_Chirp(chirp, txTemp, rxTemp)
+        refChirpMF, refChirpMF_index = open_Chirp(chirp, txTemp, rxTemp)
     else:
         refChirpMF = open_Chirp(chirp, txTemp, rxTemp)
     print('Reference chirp opened' + ' (type = ' +  chirp + ')')
@@ -113,46 +100,57 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
     print('EDR Science Data Decompressed')
 
     # all data imported and decompressed
+    # set up empty data arrays to hold Output
+    # create kaiser window of specified beta value
+    if chirp =='ideal' or chirp == 'synth' or chirp == 'UPB':
+        EDRData = np.zeros((3600,records), complex)
+        EDRData_presum = np.zeros((3600, presumCols), complex)
+        window = np.kaiser(3600, beta)
+    elif chirp == 'calib':
+        # set up two EDR data matrices to hold output for both options of range compression
+        EDRData = np.zeros((2048,records), complex)
+        EDRData_presum = np.zeros((2048, presumCols), complex)   
+        window = np.kaiser(2048, beta)
+
+        EDRData2 = np.zeros((4096,records), complex)
+        EDRData2_presum = np.zeros((4096, presumCols), complex)   
+        window2 = np.pad(np.kaiser(2048,beta),(0,4096 - refChirpMF.shape[1]),'constant')
+
+    geomData = np.zeros((records,5))
+
     # begin range compression 
     if chirp =='calib':
-        fc = (20.-(80./3.))*1e6                                    #-6.66 MHz
-        dt = (3./80.)*1e-6                                           # 0.0375 Microseconds
+        fc = ((80./3.) - 20.)*1e6                                 # 6.66 MHz - fc defined by PDS documentation     
+        # fc = (20.-(80./3.))*1e6                                   # -6.66 MHz - alternate fc - this works if followed by fftshift of data
+        dt = (3./80.)*1e-6                                         # 0.0375 Microseconds
         t = np.arange(0*dt, 4096*dt, dt)
-        phase_shift = np.exp(2*np.pi*1j*fc*t)                    #right shift spectrum when multiplied by zero padded raw data
-        refChirpMF = np.pad(refChirpMF,[(0,0),(0,4096 - refChirpMF.shape[1])], 'constant')      # zeros pad reference chirp to length 4096 prior to range compression
+        phase_shift = np.exp(2*np.pi*1j*fc*t)                    # right shift spectrum when multiplied by zero padded raw data
+        refChirpMF_pad = np.pad(refChirpMF,[(0,0),(0,4096 - refChirpMF.shape[1])], 'constant')      # zeros pad reference chirp to length 4096 prior to range compression
+        sciPad = np.pad(sci,[(0,4096 - sci.shape[0]),(0,0)],'constant')     # zero-pad science data to length of 4096
 
         for _i in range(records):
-            # check length of the science data
-            sciPad = np.zeros(4096, complex)
-            sciPad[:len(sci[:,_i])] = sci[:,_i]
+            
+            # range compression steps as per PDS documentation for calibrated chirp
+            sciShift = sciPad[:,_i] * phase_shift
+            sciFFT = np.fft.fft(sciShift) / len(sciShift) # Matt has his code set up to scale by length array - not quite sure why
 
-            # this commended out block follows to range compression steps perscribed by the PDS documentation for the 
-            # calibrated reference chirps. The only difference is that during the complex exponential multiplication,
-            # (20 - (80/3))MHz is used to shift the data to the right rather than ((80/3) - 20)MHz
-            # shift the data to the right by 6.66 MHz
-            # sciShift = sciPad * phase_shift
-            # sciFFT = np.fft.fft(sciShift)# / len(sciShift)
-            # # place spectrum in natural ordering
-            # sciFFT = np.fft.fftshift(sciFFT)
-    
+            # take central 2048 samples
+            st = 1024
+            en = 3072
+            sciFFT_cut = sciFFT[st:en]
 
-            # # take central 2048 samples
-            # st = 1024
-            # en = 3072
-            # sciFFT_cut = sciFFT[st:en]
-
-            # # perform chirp compression
-            # dechirpData = (sciFFT_cut * refChirpMF[indices[_i],:]) * window
+            # perform chirp compression
+            dechirpData = (sciFFT_cut * refChirpMF[refChirpMF_index[_i],:]) * window
 
             # alternate method of range compression using italian reference chirps that differs from the PDS documentation steps
             # both the data and the chirp are padded to 4096 and then multiplied together in the frequency domain
-            sciFFT = np.fft.fft(sciPad)
-            dechirpData = (sciFFT * refChirpMF[indices[_i],:]) * window
-
-
+            sciFFT2 = np.fft.fft(sciPad[:,_i])
+            dechirpData2 = (sciFFT2 * refChirpMF_pad[refChirpMF_index[_i],:]) * window2
 
             # Inverse Fourier transfrom and fix scaling
-            EDRData[:,_i] = np.fft.ifft(dechirpData)#  * dechirpData.shape[0]
+            EDRData[:,_i] = np.fft.ifft(dechirpData) * len(dechirpData)
+            EDRData2[:,_i] = np.fft.ifft(dechirpData2)
+
     else:
 
         for _i in range(records):
@@ -186,7 +184,22 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
     BruceData = np.fromfile('../../../../../orig/supl/SHARAD/EDR/EDR_pc_bruce/592101000_1_Unif_SLC.raw', dtype = 'complex64')
     BruceData = BruceData.reshape(3600, int(len(BruceData)/3600))
     ampOut = np.abs(EDRData)
-    print(ampOut)
+    ampOut2 = np.abs(EDRData2)
+    # print(ampOut)
+    # print('')
+    # print(ampOut2)
+    plt.subplot(2,1,1)
+    plt.plot(ampOut[:,int(recLen/2)])
+    plt.title('amplitude from subset range compression method')
+    plt.xlabel('fast-time sample')
+    plt.ylabel('amplitude')
+    plt.subplot(2,1,2)
+    plt.plot(ampOut2[:,int(recLen/2)])
+    plt.title('amplitude from padded chirp range compression method')
+    plt.xlabel('fast-time sample')
+    plt.ylabel('amplitude')
+    plt.show()
+    # sys.exit()
     #plt.plot(ampOut[:,int(recLen/2)])
     #plt.show()
     #sys.exit()
