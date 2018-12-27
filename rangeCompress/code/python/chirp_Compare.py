@@ -46,6 +46,12 @@ real = calChirp[:2048]
 imag = calChirp[2048:]
 calChirp = real + 1j*imag
 calChirpConj = np.conj(calChirp)
+print(calChirpConj.shape)
+
+# symmetrize reference chirp
+calChirpTime = np.fft.ifft(np.pad(calChirp,(0,4096 - calChirpConj.shape[0]),'constant'))
+calChirpTime = np.real(calChirpTime) * 2
+calChirpSymm = np.fft.fft(calChirpTime)
 
 # load cal_filter.dat
 calFilter = np.fromfile('../../calib/cal_filter.dat', '<f')
@@ -57,6 +63,33 @@ UPBChirp = UPBChirp*idealChirpFFT
 UPBChirpConj = np.conj(idealChirpFFT)
 
 # Compare outputs
+plt.subplot(4,1,1)
+plt.plot(np.real(idealChirpFFT))
+plt.subplot(4,1,2)
+plt.plot(np.imag(idealChirpFFT))
+plt.subplot(4,1,3)
+plt.plot(np.abs(idealChirpFFT))
+plt.subplot(4,1,4)
+plt.plot(np.unwrap(np.angle(idealChirpFFT)))
+plt.show()
+
+plt.subplot(4,1,1)
+plt.plot(np.real(calChirpSymm))
+plt.subplot(4,1,2)
+plt.plot(np.imag(calChirpSymm))
+plt.subplot(4,1,3)
+plt.plot(np.abs(calChirpSymm))
+plt.subplot(4,1,4)
+plt.plot(np.unwrap(np.angle(calChirpSymm)))
+plt.show()
+
+plt.subplot(2,1,1)
+plt.plot(calChirpTime[:3600])
+plt.subplot(2,1,2)
+plt.plot(idealChirp)
+plt.show()
+
+sys.exit()
 
 plt.subplot(2,1,1)
 plt.plot(idealChirp)
