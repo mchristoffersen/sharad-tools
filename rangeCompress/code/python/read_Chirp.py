@@ -112,7 +112,7 @@ def open_Chirp(chirp, TxTemp, RxTemp):
             cal_filter = np.roll(cal_filter, 900)
             calChirp = np.zeros(3600, complex)
             calChirp[1800:] = cal_filter
-            calChirp = calChirp*idealChirp_FFT
+            calChirp = calChirp*idealChirpFFT
             calChirpConj = np.conj(calChirp)
             return calChirpConj
 

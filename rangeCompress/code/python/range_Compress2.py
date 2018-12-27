@@ -108,17 +108,13 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
 
     elif chirp == 'calib':
         # set up two EDR data matrices to hold output for both options of range compression
-        EDRData = np.zeros((2048,records), complex)
-        EDRData_presum = np.zeros((2048, presumCols), complex)   
+        EDRData = np.zeros((4096,records), complex)
+        EDRData_presum = np.zeros((4096, presumCols), complex)   
         window = np.kaiser(2048, beta)
 
         EDRData2 = np.zeros((4096,records), complex)
         EDRData2_presum = np.zeros((4096, presumCols), complex)   
         window2 = np.pad(np.kaiser(2048,beta),(0,4096 - refChirpMF.shape[1]),'constant')
-
-        EDRData3 = np.zeros((4096,records), complex)
-        EDRData3_presum = np.zeros((4096, presumCols), complex)   
-        window3 = np.pad(np.kaiser(2048,beta),(0,4096 - refChirpMF.shape[1]),'constant')
 
     geomData = np.zeros((records,5))
 
@@ -130,41 +126,37 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
         t = np.arange(0*dt, 4096*dt, dt)
         phase_shift = np.exp(2*np.pi*1j*fc*t)                    # shift spectrum when multiplied by zero padded raw data
         refChirpMF_pad = np.pad(refChirpMF,[(0,0),(0,4096 - refChirpMF.shape[1])], 'constant')      # zeros pad reference chirp to length 4096 prior to range compression
-        refChirpMF_pad3 = np.pad(refChirpMF,[(0,0),(0,2049 - refChirpMF.shape[1])], 'constant')      # zeros pad reference chirp to length 4096 prior to range compression
+        refChirpMF_pad2 = np.pad(refChirpMF,[(0,0),(0,2049 - refChirpMF.shape[1])], 'constant')      # zeros pad reference chirp to length 2049 prior to range compression
         sciPad = np.pad(sci,[(0,4096 - sci.shape[0]),(0,0)],'constant')     # zero-pad science data to length of 4096
 
         
 
         for _i in range(records):
+
+            # pulse compression comparing revised and alternative ref chirp compression from Matt's presentation at SSTM18
+            # revised PDS method
             # range compression steps as per PDS documentation for calibrated chirp
             sciShift = sciPad[:,_i] * phase_shift
             sciFFT = np.fft.fft(sciShift) #/ len(sciShift) # Matt has his code set up to scale by length array - not quite sure why
-
-            # take central 2048 samples
+            # take central 2049 samples
             st = 1024
-            en = 3072
+            en = 3073
             sciFFT_cut = sciFFT[st:en]
-
             # perform chirp compression
-            dechirpData = (sciFFT_cut * refChirpMF[refChirpMF_index[_i],:]) * window
-
+            dechirpData = (sciFFT_cut * refChirpMF_pad2[refChirpMF_index[_i],:]) #* window
+            dechirpData = np.pad(dechirpData,(0,4096 - dechirpData.shape[0]),'constant')     # zero-pad output data to length of 409
             # Inverse Fourier transfrom and fix scaling
             EDRData[:,_i] = np.fft.ifft(dechirpData) #* len(dechirpData)
 
-            # alternate method of range compression using italian reference chirps that differs from the PDS documentation steps
-            # both the data and the chirp are padded to 4096 and then multiplied together in the frequency domain
-            sciFFT2 = np.fft.fft(sciPad[:,_i]) #/ len(sciPad[:,_i])
-            dechirpData2 = (sciFFT2 * refChirpMF_pad[refChirpMF_index[_i],:]) * window2
-            EDRData2[:,_i] = np.fft.ifft(dechirpData2) #* len(dechirpData2)
-
-            # yet another alternate method
-            sciFFT3 = sciFFT2
+            # alternative method
+            sciFFT2 = np.fft.fft(sciPad[:,_i])
             # take the first 2049 samples
-            sciFFT3_cut = sciFFT3[:2049]
-            dechirpData3 = (sciFFT3_cut * refChirpMF_pad3[refChirpMF_index[_i],:]) #* window
-            dechirpData3 = np.pad(dechirpData3,(0,4096 - dechirpData3.shape[0]),'constant')     # zero-pad output data to length of 4096
-            EDRData3[:,_i] = np.fft.ifft(dechirpData3) #* len(dechirpData3)
-        EDRData3 = EDRData3[:3600,:]
+            sciFFT2_cut = sciFFT2[:2049]
+            dechirpData2 = (sciFFT2_cut * refChirpMF_pad2[refChirpMF_index[_i],:]) #* window
+            dechirpData2 = np.pad(dechirpData2,(0,4096 - dechirpData2.shape[0]),'constant')     # zero-pad output data to length of 4096
+            EDRData2[:,_i] = np.fft.ifft(dechirpData2)
+        EDRData = EDRData[:3600,:]
+        EDRData2 = EDRData2[:3600,:]
 
 
     else:
@@ -182,11 +174,11 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
     print('Pulse compression complese')
 
     # presum data by factor or eight for visualization purposes
-    for _i in range(presumCols - 1):
-        EDRData_presum[:,_i] = np.mean(EDRData[:,presumFac*_i:presumFac*(_i+1)], axis = 1)
+    # for _i in range(presumCols - 1):
+    #     EDRData_presum[:,_i] = np.mean(EDRData[:,presumFac*_i:presumFac*(_i+1)], axis = 1)
 
-    # account for traces left if number of traces is not divisible by presumFac
-    EDRData_presum[:,-1] = np.mean(EDRData[:,presumFac*(_i+1):-1], axis = 1)
+    # # account for traces left if number of traces is not divisible by presumFac
+    # EDRData_presum[:,-1] = np.mean(EDRData[:,presumFac*(_i+1):-1], axis = 1)
     print('Presumming complete')
 
     # create geom array with relavant data for each record
@@ -200,27 +192,30 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
     # convert complex-valued voltage return to power values
     # BruceData = np.fromfile('../../../../../orig/supl/SHARAD/EDR/EDR_pc_bruce/592101000_1_Unif_SLC.raw', dtype = 'complex64')
     # BruceData = BruceData.reshape(3600, int(len(BruceData)/3600))
-    # BruceAmp = np.abs(BruceData)
-
     ampOut = np.abs(EDRData)
+    # ampOut2 = np.abs(EDRData2)
     ampOut2 = np.abs(EDRData2)
-    ampOut3 = np.abs(EDRData3)
 
     plt.subplot(2,1,1)
     plt.plot(ampOut[:,int(recLen/2)])
-    plt.plot(ampOut2[::2,int(recLen/2)])
+    # plt.plot(ampOut2[::2,int(recLen/2)])
     plt.title('amplitude from subset range compression method')
     plt.xlabel('fast-time sample')
     plt.ylabel('amplitude')
     plt.subplot(2,1,2)
-    plt.plot(ampOut3[:,int(recLen/2)])
+    plt.plot(ampOut2[:,int(recLen/2)])
     plt.show()
+
+    sys.exit()
+    #plt.plot(ampOut[:,int(recLen/2)])
+    #plt.show()
+    #sys.exit()
 
     # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
     rgram(EDRData[:,::32], data_path, runName + '_' + chirp, rel = True)
-    # np.savetxt(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n',fmt = '%s')
-    # np.save(data_path + 'processed/data/rgram/comp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + windowName + '_SLC_comp.npy', EDRData)
-    # np.save(data_path + 'processed/data/rgram/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + windowName + '_SLC_amp.npy', ampOut)
+    np.savetxt(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n',fmt = '%s')
+    np.save(data_path + 'processed/data/rgram/comp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + windowName + '_SLC_comp.npy', EDRData)
+    np.save(data_path + 'processed/data/rgram/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + windowName + '_SLC_amp.npy', ampOut)
 
     t1 = time.time()    # End time
     print('--------------------------------')
