@@ -38,7 +38,6 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
     print('--------------------------------')
     print(runName)
     print('--------------------------------')
-    print(lblName)
 
     # extract relecant information from lbl file
     print('Reading label file...')
@@ -48,8 +47,8 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
     instrMode = lblDic['INSTR_MODE_ID']['Mode']
     BitsPerSample = lblDic['INSTR_MODE_ID']['BitsPerSample']
 
-    # downsize option for testing purposes
-    records = int(records / 10)
+    # toggle on to downsize for testing purposes
+    # records = int(records / 10)
 
 
     # presumming is just for visualization purposes
@@ -99,15 +98,13 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
     print('EDR Science Data Decompressed')
 
     # all data imported and decompressed
-    # set up empty data arrays to hold Output
-    # create kaiser window of specified beta value
+    # set up empty data arrays to hold Output and kaiser window of specified beta value
     if chirp =='ideal' or chirp == 'synth' or chirp == 'UPB':
         EDRData = np.zeros((3600,records), complex)
         EDRData_presum = np.zeros((3600, presumCols), complex)
         window = np.kaiser(3600, beta)
 
     elif chirp == 'calib':
-        # set up two EDR data matrices to hold output for both options of range compression
         EDRData = np.zeros((2048,records), complex)
         EDRData_presum = np.zeros((2048, presumCols), complex)   
         window = np.kaiser(2048, beta)
@@ -122,52 +119,56 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
 
     geomData = np.zeros((records,5))
 
-    # begin range compression 
+    #-------------------
+    # setup complete; begin range compression
+    #------------------- 
+
     if chirp =='calib':
-        fc = ((80./3.) - 20.)*1e6                                 # 6.66 MHz - fc defined by PDS documentation     
-        dt = (3./80.)*1e-6                                         # 0.0375 Microseconds
+        fc = ((80./3.) - 20.)*1e6                                                                   # 6.66 MHz - fc defined by PDS documentation     
+        dt = (3./80.)*1e-6                                                                          # 0.0375 Microseconds
         t = np.arange(0*dt, 4096*dt, dt)
-        phase_shift = np.exp(2*np.pi*1j*fc*t)                    # shift spectrum when multiplied by zero padded raw data
-        refChirpMF_pad = np.pad(refChirpMF,[(0,0),(0,2049 - refChirpMF.shape[1])], 'constant')      # zeros pad reference chirp to length 4096 prior to range compression
-        sciPad = np.pad(sci,[(0,4096 - sci.shape[0]),(0,0)],'constant')     # zero-pad science data to length of 4096
+        phase_shift = np.exp(2*np.pi*1j*fc*t)                                                       # shift spectrum when multiplied by zero padded raw data
+        refChirpMF_pad = np.pad(refChirpMF,[(0,0),(0,2049 - refChirpMF.shape[1])], 'constant')      # zeros pad reference chirp to length 2049 prior to range compression to account for missing sample in fourier spectra
+        sciPad = np.pad(sci,[(0,4096 - sci.shape[0]),(0,0)],'constant')                             # zero-pad science data to length of 4096
 
         for _i in range(records):
             #-------------------
             # PDS documented range compression steps -EDRData
             #-------------------
             sciShift = sciPad[:,_i] * phase_shift
-            sciFFT = np.fft.fft(sciShift) #/ len(sciShift) # Matt has his code set up to scale by length array - not quite sure why
+            sciFFT = np.fft.fft(sciShift) #/ len(sciShift)                                          # Matt has his code set up to scale by length array - not quite sure why
             # take central 2048 samples
             st = 1024
             en = 3072
             sciFFT_cut = sciFFT[st:en]
             # perform chirp compression
-            dechirpData = (sciFFT_cut * refChirpMF[refChirpMF_index[_i],:]) * window
+            dechirpData = (sciFFT_cut * refChirpMF[refChirpMF_index[_i],:]) #* window
             # Inverse Fourier transfrom and fix scaling
             EDRData[:,_i] = np.fft.ifft(dechirpData) #* len(dechirpData)
             #-------------------
             # revised PDS method - EDRData2
             #-------------------
             sciShift = sciPad[:,_i] * phase_shift
-            sciFFT2 = np.fft.fft(sciShift) #/ len(sciShift2) # Matt has his code set up to scale by length array - not quite sure why
+            sciFFT2 = np.fft.fft(sciShift) #/ len(sciShift2)                                        # Matt has his code set up to scale by length array - not quite sure why
             # take central 2049 samples
             st2 = 1024
             en2 = 3073
             sciFFT_cut2 = sciFFT2[st2:en2]
             # perform chirp compression
             dechirpData2 = (sciFFT_cut2 * refChirpMF_pad[refChirpMF_index[_i],:]) #* window
-            dechirpData2 = np.pad(dechirpData2,(0,4096 - dechirpData2.shape[0]),'constant')     # zero-pad output data to length of 409
+            dechirpData2 = np.pad(dechirpData2,(0,4096 - dechirpData2.shape[0]),'constant')         # zero-pad output data to length of 409
             # Inverse Fourier transfrom and fix scaling
             EDRData2[:,_i] = np.fft.ifft(dechirpData2) #* len(dechirpData2)
             #-------------------
             # alternative method - EDRData3
             #-------------------
-            sciFFT3 = np.fft.fft(sciPad[:,_i]) #/ len(sciShift3) # Matt has his code set up to scale by length array - not quite sure why
+            sciFFT3 = np.fft.fft(sciPad[:,_i]) #/ len(sciShift3)                                    # Matt has his code set up to scale by length array - not quite sure why
             # take the first 2049 samples
             sciFFT3_cut = sciFFT3[:2049]
             dechirpData3 = (sciFFT3_cut * refChirpMF_pad[refChirpMF_index[_i],:]) #* window
-            dechirpData3 = np.pad(dechirpData3,(0,4096 - dechirpData3.shape[0]),'constant')     # zero-pad output data to length of 4096
+            dechirpData3 = np.pad(dechirpData3,(0,4096 - dechirpData3.shape[0]),'constant')         # zero-pad output data to length of 4096
             EDRData3[:,_i] = np.fft.ifft(dechirpData3) #* len(dechirpData3)
+        
         #truncate revised and alternate range compressed vector to 3600
         EDRData2 = EDRData2[:3600,:]        
         EDRData3 = EDRData3[:3600,:]
@@ -203,26 +204,36 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
         geomData[_i,4] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
 
     # convert complex-valued voltage return to power values
-    # BruceData = np.fromfile('../../../../../orig/supl/SHARAD/EDR/EDR_pc_bruce/592101000_1_Unif_SLC.raw', dtype = 'complex64')
-    # BruceData = BruceData.reshape(3600, int(len(BruceData)/3600))
-    # BruceAmp = np.abs(BruceData)
+    BruceData = np.fromfile('../../../../../orig/supl/SHARAD/EDR/EDR_pc_bruce/592101000_1_Unif_SLC.raw', dtype = 'complex64')
+    BruceData = BruceData.reshape(3600, int(len(BruceData)/3600))
+    BruceAmp = np.abs(BruceData)
 
     ampOut = np.abs(EDRData)
     ampOut2 = np.abs(EDRData2)
     ampOut3 = np.abs(EDRData3)
 
-    plt.subplot(3,1,1)
-    plt.plot(ampOut[:,int(recLen/2)])
+    print(BruceData)
+    print(BruceData.shape)
+    print(ampOut)
+    print(ampOut.shape)
+
+    plt.subplot(4,1,1)
+    plt.plot(ampOut[:,int(records/2)])
     plt.title('original PDS method')
-    plt.subplot(3,1,2)
-    plt.plot(ampOut2[:,int(recLen/2)])
+    plt.subplot(4,1,2)
+    plt.plot(ampOut2[:,int(records/2)])
     plt.title('revised PDS method')
-    plt.subplot(3,1,3)
-    plt.plot(ampOut3[:,int(recLen/2)])
+    plt.subplot(4,1,3)
+    plt.plot(ampOut3[:,int(records/2)])
     plt.title('alternative method')
     plt.xlabel('sample')
     plt.ylabel('amplitude')
+    plt.subplot(4,1,4)
+    plt.plot(BruceAmp[:,int(records/2)])
     plt.show()
+
+
+    sys.exit()
 
     # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
     rgram(EDRData[:,::32], data_path, runName + '_' + chirp, rel = True)
@@ -252,7 +263,7 @@ if __name__ == '__main__':
     EDRName = data_path + runName + '_a_s.dat'
     chirp = 'calib'
     presumFac = 8           # presum factor for radargram visualization; actual data is not presummed
-    beta = 0                # beta value for kaiser window (0 = rectangular, 5 	Similar to a Hamming, 6	Similar to a Hann, 8.6 	Similar to a Blackman)
+    beta = 0                # beta value for kaiser window [0 = rectangular, 5 	Similar to a Hamming, 6	Similar to a Hann, 8.6 	Similar to a Blackman]
     if beta == 0:
         windowName = 'Unif'
     elif beta == 5:
