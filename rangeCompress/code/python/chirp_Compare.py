@@ -63,6 +63,23 @@ UPBChirp = UPBChirp*idealChirpFFT
 UPBChirpConj = np.conj(idealChirpFFT)
 
 # Compare outputs
+plt.subplot(3,2,1)
+plt.plot(idealChirp)
+plt.title('idealChirp')
+plt.subplot(3,2,2)
+plt.plot(idealChirpFFT)
+plt.subplot(3,2,3)
+plt.plot(synthChirp)
+plt.title('scipy.signal.chirp')
+plt.subplot(3,2,4)
+plt.plot(synthChirpFFT)
+plt.subplot(3,1,3)
+plt.plot(np.divide(idealChirp,synthChirp))
+plt.title('idealChirp / scipy.signal.chirp')
+plt.show()
+
+
+
 plt.subplot(4,1,1)
 plt.plot(np.real(idealChirpFFT))
 plt.subplot(4,1,2)

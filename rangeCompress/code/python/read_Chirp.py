@@ -88,7 +88,7 @@ def open_Chirp(chirp, TxTemp, RxTemp):
         chirpTime = np.arange(0,nSamp) * dt         # time array for length of pulse with samples at .0375microsec        
         arg = 2.0*np.pi*chirpTime*(fHigh+fSlope*chirpTime/2.0)
         idealChirp = np.zeros(3600, complex)
-        idealChirp[:int(nSamp)] = np.cos(arg)
+        idealChirp[:int(nSamp)] = np.sin(arg)       # trying to determine whether to use sine-wave generator or cosine - scipy.signal.chirp uses cosine
         idealChirpFFT = np.fft.fft(idealChirp)
         idealChirpConj = np.conj(idealChirpFFT)
 
