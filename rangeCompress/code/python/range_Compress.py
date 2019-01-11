@@ -48,7 +48,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     BitsPerSample = lblDic['INSTR_MODE_ID']['BitsPerSample']
 
     # toggle on to downsize for testing purposes
-    records = int(records / 100)
+    # records = int(records / 100)
 
 
     # presumming is just for visualization purposes
@@ -159,6 +159,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
         geomData[_i,3] = auxDF['SUB_SC_EAST_LONGITUDE'][_i]
         geomData[_i,4] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
 
+    print('Saving all data')
     # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
     rgram(ampStack, data_path, runName, chirp, windowName, rel = True)
     np.savetxt(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n',fmt = '%s')
@@ -213,7 +214,8 @@ if __name__ == '__main__':
             auxName = data_path + runName + '_a_a.dat'
             EDRName = data_path + runName + '_a_s.dat'
             
-            if (not os.path.isfile(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv')):
+            # if (not os.path.isfile(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv')):
+            if (not os.path.isfile(data_path + 'processed/browse/tiff/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc.tiff')):
                 main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
             else :
                 print('\n' + runName + ' already processed!\n')

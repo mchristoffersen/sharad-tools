@@ -12,7 +12,6 @@ def rgram(amp, path, runName, chirp, windowName, rel = True):
     Updated by: Brandon S. Tober
     Last Updated: 10Jan2019
     """
-    
     pow = np.power(amp,2)
     noise_floor = np.mean(pow[:50,:])
     dB  = 10 * np.log10(pow / noise_floor) 
@@ -33,4 +32,12 @@ def rgram(amp, path, runName, chirp, windowName, rel = True):
         plt.imsave(imName, rgram, cmap = 'gray')
     except Exception as err:
         print(err)
+        print('Reducing data to save radargram')
+        try:
+            rgram = rgram[:,::8]
+            plt.clf()
+            plt.close()
+            plt.imsave(imName, rgram, cmap='gray')
+        except Exception as err:
+                print(err)
     return
