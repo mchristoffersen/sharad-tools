@@ -21,7 +21,7 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
 
     github: b-tober
     Updated by: Brandon S. Tober
-    Last Updated: 06Dec2018
+    Last Updated: 09Jan18
     -----------
     Example call:
 
@@ -83,7 +83,7 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
         refChirpMF, refChirpMF_index = open_Chirp(chirp, txTemp, rxTemp)
     else:
         refChirpMF = open_Chirp(chirp, txTemp, rxTemp)
-    print('Reference chirp opened' + ' (type = ' +  chirp + ')')
+    print('Reference chirp opened, type:\t' +  format(chirp))
 
     # read in raw science data and ancil data
     sci, ancil = EDR_Parse(EDRName, records, recLen, BitsPerSample)

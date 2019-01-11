@@ -12,7 +12,7 @@ from read_EDR import EDR_Parse, sci_Decompress
 
 
 
-def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0):
+def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     """
     -----------
     This python script is used to pulse compress raw SHARAD EDRs to return chirp compressed science record. Output should be complex voltage.
@@ -21,7 +21,7 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
 
     github: b-tober
     Updated by: Brandon S. Tober
-    Last Updated: 06Dec2018
+    Last Updated: 10Jan2019
     -----------
     Example call:
 
@@ -29,12 +29,12 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
     auxName =  '/media/anomalocaris/Swaps/Google_Drive/MARS/orig/edr_test/e_5050702_001_ss19_700_a_a.dat'
     lblName =  '/media/anomalocaris/Swaps/Google_Drive/MARS/orig/edr_test/e_5050702_001_ss19_700_a.lbl'
     chirp = 'calib'
-    presumFac = 8
+    stackFac = 8
     beta = 0
 
-    main(EDRName, auxName, lblName, chirp = chirp, presumFac = presumFac)
+    main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac)
     """
-    t0 = time.time()                    #start time
+    t0 = time.time()                                            #start time
     print('--------------------------------')
     print(runName)
     print('--------------------------------')
@@ -42,17 +42,17 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
     # extract relecant information from lbl file
     print('Reading label file...')
     lblDic = lbl_Parse(lblName)
-    records = lblDic['FILE_RECORDS']    # number of records in observation (traces)
-    instrPresum = lblDic['INSTR_MODE_ID']['Presum']       # onboard presums
+    records = lblDic['FILE_RECORDS']                            # number of records in observation (traces)
+    instrPresum = lblDic['INSTR_MODE_ID']['Presum']             # onboard presums
     instrMode = lblDic['INSTR_MODE_ID']['Mode']
     BitsPerSample = lblDic['INSTR_MODE_ID']['BitsPerSample']
 
     # toggle on to downsize for testing purposes
-    # records = int(records / 10)
+    # records = int(records / 100)
 
 
     # presumming is just for visualization purposes
-    presumCols = int(np.ceil(records/presumFac))
+    presumCols = int(np.ceil(records/stackFac))
 
     # parse aux file into data frame
     auxDF = aux_Parse(auxName)
@@ -75,15 +75,14 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
 
     # determine TX and RX temps if using Italian reference chirp
     txTemp = auxDF['TX_TEMP'][:]
-    rxTemp = auxDF['RX_TEMP'][:]
-	
+    rxTemp = auxDF['RX_TEMP'][:]	
     
-    # read in reference chirp as matched filter - this should be imported in Fourier frequency domain, as complex conjugate
+    # read in reference chirps as matched filter - this should be imported in Fourier frequency domain, as complex conjugate
     if chirp == 'calib':
         refChirpMF, refChirpMF_index = open_Chirp(chirp, txTemp, rxTemp)
     else:
         refChirpMF = open_Chirp(chirp, txTemp, rxTemp)
-    print('Reference chirp opened' + ' (type = ' +  chirp + ')')
+    print('Reference chirp opened, type:\t' +  format(chirp))
 
     # read in raw science data and ancil data
     sci, ancil = EDR_Parse(EDRName, records, recLen, BitsPerSample)
@@ -101,12 +100,12 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
     # set up empty data arrays to hold Output and kaiser window of specified beta value
     if chirp =='ideal' or chirp == 'synth' or chirp == 'UPB':
         EDRData = np.zeros((3600,records), complex)
-        EDRData_presum = np.zeros((3600, presumCols), complex)
+        ampStack = np.zeros((3600, presumCols))
         window = np.kaiser(3600, beta)
 
     elif chirp == 'calib':
         EDRData = np.zeros((4096,records), complex)
-        EDRData_presum = np.zeros((3600, presumCols), complex)   
+        ampStack = np.zeros((3600, presumCols))   
         window = np.pad(np.kaiser(2048,beta),(0,4096 - refChirpMF.shape[1]),'constant')        
 
     geomData = np.zeros((records,5))
@@ -141,13 +140,16 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
 
     print('Range compression complete')
 
-    # presum data by factor or eight for visualization purposes
-    for _i in range(presumCols - 1):
-        EDRData_presum[:,_i] = np.mean(EDRData[:,presumFac*_i:presumFac*(_i+1)], axis = 1)
+    # convert complex-valued voltage return to magnitude
+    ampOut = np.abs(EDRData)
 
-    # account for traces left if number of traces is not divisible by presumFac
-    EDRData_presum[:,-1] = np.mean(EDRData[:,presumFac*(_i+1):-1], axis = 1)
-    print('Presumming complete')
+    # stack data
+    for _i in range(presumCols - 1):
+        ampStack[:,_i] = np.mean(ampOut[:,stackFac*_i:stackFac*(_i+1)], axis = 1)
+
+    # account for traces left if number of traces is not divisible by stackFac
+    ampStack[:,-1] = np.mean(ampOut[:,stackFac*(_i+1):-1], axis = 1)
+    print('Stacking complete')
 
     # create geom array with relavant data for each record
     for _i in range(records):
@@ -156,9 +158,6 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
         geomData[_i,2] = auxDF['SUB_SC_PLANETOCENTRIC_LATITUDE'][_i]
         geomData[_i,3] = auxDF['SUB_SC_EAST_LONGITUDE'][_i]
         geomData[_i,4] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
-
-    # convert complex-valued voltage return to power values
-    ampOut = np.abs(EDRData)
 
     # plot outputs for different methods while comparing range compression options
     # if chirp =='calib':
@@ -170,10 +169,11 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
     # sys.exit()
 
     # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
-    rgram(EDRData_presum, data_path, runName, chirp, windowName, rel = True)
-    # np.savetxt(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n',fmt = '%s')
-    # np.save(data_path + 'processed/data/rgram/comp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_SLC_raw.npy', EDRData)
-    # np.save(data_path + 'processed/data/rgram/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_SLC_amp.npy', ampOut)
+    rgram(ampStack, data_path, runName, chirp, windowName, rel = True)
+    np.savetxt(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n',fmt = '%s')
+    np.save(data_path + 'processed/data/rgram/comp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_raw.npy', EDRData)
+    np.save(data_path + 'processed/data/rgram/stack/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_stack.npy', ampStack)
+    np.save(data_path + 'processed/data/rgram/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_amp.npy', ampOut)
 
     t1 = time.time()    # End time
     print('--------------------------------')
@@ -182,7 +182,7 @@ def main(EDRName, auxName, lblName, chirp = 'synth', presumFac = None, beta = 0)
     return
 
 if __name__ == '__main__':
-    data_path = '/MARS/orig/supl/SHARAD/EDR/edr_test/'
+    data_path = '/MARS/orig/supl/SHARAD/EDR/hebrus_valles_sn/'
     if os.getcwd().split('/')[1] == 'media':
         data_path = '/media/anomalocaris/Swaps' + data_path
     elif os.getcwd().split('/')[1] == 'mnt':
@@ -190,13 +190,8 @@ if __name__ == '__main__':
     else:
         print('Data path not found')
         sys.exit()
-    lbl_file = sys.argv[1]
-    lblName = data_path + lbl_file
-    runName = lbl_file.rstrip('_a.lbl')
-    auxName = data_path + runName + '_a_a.dat'
-    EDRName = data_path + runName + '_a_s.dat'
     chirp = 'calib'
-    presumFac = 8           # presum factor for radargram visualization; actual data is not presummed
+    stackFac = 4            # stack factor - going with 4 to be safe and not incoherently stack
     beta = 0                # beta value for kaiser window [0 = rectangular, 5 	Similar to a Hamming, 6	Similar to a Hann, 8.6 	Similar to a Blackman]
     if beta == 0:
         windowName = 'unif'
@@ -209,15 +204,24 @@ if __name__ == '__main__':
     else:
         print('Unknown window type')
         sys.exit()
-    #if (not os.path.isfile(data_path + 'processed/data/geom/' + runName + '_geom.csv')):
-    main(EDRName, auxName, lblName, chirp = chirp, presumFac = presumFac, beta = beta)
-    # for file in os.listdir(data_path):
-    #     if file.endswith('.lbl'):
-    #         lbl_file = file
-    #         lblName = data_path + lbl_file
-    #         runName = lbl_file.rstrip('_a.lbl')
-    #         auxName = data_path + runName + '_a_a.dat'
-    #         EDRName = data_path + runName + '_a_s.dat'
-    #         main(EDRName, auxName, lblName, chirp = chirp, presumFac = presumFac)
-    #else :
-    #    print('\n' + runName.split('_')[1] + runName.split('_')[2] + ' already processed!\n')
+
+    # uncomment for testing single obs., enter lbl file as sys.argv[1]
+    # lbl_file = sys.argv[1]
+    # lblName = data_path + lbl_file
+    # runName = lbl_file.rstrip('_a.lbl')
+    # auxName = data_path + runName + '_a_a.dat'
+    # EDRName = data_path + runName + '_a_s.dat'
+    # main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
+
+    for file in os.listdir(data_path):
+        if file.endswith('.lbl'):
+            lbl_file = file
+            lblName = data_path + lbl_file
+            runName = lbl_file.rstrip('_a.lbl')
+            auxName = data_path + runName + '_a_a.dat'
+            EDRName = data_path + runName + '_a_s.dat'
+            
+            if (not os.path.isfile(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv')):
+                main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
+            else :
+                print('\n' + runName + ' already processed!\n')

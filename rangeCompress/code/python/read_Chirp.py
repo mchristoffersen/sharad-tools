@@ -9,9 +9,11 @@ def open_Chirp(chirp, TxTemp, RxTemp):
     """
     This function is used to read in a variety of reference chirp options for SHARAD pulse compression. 
     This was modified from Matt Perry's FrankenRDR readChirp function
+    Now all unique reference chirps which are required by TX and RX temps are pre-loaded in to memory and returned with a list of which chirp to use for each trace
 
+    github: b-tober
     Updated by: Brandon S. Tober
-    Last updated: 17Nov2018
+    Last updated: 10Jan2019
     """
 
     if chirp == 'calib':
@@ -31,8 +33,8 @@ def open_Chirp(chirp, TxTemp, RxTemp):
         #
         for _i in range(len(TxTemp)):
 
-            TxDiff = []#np.zeros(len(TxTemp))
-            RxDiff = []#np.zeros(len(TxTemp))
+            TxDiff = []
+            RxDiff = []
             #
             # Find distance
             #
@@ -50,10 +52,10 @@ def open_Chirp(chirp, TxTemp, RxTemp):
                         TxCalNames[TxDiff.index(min(TxDiff))] + '_' + \
                         RxCalNames[RxDiff.index(min(RxDiff))] + ext)]
 
-        #get the unique chirps required for compression
+        # get the unique chirps required for compression
         calChirpFilesUnique = list(set(calChirpFile))
         
-        calChirps = np.empty((len(calChirpFilesUnique),2048), dtype = 'complex64')
+        calChirps = np.empty((len(calChirpFilesUnique),2048), dtype = 'complex64')  # empty array to hold all the required chirps
 
         for _i in range(len(calChirpFilesUnique)):
             if os.path.isfile(calChirpFilesUnique[_i]):
