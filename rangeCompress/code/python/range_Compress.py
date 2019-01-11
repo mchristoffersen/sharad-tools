@@ -48,7 +48,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     BitsPerSample = lblDic['INSTR_MODE_ID']['BitsPerSample']
 
     # toggle on to downsize for testing purposes
-    # records = int(records / 100)
+    records = int(records / 100)
 
 
     # presumming is just for visualization purposes
@@ -159,21 +159,12 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
         geomData[_i,3] = auxDF['SUB_SC_EAST_LONGITUDE'][_i]
         geomData[_i,4] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
 
-    # plot outputs for different methods while comparing range compression options
-    # if chirp =='calib':
-    #     plt.plot(ampOut[:,int(records/2)])
-    #     plt.show()
-    # else:
-    #     plt.plot(ampOut[:,int(records/2)])
-    #     plt.show()
-    # sys.exit()
-
     # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
     rgram(ampStack, data_path, runName, chirp, windowName, rel = True)
     np.savetxt(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n',fmt = '%s')
     np.save(data_path + 'processed/data/rgram/comp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_raw.npy', EDRData)
+    np.save(data_path + 'processed/data/rgram/amp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_amp.npy', ampOut)
     np.save(data_path + 'processed/data/rgram/stack/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_stack.npy', ampStack)
-    np.save(data_path + 'processed/data/rgram/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_amp.npy', ampOut)
 
     t1 = time.time()    # End time
     print('--------------------------------')
@@ -182,6 +173,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     return
 
 if __name__ == '__main__':
+    # get correct data path if depending on current OS
     data_path = '/MARS/orig/supl/SHARAD/EDR/hebrus_valles_sn/'
     if os.getcwd().split('/')[1] == 'media':
         data_path = '/media/anomalocaris/Swaps' + data_path
