@@ -21,7 +21,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
 
     github: b-tober
     Updated by: Brandon S. Tober
-    Last Updated: 10Jan2019
+    Last Updated: 11Jan2019
     -----------
     Example call:
 
@@ -34,7 +34,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
 
     main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac)
     """
-    t0 = time.time()                                            #start time
+    t0 = time.time()                                            # start time
     print('--------------------------------')
     print(runName)
     print('--------------------------------')
@@ -48,11 +48,11 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     BitsPerSample = lblDic['INSTR_MODE_ID']['BitsPerSample']
 
     # toggle on to downsize for testing purposes
-    records = int(records / 100)
+    # records = int(records / 100)
 
 
     # presumming is just for visualization purposes
-    presumCols = int(np.ceil(records/stackFac))
+    stackCols = int(np.ceil(records/stackFac))
 
     # parse aux file into data frame
     auxDF = aux_Parse(auxName)
@@ -65,11 +65,11 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     elif BitsPerSample == 8:
         recLen = 3786
 
-    print('InstrPresum:\t' + format(instrPresum))
-    print('Instrument Mode:\t' + format(instrMode))
-    print('Bits Per Sample:\t' + format(BitsPerSample))
-    print('Record Length:\t' + format(recLen))
-    print('Number of Records:\t' + format(records))
+    print('Instrument presum:\t' + format(instrPresum))
+    print('Instrument mode:\t' + format(instrMode))
+    print('Bits per sample:\t' + format(BitsPerSample))
+    print('Record length:\t' + format(recLen))
+    print('Number of records:\t' + format(records))
     print('Using Kaiser window of beta value:\t' + format(beta))
     print('---- Begin Processing ----')
 
@@ -86,26 +86,26 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
 
     # read in raw science data and ancil data
     sci, ancil = EDR_Parse(EDRName, records, recLen, BitsPerSample)
-    print('EDR Science Data Parsed')
+    print('EDR science data parsed')
 
     # parse ancilliary data
     ancil = anc_Parse(ancil, records)
-    print('Ancilliary Data Parsed')
+    print('Ancilliary data parsed')
 
     # decompress science data
     sci = sci_Decompress(sci, lblDic['COMPRESSION'], instrPresum, BitsPerSample, ancil['SDI_BIT_FIELD'][:])
-    print('EDR Science Data Decompressed')
+    print('EDR science data decompressed')
 
     # all data imported and decompressed
     # set up empty data arrays to hold Output and kaiser window of specified beta value
     if chirp =='ideal' or chirp == 'synth' or chirp == 'UPB':
         EDRData = np.zeros((3600,records), complex)
-        ampStack = np.zeros((3600, presumCols))
+        ampStack = np.zeros((3600, stackCols))
         window = np.kaiser(3600, beta)
 
     elif chirp == 'calib':
         EDRData = np.zeros((4096,records), complex)
-        ampStack = np.zeros((3600, presumCols))   
+        ampStack = np.zeros((3600, stackCols))   
         window = np.pad(np.kaiser(2048,beta),(0,4096 - refChirpMF.shape[1]),'constant')        
 
     geomData = np.zeros((records,5))
@@ -126,7 +126,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
             dechirpData = (sciFFT * refChirpMF_pad[refChirpMF_index[_i],:]) * window
             EDRData[:,_i] = np.fft.ifft(dechirpData)
 
-        #truncate revised and alternate range compressed vector to 3600
+        # truncate revised and alternate range compressed vector to 3600
         EDRData = EDRData[:3600,:]
 
     else:
@@ -144,7 +144,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     ampOut = np.abs(EDRData)
 
     # stack data
-    for _i in range(presumCols - 1):
+    for _i in range(stackCols - 1):
         ampStack[:,_i] = np.mean(ampOut[:,stackFac*_i:stackFac*(_i+1)], axis = 1)
 
     # account for traces left if number of traces is not divisible by stackFac
@@ -159,14 +159,15 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
         geomData[_i,3] = auxDF['SUB_SC_EAST_LONGITUDE'][_i]
         geomData[_i,4] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
 
+    print('Saving all data')
     # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
-    rgram(ampStack, data_path, runName, chirp, windowName, rel = True)
+    rgram(ampOut, data_path, runName, chirp, windowName, rel = True)
     np.savetxt(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n',fmt = '%s')
     np.save(data_path + 'processed/data/rgram/comp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_raw.npy', EDRData)
     np.save(data_path + 'processed/data/rgram/amp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_amp.npy', ampOut)
     np.save(data_path + 'processed/data/rgram/stack/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_stack.npy', ampStack)
 
-    t1 = time.time()    # End time
+    t1 = time.time()    # end time
     print('--------------------------------')
     print('Total Runtime: ' + str(round((t1 - t0),4)) + ' seconds')
     print('--------------------------------')
@@ -213,7 +214,8 @@ if __name__ == '__main__':
             auxName = data_path + runName + '_a_a.dat'
             EDRName = data_path + runName + '_a_s.dat'
             
-            if (not os.path.isfile(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv')):
+            # if (not os.path.isfile(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv')):
+            if (not os.path.isfile(data_path + 'processed/browse/tiff/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc.tiff')):
                 main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
             else :
                 print('\n' + runName + ' already processed!\n')
