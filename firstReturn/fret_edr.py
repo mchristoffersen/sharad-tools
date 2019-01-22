@@ -2,7 +2,7 @@
 # this will run through all .img radargrams in directory.
 # designed to run on directory structured like the PDS.
 # author: Brandon S. Tober
-# created 30January2018
+# created: 30January2018
 # updated: 23Oct2018
 
 import os,sys
