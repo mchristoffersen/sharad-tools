@@ -1,10 +1,4 @@
-# script finds first return from radargram per method in Grima et al., 2012.
-# this will run through all .img radargrams in directory.
-# designed to run on directory structured like the PDS.
-# author: Brandon S. Tober
-# created: 30January2018
-# updated: 21January2019
-
+# import necessary libraries
 import os,sys
 from PIL import Image
 import math
@@ -14,6 +8,17 @@ import time
 import matplotlib.pyplot as plt
 
 def main(data_path, surf = 'nadir'):
+    '''
+    script extracts power of surface return from radargram
+    surface return can be defined as either first return (fret), nadir return, or 
+    the max power return - return from which most radar energy penetrates surface (max)
+    this will run through all .img radargrams in directory.
+    designed to run on directory structured like PDS.
+
+    author: Brandon S. Tober
+    created: 30January2018
+    updated: 21January2019
+    '''
     
     print('\n----------------------------------------------------------------')
 
