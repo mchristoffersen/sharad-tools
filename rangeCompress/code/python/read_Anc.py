@@ -157,6 +157,9 @@ def anc_Parse(anc, records):
       ancilliaryData['PSAFS_TC_OVERRUN'].append(PSAFS[13:14].uint)
       ancilliaryData['PSAFS_FIFO_FULL'].append(PSAFS[14:15].uint)
       ancilliaryData['PSAFS_TEST'].append(PSAFS[15:16].uint)
+      #
+      #
+      #
       ancilliaryData['SPARE4'].append(struct.unpack('>B', data[46:47])[0])
       ancilliaryData['DATA_BLOCK_FIRST_PRI'].append(bitstring.BitArray(data[47:50]).uint)
       ancilliaryData['TIME_DATA_BLOCK_WHOLE'].append(struct.unpack('>I', data[50:54])[0])
@@ -196,6 +199,7 @@ def anc_Parse(anc, records):
       ancilliaryData['PHASE_COMPENSATION_STEP'].append(struct.unpack('>f', data[174:178])[0])
       ancilliaryData['RECEIVE_WINDOW_OPENING_TIME'].append(struct.unpack('>f', data[178:182])[0])
       ancilliaryData['RECEIVE_WINDOW_POSITION'].append(struct.unpack('>f', data[182:186])[0])
+      print(struct.unpack('<f',data[178:182]))
     #####################################################################################
     #
     # PACKET_SEGMENTATION_AND_FPGA_STATUS bit string

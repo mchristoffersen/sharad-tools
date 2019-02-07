@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import glob, os, sys, time
 from read_Lbl import lbl_Parse
 from read_Aux import aux_Parse
-from read_Anc import anc_Parse
+from read_Anc_TEST import anc_Parse
 from read_Chirp import open_Chirp
 from plotting import rgram
 from read_EDR import EDR_Parse, sci_Decompress
@@ -48,8 +48,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     BitsPerSample = lblDic['INSTR_MODE_ID']['BitsPerSample']
 
     # toggle on to downsize for testing purposes
-    # records = int(records / 100)
-
+    records = int(records / 1000)
 
     # presumming is just for visualization purposes
     stackCols = int(np.ceil(records/stackFac))
@@ -91,7 +90,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     # parse ancilliary data
     ancil = anc_Parse(ancil, records)
     print('Ancilliary data parsed')
-
+    
     # decompress science data
     sci = sci_Decompress(sci, lblDic['COMPRESSION'], instrPresum, BitsPerSample, ancil['SDI_BIT_FIELD'][:])
     print('EDR science data decompressed')
@@ -108,7 +107,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
         ampStack = np.zeros((3600, stackCols))   
         window = np.pad(np.kaiser(2048,beta),(0,4096 - refChirpMF.shape[1]),'constant')        
 
-    geomData = np.zeros((records,5))
+    geomData = np.zeros((records,10))
 
     #-------------------
     # setup complete; begin range compression
@@ -157,7 +156,16 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
         geomData[_i,1] = int(_i)
         geomData[_i,2] = auxDF['SUB_SC_PLANETOCENTRIC_LATITUDE'][_i]
         geomData[_i,3] = auxDF['SUB_SC_EAST_LONGITUDE'][_i]
-        geomData[_i,4] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
+        geomData[_i,4] = auxDF['SPACECRAFT_ALTITUDE'][_i]
+        geomData[_i,5] = auxDF['Z_MARS_SC_POSITION_VECTOR'][_i]
+        geomData[_i,6] = auxDF['MARS_SC_RADIAL_VELOCITY'][_i]
+        geomData[_i,7] = auxDF['MARS_SC_TANGENTIAL_VELOCITY'][_i]
+        geomData[_i,8] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
+        geomData[_i,9] = ancil['RECEIVE_WINDOW_OPENING_TIME'][_i] * .0375
+        # print(auxDF['Z_MARS_SC_POSITION_VECTOR'][_i])
+        # print(auxDF['SPACECRAFT_ALTITUDE'][_i])
+        print(ancil['RECEIVE_WINDOW_OPENING_TIME'][_i])# * .0375)
+    sys.exit()
 
     print('Saving all data')
     # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
