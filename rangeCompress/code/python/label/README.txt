@@ -16,5 +16,5 @@ stack          = "Stacked amplitude. Stacking factor can be changed but is set t
 				 
 tiff           = "Output radargram for visualization purposes. This uses the amplitude data output and  
                  performs stacking to a factor of 16 (which can be changed) for data reduction. Data is 
-				 plotted in decibels, in reference to the power of a specified noise floor. The decibel
-				 power is then scaled between 0 and 255 bytes where the highest power is set at 255."
+                 plotted in decibels, in reference to the power of a specified noise floor. The decibel
+                 power is then scaled between 0 and 255 bytes where the highest power is set at 255."
