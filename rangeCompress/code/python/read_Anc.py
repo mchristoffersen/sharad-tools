@@ -12,7 +12,7 @@ def anc_Parse(anc, records):
   """
     This function parses the ancilliary data for an individual SHARAD EDR data record
 
-    Modified: 23Jul18 by Brandon S. Tober to create ancilliary data structure which would parse
+    Modified: 11Feb19 by Brandon S. Tober to create ancilliary data structure which would parse
     a string of ancilliary data for all records in radar observation
   """
 
@@ -20,51 +20,49 @@ def anc_Parse(anc, records):
   # Set up dictionary
   #
   ancilliaryData = { 'SCET_BLOCK_WHOLE': [],
-                     'SCET_BLOCK_FRAC': [],
-                     'TLM_COUNTER': [],
-                     'FMT_LENGTH': [],
-                     'SPARE1': [],
-                     'SCET_OST_WHOLE': [],
-                     'SCET_OST_FRAC': [],
-                     'SPARE2': [],
-                     'OST_LINE_NUMBER': [],
-#                     'OST_LINE': [],
-                     'OST_LINE_PULSE_REPETITION_INTERVAL': [],
-                     'OST_LINE_PHASE_COMPENSATION_TYPE': [],
-                     'OST_LINE_SPARE1': [],
-                     'OST_LINE_DATA_LENGTH_TAKEN': [],
-                     'OST_LINE_OPERATIVE_MODE': [],
-                     'OST_LINE_MANUAL_GAIN_CONTROL': [],
-                     'OST_LINE_COMPRESSION_SELECTION': [],
-                     'OST_LINE_CLOSED_LOOP_TRACKING': [],
-                     'OST_LINE_TRACKING_DATA_STORAGE': [],
-                     'OST_LINE_TRACKING_PRE_SUMMING': [],
-                     'OST_LINE_TRACKING_LOGIC_SELECTION': [],
-                     'OST_LINE_THRESHOLD_LOGIC_SELECTION': [],
-                     'OST_LINE_SAMPLE_NUMBER': [],
-                     'OST_LINE_SPARE2': [],
-                     'OST_LINE_ALPHA_BETA': [],
-                     'OST_LINE_REFERENCE_BIT': [],
-                     'OST_LINE_THRESHOLD': [],
-                     'OST_LINE_THRESHOLD_INCREMENT': [],
-                     'OST_LINE_SPARE3': [],
-                     'OST_LINE_INITIAL_ECHO_VALUE': [],
-                     'OST_LINE_EXPECTED_ECHO_SHIFT': [],
-                     'OST_LINE_WINDOW_LEFT_SHIFT': [],
-                     'OST_LINE_WINDOW_RIGHT_SHIFT': [],
-                     'OST_LINE_SPARE4': [],
-                     'SPARE3': [],
-                     'DATA_BLOCK_ID': [],
-                     'SCIENCE_DATA_SOURCE_COUNTER': [],
-#                     'PACKET_SEGMENTATION_AND_FPGA_STATUS': [],
-                     'PSAFS_SCIENTIFIC_DATA_TYPE': [],
-                     'PSAFS_SEGMENTATION_FLAG': [],
-                     'PSAFS_SPARE1': [],
-                     'PSAFS_SPARE2': [],
-                     'PSAFS_DMA_ERROR': [],
-                     'PSAFS_TC_OVERRUN': [],
-                     'PSAFS_FIFO_FULL': [],
-                     'PSAFS_TEST': [],
+                    'SCET_BLOCK_FRAC': [],
+                    'TLM_COUNTER': [],
+                    'FMT_LENGTH': [],
+                    'SPARE1': [],
+                    'SCET_OST_WHOLE': [],
+                    'SCET_OST_FRAC': [],
+                    'SPARE2': [],
+                    'OST_LINE_NUMBER': [],
+                    'OST_LINE': { 'PULSE_REPETITION_INTERVAL': [],
+                        'PHASE_COMPENSATION_TYPE': [],
+                        'SPARE1': [],
+                        'DATA_LENGTH_TAKEN': [],
+                        'OPERATIVE_MODE': [],
+                        'MANUAL_GAIN_CONTROL': [],
+                        'COMPRESSION_SELECTION': [],
+                        'CLOSED_LOOP_TRACKING': [],
+                        'TRACKING_DATA_STORAGE': [],
+                        'TRACKING_PRE_SUMMING': [],
+                        'TRACKING_LOGIC_SELECTION': [],
+                        'THRESHOLD_LOGIC_SELECTION': [],
+                        'SAMPLE_NUMBER': [],
+                        'SPARE2': [],
+                        'ALPHA_BETA': [],
+                        'REFERENCE_BIT': [],
+                        'THRESHOLD': [],
+                        'THRESHOLD_INCREMENT': [],
+                        'SPARE3': [],
+                        'INITIAL_ECHO_VALUE': [],
+                        'EXPECTED_ECHO_SHIFT': [],
+                        'WINDOW_LEFT_SHIFT': [],
+                        'WINDOW_RIGHT_SHIFT': [],
+                        'SPARE4': [],},
+                    'SPARE3': [],
+                    'DATA_BLOCK_ID': [],
+                    'SCIENCE_DATA_SOURCE_COUNTER': [],
+                    'PACKET_SEGMENTATION_AND_FPGA_STATUS': { 'SCIENTIFIC_DATA_TYPE': [],
+                        'SEGMENTATION_FLAG': [],
+                        'SPARE1': [],
+                        'SPARE2': [],
+                        'DMA_ERROR': [],
+                        'TC_OVERRUN': [],
+                        'FIFO_FULL': [],
+                        'TEST': [],},
                      'SPARE4': [],
                      'DATA_BLOCK_FIRST_PRI': [],
                      'TIME_DATA_BLOCK_WHOLE': [],
@@ -104,7 +102,7 @@ def anc_Parse(anc, records):
     # Set up dictionary for items
     #
     for _i in range(records):
-      data = anc[_i:((_i+1) * 186)]
+      data = anc[(_i * 186):((_i + 1) * 186)]
       ancilliaryData['SCET_BLOCK_WHOLE'].append(bitstring.BitArray(data[0:4]).uint)
       ancilliaryData['SCET_BLOCK_FRAC'].append(bitstring.BitArray(data[4:6]).uint)
       ancilliaryData['TLM_COUNTER'].append(struct.unpack('>I', data[6:10])[0])
@@ -114,49 +112,9 @@ def anc_Parse(anc, records):
       ancilliaryData['SCET_OST_FRAC'].append(struct.unpack('>H', data[18:20])[0])
       ancilliaryData['SPARE2'].append(struct.unpack('>B', data[20:21])[0])
       ancilliaryData['OST_LINE_NUMBER'].append(struct.unpack('>B', data[21:22])[0])
-      #
-      # OST_LINE_NUMBER BIT STRING
-      #
-      OST_LINE = bitstring.BitArray(data[22:39])
-      ancilliaryData['OST_LINE_PULSE_REPETITION_INTERVAL'].append(OST_LINE[0:4].uint)
-      ancilliaryData['OST_LINE_PHASE_COMPENSATION_TYPE'].append(OST_LINE[4:8].uint)
-      ancilliaryData['OST_LINE_SPARE1'].append(OST_LINE[8:10].uint)
-      ancilliaryData['OST_LINE_DATA_LENGTH_TAKEN'].append(OST_LINE[10:32].uint)
-      ancilliaryData['OST_LINE_OPERATIVE_MODE'].append(OST_LINE[32:40].uint)
-      ancilliaryData['OST_LINE_MANUAL_GAIN_CONTROL'].append(OST_LINE[40:48].uint)
-      ancilliaryData['OST_LINE_COMPRESSION_SELECTION'].append(OST_LINE[48:49].bool)
-      ancilliaryData['OST_LINE_CLOSED_LOOP_TRACKING'].append(OST_LINE[49:50].bool)
-      ancilliaryData['OST_LINE_TRACKING_DATA_STORAGE'].append(OST_LINE[50:51].bool)
-      ancilliaryData['OST_LINE_TRACKING_PRE_SUMMING'].append(OST_LINE[51:54].uint)
-      ancilliaryData['OST_LINE_TRACKING_LOGIC_SELECTION'].append(OST_LINE[54:55].uint)
-      ancilliaryData['OST_LINE_THRESHOLD_LOGIC_SELECTION'].append(OST_LINE[55:56].uint)
-      ancilliaryData['OST_LINE_SAMPLE_NUMBER'].append(OST_LINE[56:60].uint)
-      ancilliaryData['OST_LINE_SPARE2'].append(OST_LINE[60:61].uint)
-      ancilliaryData['OST_LINE_ALPHA_BETA'].append(OST_LINE[61:63].uint)
-      ancilliaryData['OST_LINE_REFERENCE_BIT'].append(OST_LINE[63:64].uint)
-      ancilliaryData['OST_LINE_THRESHOLD'].append(OST_LINE[64:72].uint)
-      ancilliaryData['OST_LINE_THRESHOLD_INCREMENT'].append(OST_LINE[72:80].uint)
-      ancilliaryData['OST_LINE_SPARE3'].append(OST_LINE[80:84].uint)
-      ancilliaryData['OST_LINE_INITIAL_ECHO_VALUE'].append(OST_LINE[84:87].uint)
-      ancilliaryData['OST_LINE_EXPECTED_ECHO_SHIFT'].append(OST_LINE[87:90].uint)
-      ancilliaryData['OST_LINE_WINDOW_LEFT_SHIFT'].append(OST_LINE[90:93].uint)
-      ancilliaryData['OST_LINE_WINDOW_RIGHT_SHIFT'].append(OST_LINE[93:96].uint)
-      ancilliaryData['OST_LINE_SPARE4'].append(OST_LINE[96:128].uint)
       ancilliaryData['SPARE3'].append(struct.unpack('>B', data[38:39])[0])
       ancilliaryData['DATA_BLOCK_ID'].append(bitstring.BitArray(data[39:42]).uint)
       ancilliaryData['SCIENCE_DATA_SOURCE_COUNTER'].append(struct.unpack('>H', data[42:44])[0])
-      #
-      # PACKET_SEGMENTATION_AND_FPGA_STATUS bit string
-      #
-      PSAFS = bitstring.BitArray(data[44:46])
-      ancilliaryData['PSAFS_SCIENTIFIC_DATA_TYPE'].append(PSAFS[0:1].uint)
-      ancilliaryData['PSAFS_SEGMENTATION_FLAG'].append(PSAFS[1:3].uint)
-      ancilliaryData['PSAFS_SPARE1'].append(PSAFS[3:8].uint)
-      ancilliaryData['PSAFS_SPARE2'].append(PSAFS[8:12].uint)
-      ancilliaryData['PSAFS_DMA_ERROR'].append(PSAFS[12:13].uint)
-      ancilliaryData['PSAFS_TC_OVERRUN'].append(PSAFS[13:14].uint)
-      ancilliaryData['PSAFS_FIFO_FULL'].append(PSAFS[14:15].uint)
-      ancilliaryData['PSAFS_TEST'].append(PSAFS[15:16].uint)
       ancilliaryData['SPARE4'].append(struct.unpack('>B', data[46:47])[0])
       ancilliaryData['DATA_BLOCK_FIRST_PRI'].append(bitstring.BitArray(data[47:50]).uint)
       ancilliaryData['TIME_DATA_BLOCK_WHOLE'].append(struct.unpack('>I', data[50:54])[0])
@@ -196,46 +154,44 @@ def anc_Parse(anc, records):
       ancilliaryData['PHASE_COMPENSATION_STEP'].append(struct.unpack('>f', data[174:178])[0])
       ancilliaryData['RECEIVE_WINDOW_OPENING_TIME'].append(struct.unpack('>f', data[178:182])[0])
       ancilliaryData['RECEIVE_WINDOW_POSITION'].append(struct.unpack('>f', data[182:186])[0])
-    #####################################################################################
-    #
-    # PACKET_SEGMENTATION_AND_FPGA_STATUS bit string
-    #
-##      PSAFS = bitstring.BitArray(data[44:46])
-##      ancilliaryData['PSAFS_SCIENTIFIC_DATA_TYPE'].append(PSAFS[0:1].uint)
-##      ancilliaryData['PSAFS_SEGMENTATION_FLAG'].append(PSAFS[1:3].uint)
-##      ancilliaryData['PSAFS_SPARE1'].append(PSAFS[3:8].uint)
-##      ancilliaryData['PSAFS_SPARE2'].append(PSAFS[8:12].uint)
-##      ancilliaryData['PSAFS_DMA_ERROR'].append(PSAFS[12:13].uint)
-##      ancilliaryData['PSAFS_TC_OVERRUN'].append(PSAFS[13:14].uint)
-##      ancilliaryData['PSAFS_FIFO_FULL'].append(PSAFS[14:15].uint)
-##      ancilliaryData['PSAFS_TEST'].append(PSAFS[15:16].uint)
-##      #####################################################################################
+      #
+      # PACKET_SEGMENTATION_AND_FPGA_STATUS bit string
+      #
+      PSAFS = bitstring.BitArray(data[44:46])
+      ancilliaryData['PACKET_SEGMENTATION_AND_FPGA_STATUS']['SCIENTIFIC_DATA_TYPE'].append(PSAFS[0:1].uint)
+      ancilliaryData['PACKET_SEGMENTATION_AND_FPGA_STATUS']['SEGMENTATION_FLAG'].append(PSAFS[1:3].uint)
+      ancilliaryData['PACKET_SEGMENTATION_AND_FPGA_STATUS']['SPARE1'].append(PSAFS[3:8].uint)
+      ancilliaryData['PACKET_SEGMENTATION_AND_FPGA_STATUS']['SPARE2'].append(PSAFS[8:12].uint)
+      ancilliaryData['PACKET_SEGMENTATION_AND_FPGA_STATUS']['DMA_ERROR'].append(PSAFS[12:13].uint)
+      ancilliaryData['PACKET_SEGMENTATION_AND_FPGA_STATUS']['TC_OVERRUN'].append(PSAFS[13:14].uint)
+      ancilliaryData['PACKET_SEGMENTATION_AND_FPGA_STATUS']['FIFO_FULL'].append(PSAFS[14:15].uint)
+      ancilliaryData['PACKET_SEGMENTATION_AND_FPGA_STATUS']['TEST'].append(PSAFS[15:16].uint)
       #
       # OST_LINE_NUMBER BIT STRING
       #
-##      OST_LINE = bitstring.BitArray(data[22:39])
-##      ancilliaryData['OST_LINE_PULSE_REPETITION_INTERVAL'].append(OST_LINE[0:4].uint)
-##      ancilliaryData['OST_LINE_PHASE_COMPENSATION_TYPE'].append(OST_LINE[4:8].uint)
-##      ancilliaryData['OST_LINE_SPARE1'].append(OST_LINE[8:10].uint)
-##      ancilliaryData['OST_LINE_DATA_LENGTH_TAKEN'].append(OST_LINE[10:32].uint)
-##      ancilliaryData['OST_LINE_OPERATIVE_MODE'].append(OST_LINE[32:40].uint)
-##      ancilliaryData['OST_LINE_MANUAL_GAIN_CONTROL'].append(OST_LINE[40:48].uint)
-##      ancilliaryData['OST_LINE_COMPRESSION_SELECTION'].append(OST_LINE[48:49].bool)
-##      ancilliaryData['OST_LINE_CLOSED_LOOP_TRACKING'].append(OST_LINE[49:50].bool)
-##      ancilliaryData['OST_LINE_TRACKING_DATA_STORAGE'].append(OST_LINE[50:51].bool)
-##      ancilliaryData['OST_LINE_TRACKING_PRE_SUMMING'].append(OST_LINE[51:54].uint)
-##      ancilliaryData['OST_LINE_TRACKING_LOGIC_SELECTION'].append(OST_LINE[54:55].uint)
-##      ancilliaryData['OST_LINE_THRESHOLD_LOGIC_SELECTION'].append(OST_LINE[55:56].uint)
-##      ancilliaryData['OST_LINE_SAMPLE_NUMBER'].append(OST_LINE[56:60].uint)
-##      ancilliaryData['OST_LINE_SPARE2'].append(OST_LINE[60:61].uint)
-##      ancilliaryData['OST_LINE_ALPHA_BETA'].append(OST_LINE[61:63].uint)
-##      ancilliaryData['OST_LINE_REFERENCE_BIT'].append(OST_LINE[63:64].uint)
-##      ancilliaryData['OST_LINE_THRESHOLD'].append(OST_LINE[64:72].uint)
-##      ancilliaryData['OST_LINE_THRESHOLD_INCREMENT'].append(OST_LINE[72:80].uint)
-##      ancilliaryData['OST_LINE_SPARE3'].append(OST_LINE[80:84].uint)
-##      ancilliaryData['OST_LINE_INITIAL_ECHO_VALUE'].append(OST_LINE[84:87].uint)
-##      ancilliaryData['OST_LINE_EXPECTED_ECHO_SHIFT'].append(OST_LINE[87:90].uint)
-##      ancilliaryData['OST_LINE_WINDOW_LEFT_SHIFT'].append(OST_LINE[90:93].uint)
-##      ancilliaryData['OST_LINE_WINDOW_RIGHT_SHIFT'].append(OST_LINE[93:96].uint)
-##      ancilliaryData['OST_LINE_SPARE4'].append(OST_LINE[96:128].uint)
+      OST_LINE = bitstring.BitArray(data[22:39])
+      ancilliaryData['OST_LINE']['PULSE_REPETITION_INTERVAL'].append(OST_LINE[0:4].uint)
+      ancilliaryData['OST_LINE']['PHASE_COMPENSATION_TYPE'].append(OST_LINE[4:8].uint)
+      ancilliaryData['OST_LINE']['SPARE1'].append(OST_LINE[8:10].uint)
+      ancilliaryData['OST_LINE']['DATA_LENGTH_TAKEN'].append(OST_LINE[10:32].uint)
+      ancilliaryData['OST_LINE']['OPERATIVE_MODE'].append(OST_LINE[32:40].uint)
+      ancilliaryData['OST_LINE']['MANUAL_GAIN_CONTROL'].append(OST_LINE[40:48].uint)
+      ancilliaryData['OST_LINE']['COMPRESSION_SELECTION'].append(OST_LINE[48:49].bool)
+      ancilliaryData['OST_LINE']['CLOSED_LOOP_TRACKING'].append(OST_LINE[49:50].bool)
+      ancilliaryData['OST_LINE']['TRACKING_DATA_STORAGE'].append(OST_LINE[50:51].bool)
+      ancilliaryData['OST_LINE']['TRACKING_PRE_SUMMING'].append(OST_LINE[51:54].uint)
+      ancilliaryData['OST_LINE']['TRACKING_LOGIC_SELECTION'].append(OST_LINE[54:55].uint)
+      ancilliaryData['OST_LINE']['THRESHOLD_LOGIC_SELECTION'].append(OST_LINE[55:56].uint)
+      ancilliaryData['OST_LINE']['SAMPLE_NUMBER'].append(OST_LINE[56:60].uint)
+      ancilliaryData['OST_LINE']['SPARE2'].append(OST_LINE[60:61].uint)
+      ancilliaryData['OST_LINE']['ALPHA_BETA'].append(OST_LINE[61:63].uint)
+      ancilliaryData['OST_LINE']['REFERENCE_BIT'].append(OST_LINE[63:64].uint)
+      ancilliaryData['OST_LINE']['THRESHOLD'].append(OST_LINE[64:72].uint)
+      ancilliaryData['OST_LINE']['THRESHOLD_INCREMENT'].append(OST_LINE[72:80].uint)
+      ancilliaryData['OST_LINE']['SPARE3'].append(OST_LINE[80:84].uint)
+      ancilliaryData['OST_LINE']['INITIAL_ECHO_VALUE'].append(OST_LINE[84:87].uint)
+      ancilliaryData['OST_LINE']['EXPECTED_ECHO_SHIFT'].append(OST_LINE[87:90].uint)
+      ancilliaryData['OST_LINE']['WINDOW_LEFT_SHIFT'].append(OST_LINE[90:93].uint)
+      ancilliaryData['OST_LINE']['WINDOW_RIGHT_SHIFT'].append(OST_LINE[93:96].uint)
+      ancilliaryData['OST_LINE']['SPARE4'].append(OST_LINE[96:128].uint)
   return ancilliaryData

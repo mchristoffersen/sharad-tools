@@ -1,10 +1,4 @@
-# script finds first return from radargram per method in Grima et al., 2012.
-# this will run through all .img radargrams in directory.
-# designed to run on directory structured like the PDS.
-# author: Brandon S. Tober
-# created: 30January2018
-# updated: 23Oct2018
-
+# import necessary libraries
 import os,sys
 from PIL import Image
 import math
@@ -13,24 +7,32 @@ import scipy.misc
 import time
 import matplotlib.pyplot as plt
 
-def main():
+def main(data_path, surf = 'nadir'):
+    '''
+    script extracts power of surface return from radargram
+    surface return can be defined as either first return (fret), nadir return, or 
+    the max power return - return from which most radar energy penetrates surface (max)
+    this will run through all .img radargrams in directory.
+    designed to run on directory structured like PDS.
+
+    author: Brandon S. Tober
+    created: 30January2018
+    updated: 21January2019
+    '''
     
-    # set path of directory
-    #path = '/disk/qnap-2/MARS/orig/supl/SHARAD/EDR/hebrus_valles_sn/'
-    path = '/media/anomalocaris/Swaps/MARS/code/sharad-tools/firstReturn/fret_test/EDR/'
     print('\n----------------------------------------------------------------')
 
     # keep count of the number of rgrams processed
     count = 0       
 
     t0 = time.time()    # start time
-    for root, dirs, files in os.walk(path + 'data/rgram/'):
+    for root, dirs, files in os.walk(data_path + 'data/rgram/'):
         for file in files:
             if file.endswith('amp.npy'):
                 file_name = file.rstrip('_amp.npy)')
-                if (not os.path.isfile(path + 'out/geom/' + file_name + '_geom2.csv')):
+                if (not os.path.isfile(data_path + 'out/geom/' + file_name + '_geom2.csv')):
                     print('\nComputing first return for observation: ' + file_name + '\n')
-                    imarray = np.load(path + 'data/rgram/' + file)
+                    imarray = np.load(data_path + 'data/rgram/' + file)
 
                     #imarray = imarray[:,0:100:1]	# decrease the imarray to make testing faster
 
@@ -57,7 +59,7 @@ def main():
                     fret_db = np.empty((c,1))
 
                     # open geom nav file for rgram to append surface echo power to each trace                
-                    nav_file = np.genfromtxt(path + 'data/geom/' + file_name + '_geom.csv', delimiter = ',', dtype = str)
+                    nav_file = np.genfromtxt(data_path + 'data/geom/' + file_name + '_geom.csv', delimiter = ',', dtype = str)
 
                     #nav_file = nav_file[0:100:1,:]	# decrease the imarray to make testing faster 
 
@@ -84,14 +86,14 @@ def main():
                     else:
                         nav_file[:,6] = fret_db[:,0]
                         
-                    np.savetxt(path + 'out/geom/' + file_name + '_geom2.csv', nav_file, delimiter = ',', newline = '\n', fmt= '%s')
-                    np.savetxt(path + 'out/fret/' + file_name + '_fret_db.txt', fret_db, delimiter=',', newline = '\n', comments = '', header = 'PDB', fmt='%.8f')
+                    np.savetxt(data_path + 'out/geom/' + file_name + '_geom2.csv', nav_file, delimiter = ',', newline = '\n', fmt= '%s')
+                    np.savetxt(data_path + 'out/fret/' + file_name + '_fret_db.txt', fret_db, delimiter=',', newline = '\n', comments = '', header = 'PDB', fmt='%.8f')
 
 
 
                     try:
                         fret_array = Image.fromarray(fret_index[:,::32], 'RGB') # downsample by taking every 32nd trace for output fret image
-                        scipy.misc.imsave(path + 'out/fret/' + file_name + '_fret.jpg', fret_array)
+                        scipy.misc.imsave(data_path + 'out/fret/' + file_name + '_fret.jpg', fret_array)
                     except Exception as err:
                         print(err)
                     # update the counter to keep track of lines processed
@@ -103,6 +105,18 @@ def main():
     t1 = time.time()    # end time
     print('\n----------Total Runtime: ' + str((t1 - t0)/60) + ' minutes----------')
 
-# call the main function
-main()
+if __name__ == '__main__':
+    # get correct data path if depending on current OS
+    data_path = '/MARS/orig/supl/SHARAD/EDR/hebrus_valles_sn/'
+    if os.getcwd().split('/')[1] == 'media':
+        data_path = '/media/anomalocaris/Swaps' + data_path
+    elif os.getcwd().split('/')[1] == 'mnt':
+        data_path = '/mnt/d' + data_path
+    elif os.getcwd().split('/')[1] == 'disk':
+        data_path = '/disk/qnap-2/'
+    else:
+        print('Data path not found')
+        sys.exit()
+    surf = 'nadir'                              # define the desired surface pick = [fret,narid,max]
+    main(data_path = data_path,surf = surf)
         

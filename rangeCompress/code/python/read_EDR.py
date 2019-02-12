@@ -20,12 +20,18 @@ def EDR_Parse(fname, records, recLen, bps):
   Modified: 27Aug18 by Brandon S. Tober to read entire EDR science record at once into data matrix. 
     also modified so that bitstring is only used for observations where bps is 4 or 6. 8 bit samples can be read using np.fromstring much faster.
   """
-  # Open binary data science file
-  _file = open(fname, 'rb')
   #
   # Create matrix to store parsed data
   #
   decodedData = np.zeros([3600, records], dtype = "int64")
+  #
+  # Open binary data science file
+  #
+  _file = open(fname, 'rb')
+  #
+  # Make sure we are at the beginning of a record
+  #
+  _file.seek(0)
   #
   # Read in entire binary data volume for all traces
   #
