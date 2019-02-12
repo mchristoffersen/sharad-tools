@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import glob, os, sys, time
 from read_Lbl import lbl_Parse
 from read_Aux import aux_Parse
-from read_Anc_TEST import anc_Parse
+from read_Anc import anc_Parse
 from read_Chirp import open_Chirp
 from plotting import rgram
 from read_EDR import EDR_Parse, sci_Decompress
@@ -161,11 +161,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
         geomData[_i,6] = auxDF['MARS_SC_RADIAL_VELOCITY'][_i]
         geomData[_i,7] = auxDF['MARS_SC_TANGENTIAL_VELOCITY'][_i]
         geomData[_i,8] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
-        geomData[_i,9] = ancil['RECEIVE_WINDOW_OPENING_TIME'][_i] * .0375
-        # print(auxDF['Z_MARS_SC_POSITION_VECTOR'][_i])
-        # print(auxDF['SPACECRAFT_ALTITUDE'][_i])
-        print(ancil['RECEIVE_WINDOW_OPENING_TIME'][_i])# * .0375)
-    sys.exit()
+        geomData[_i,9] = ancil['RECEIVE_WINDOW_OPENING_TIME'][_i] * .0375e-6
 
     print('Saving all data')
     # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
