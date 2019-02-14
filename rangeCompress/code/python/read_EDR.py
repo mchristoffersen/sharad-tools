@@ -33,9 +33,10 @@ def EDR_Parse(fname, records, recLen, bps):
   #
   _file.seek(0)
   #
-  # Read in entire binary data volume for all traces
+  # Read in entire binary data volume for all traces then close the file
   #
   rawData = _file.read(recLen * records)
+  _file.close()
   #
   # Partition data volume by trace
   #

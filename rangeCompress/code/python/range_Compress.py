@@ -217,7 +217,7 @@ if __name__ == '__main__':
             runName = lbl_file.rstrip('_a.lbl')
             auxName = data_path + runName + '_a_a.dat'
             EDRName = data_path + runName + '_a_s.dat'
-            
+
             # if (not os.path.isfile(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv')):
             if (not os.path.isfile(data_path + 'processed/browse/tiff/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc.tiff')):
                 main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
