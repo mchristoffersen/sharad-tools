@@ -26,6 +26,7 @@ def main(data_path, surf = 'nadir'):
     count = 0       
 
     t0 = time.time()    # start time
+    
     for root, dirs, files in os.walk(data_path + 'data/rgram/'):
         for file in files:
             if file.endswith('amp.npy'):
@@ -38,17 +39,27 @@ def main(data_path, surf = 'nadir'):
 
                     (r,c) = imarray.shape   
                     C = np.empty((r,c))	# create empty criteria array to localize surface echo for each trace
-                    gradient = np.gradient(imarray, axis = 0) # find gradient of each trace in RGRAM
 
-                    # criteria for surface echo - indicator is Pt * dPt-1/dt, 
-                    # where P is the signal energy applied on each grame sample (t)
-                    # Indicator weights energy of a sample by the derivative preceding it
+                    if surf == 'nadir':
 
-                    # vectorized criteria calculation
-                    C[100:r,:] = imarray[100:r,:]*gradient[99:r-1,:]   
-                    
-                    # find indices of max critera seletor for each column
-                    C_max_ind = np.argmax(C, axis = 0)	
+                    elif surf == 'maxPow':
+                        print('Code not set up to handle max power return as of yet - BT')
+                        sys.exit()
+
+                    elif surf == 'fret':
+
+                        gradient = np.gradient(imarray, axis = 0) # find gradient of each trace in RGRAM
+
+                        # criteria for surface echo - indicator is Pt * dPt-1/dt, 
+                        # where P is the signal energy applied on each grame sample (t)
+                        # Indicator weights energy of a sample by the derivative preceding it
+
+                        # vectorized criteria calculation
+                        C[100:r,:] = imarray[100:r,:]*gradient[99:r-1,:]   
+                        
+                        # find indices of max critera seletor for each column
+                        C_max_ind = np.argmax(C, axis = 0)	
+
                     maxAmp = np.argmax(imarray, axis = 0) # also find the max power (or amplitude) in each trace to compare with fret algorithm
                     
                     # scale image array by max pixel to create jpg output with fret index
