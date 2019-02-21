@@ -103,11 +103,10 @@ OBJECT = TABLE
       DATA_TYPE              = IEEE_REAL
       UNIT                   = SECONDS
       DESCRIPTION            = "Opening time of the receiver, measured from
-                                the start of the transmission of the pulse. 
-								Originally expressed in units of the sampling 
-								interval of the analog-to-digital converter, 
-								which is 0.0375 microseconds long. Converted 
-								to seconds by multiplying by .0375e-6 s"
+                                the start of the transmission of the pulse and
+                                expressed in units of the sampling interval of
+                                the analog-to-digital converter, which is
+                                0.0375 microseconds long."
     END_OBJECT               = COLUMN
 	
 END_OBJECT = TABLE

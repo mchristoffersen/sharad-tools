@@ -152,7 +152,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
 
     # create geom array with relavant data for each record
     for _i in range(records):
-        geomData[_i,0] = runName.split('_')[1] + runName.split('_')[2]
+        geomData[_i,0] = int(runName.split('_')[1] + runName.split('_')[2])
         geomData[_i,1] = int(_i)
         geomData[_i,2] = auxDF['SUB_SC_PLANETOCENTRIC_LATITUDE'][_i]
         geomData[_i,3] = auxDF['SUB_SC_EAST_LONGITUDE'][_i]
@@ -161,7 +161,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
         geomData[_i,6] = auxDF['MARS_SC_RADIAL_VELOCITY'][_i]
         geomData[_i,7] = auxDF['MARS_SC_TANGENTIAL_VELOCITY'][_i]
         geomData[_i,8] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
-        geomData[_i,9] = ancil['RECEIVE_WINDOW_OPENING_TIME'][_i] * .0375e-6
+        geomData[_i,9] = ancil['RECEIVE_WINDOW_OPENING_TIME'][_i]
 
     print('Saving all data')
     # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
