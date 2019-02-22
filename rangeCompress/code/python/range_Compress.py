@@ -184,6 +184,8 @@ if __name__ == '__main__':
         data_path = '/media/anomalocaris/Swaps' + data_path
     elif os.getcwd().split('/')[1] == 'mnt':
         data_path = '/mnt/d' + data_path
+    elif os.getcwd().split('/')[1] == 'disk':
+        data_path = '/disk/qnap-2/' + data_path
     else:
         print('Data path not found')
         sys.exit()
@@ -202,7 +204,7 @@ if __name__ == '__main__':
         print('Unknown window type')
         sys.exit()
 
-    # uncomment for testing single obs., enter lbl file as sys.argv[1]
+    # uncomment for testing single obs., enter lbl file as sys.argv[1] or for parellelizing range compression with list of .lbl files
     # lbl_file = sys.argv[1]
     # lblName = data_path + lbl_file
     # runName = lbl_file.rstrip('_a.lbl')
