@@ -193,7 +193,7 @@ class Path:
 
     return grd
     
-#### EXAMPLE NAV IMPORT ####
+#### NAV IMPORT ####
 
 
 def GetNav_geom(navfile):
@@ -211,14 +211,16 @@ def GetNav_geom(navfile):
   navdat.csys = '+proj=longlat +a=3396190 +b=3376200 +no_defs'
   
   # Adjust with areoid ... this relies on specific directory structure
-  aer = Dem('../test/temp/dem/mega_16.tif')
+  aer = Dem('/mnt/d/MARS/code/modl/MRO/simc/test/temp/dem/mega_16.tif')
+  
   aer_nadir = navdat.toground(aer)
 
   for i in range(len(navdat)):
     if(aer_nadir[i].z == aer.nd):
       aer_nadir[i].z = aer_nadir[i-1].z
-    newr = navdat[i].z - 3396190 - aer_nadir[i].z
-    #print(newr)
+    ellip_spher_diff = ((3396190 - 3376200)*abs(np.cos((navdat[i].y)*(np.pi/180)))) + 190
+    ellip_aer_diff = ellip_spher_diff - aer_nadir[i].z
+    newr = navdat[i].z + ellip_aer_diff
     navdat[i].z = newr
 
   return navdat
@@ -226,35 +228,10 @@ def GetNav_geom(navfile):
 
 ####    ####    ####    ####
 
-## Grab megt and mega from /disk/qnap-2/MARS/code/modl/MRO/simc/test/temp/dem/
 
-dem_path = "path/to/dem"
-nav_path = "path/to/nav"
-
-binsize = .0375e-6
-
-speedlight = 3e8
-
-navdat = GetNav_geom(nav_path)
-
-shift = [0]*len(navdat)
-for i in range(len(navdat)):
-  shift[i] = int((navdat[i].z)/binsize)       #change navdat[i].z to receive window opening time
-
-topo = Dem(dem_path)
-
-nad_loc = navdat.toground(topo,navsys)
-
-nadbin = [0]*len(navdat)
-
-for i in range(len(navdat)):
-    nadbin[i] = int(((navdat[i].z-nad_loc[i].z)*2/speedlight)/binsize) - shift[i]
 
 '''
 need to get proj data for EDRs
 need to get reference datum for EDRs
 need to add z(radius) to EDR nav data
 '''
-
-
-

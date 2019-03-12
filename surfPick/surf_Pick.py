@@ -1,5 +1,5 @@
 # import necessary libraries
-import nadir
+from nadir import *
 import os,sys
 from PIL import Image
 import math
@@ -24,20 +24,19 @@ def main(rgramFile, surf = 'nadir'):
     print('--------------------------------')
     print(rgramName)
     print('--------------------------------')
-
+    navFile = np.genfromtxt(in_path + 'processed/data/geom/' + fileName + '_geom.csv', delimiter = ',', dtype = None)        # open geom nav file for rgram to append surface echo power to each trace                                                 
     imarray = np.load(rgramFile)
 
     # imarray = imarray[:,0:100:1]	                                                                                        # decrease the imarray to make testing faster
-    # navFile = navFile[0:100:1,:]	                                                                                       
-
+    # navFile = navFile[0:100:1,:]	
+                                                                                           
     (r,c) = imarray.shape   
     C = np.empty((r,c))	                                                                                                    # create empty criteria array to localize surface echo for each trace
 
     if surf == 'nadir':
 
         ## Grab megt and mega from /disk/qnap-2/MARS/code/modl/MRO/simc/test/temp/dem/
-
-        dem_path = "path/to/dem"
+        dem_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/megt_128_merge.tif'
 
         binsize = .0375e-6
 
@@ -45,21 +44,21 @@ def main(rgramFile, surf = 'nadir'):
 
         navdat = GetNav_geom(navPath)
 
-        recwindow = navFile[:,9]
-
-        shift = [0]*len(navdat)
-        for i in range(len(navdat)):
-            shift[i] = int((recwindow[i])/binsize)       
-
+        shift = navFile[:,9]
+ 
         topo = Dem(dem_path)
 
-        nad_loc = navdat.toground(topo,navsys)
+        nad_loc = navdat.toground(topo,navdat.csys)
 
-        nadbin = [0]*len(navdat)
+        nadbin = np.zeros(len(navdat))
 
         for i in range(len(navdat)):
             nadbin[i] = int(((navdat[i].z-nad_loc[i].z)*2/speedlight)/binsize) - shift[i]
 
+        plt.plot(nadbin)
+        plt.plot(shift)
+        plt.show()
+        sys.exit()
         surf = nadbin
 
     elif surf == 'fret':
@@ -80,11 +79,10 @@ def main(rgramFile, surf = 'nadir'):
     elif surf == 'max':
         print('Code not set up to handle max power return as of yet - BT')
         sys.exit()
-
-
+        
     # rescale rgram for visualization to plot surfPick
     maxAmp = np.argmax(imarray, axis = 0)                                                                                   # find max power (or amplitude) in each trace to compare with fret algorithm
-    dB = 10 * np.log10(imarray / np.mean(pow[:50,:]))                                                                       # scale image array by max pixel to create jpg output with fret index
+    dB = 10 * np.log10(imarray / np.mean(imarray[:50,:]))                                                                       # scale image array by max pixel to create jpg output with fret index
     imarrayScale = ((dB / np.amax(dB)) * 255)
     imarrayScale[ np.where(imarrayScale > 50) ] = 255
 
@@ -128,15 +126,19 @@ def main(rgramFile, surf = 'nadir'):
 if __name__ == '__main__':
     
     # get correct data paths if depending on current OS
+    mars_path = '/MARS/'
     in_path = '/MARS/orig/supl/SHARAD/EDR/hebrus_valles_sn/'
-    out_path = 'MARS/targ/xtra/surfPow/'
+    out_path = '/MARS/targ/xtra/SHARAD/surfPow/hebrus_valles_sn/'
     if os.getcwd().split('/')[1] == 'media':
+        mars_path = '/media/anomalocaris/Swaps' + mars_path
         in_path = '/media/anomalocaris/Swaps' + in_path
         out_path = '/media/anomalocaris/Swaps' + out_path
     elif os.getcwd().split('/')[1] == 'mnt':
+        mars_path = '/mnt/d' + mars_path
         in_path = '/mnt/d' + in_path
         out_path = '/mnt/d' + out_path
     elif os.getcwd().split('/')[1] == 'disk':
+        mars_path = '/disk/qnap-2/' + mars_path
         in_path = '/disk/qnap-2/' + in_path
         out_path = '/disk/qnap-2/' + out_path
     else:
@@ -144,11 +146,10 @@ if __name__ == '__main__':
         sys.exit()
    
     rgramFile = sys.argv[1]                                                                                                 # input radargram - range compressed - amplitude output
-    rgramFile = in_path + rgramFile                                                                                         # attach input data path to beginning of rgram file name
     fileName = rgramFile.split('_')[0] + '_' + rgramFile.split('_')[1]                                                      # base fileName
-    rgramName = fileName[.split('_')[0] + fileName.split('_')[1]                                                            # SHARAD rgram obs. #
-    navPath = in_path + 'data/geom/' + fileName + '_geom.csv'                                                               # path to nav file for obs.  
-    navFile = np.genfromtxt(in_path + 'data/geom/' + fileName + '_geom.csv', delimiter = ',', dtype = str)                  # open geom nav file for rgram to append surface echo power to each trace                                                 
+    rgramName = fileName.split('_')[0] + fileName.split('_')[1]                                                             # SHARAD rgram obs. #
+    navPath = in_path + 'processed/data/geom/' + fileName + '_geom.csv'                                                     # path to nav file for obs.  
+    rgramFile = in_path + 'processed/data/rgram/amp/' + rgramFile                                                           # attach input data path to beginning of rgram file name
     surf = 'nadir'                                                                                                          # define the desired surface pick = [fret,narid,max]
 
     
