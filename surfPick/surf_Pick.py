@@ -51,12 +51,37 @@ def main(rgramFile, surf = 'nadir'):
         nad_loc = navdat.toground(topo,navdat.csys)
 
         nadbin = np.zeros(len(navdat))
+        nadbin2 = np.zeros(len(navdat))
+        navdatz = np.zeros(len(navdat))
+        nadlocz = np.zeros(len(navdat))
 
         for i in range(len(navdat)):
             nadbin[i] = int(((navdat[i].z-nad_loc[i].z)*2/speedlight)/binsize) - shift[i]
+            nadbin2[i] = int(((navdat[i].z-nad_loc[i].z)*2/speedlight)/binsize)
+            navdatz[i] = navdat[i].z
+            nadlocz[i] = nad_loc[i].z
 
-        plt.plot(nadbin)
+        print(navdatz[0] - nadlocz[0])
+        plt.subplot(2,1,1)
+        plt.plot(navdatz)
+        plt.subplot(2,1,2)
+        plt.plot(nadlocz)
+        plt.show()   
+
+
+        plt.subplot(2,2,1)
+        plt.title('PRI')
+        plt.plot(navFile[:,10])
+        plt.subplot(2,2,2)
+        plt.title('RECEIVE_WINDOW_OPEINING_TIME')
+        plt.plot(navFile[:,11])
+        plt.subplot(2,2,3)
+        plt.title('RECEIVE_WINDOW_POSITION_SHIFT')
         plt.plot(shift)
+        plt.subplot(2,2,4)
+        plt.title('nadir_bin')
+        plt.plot(nadbin)
+        plt.suptitle('0589902_001')
         plt.show()
         sys.exit()
         surf = nadbin

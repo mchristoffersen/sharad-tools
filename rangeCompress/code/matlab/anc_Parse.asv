@@ -1,4 +1,4 @@
-function [ t_anc ] = anc_Parse( sci_file_name,length,width,anc_output_name )
+function [ t_anc ] = anc_Parse( s_file_name,length,width,anc_output_name )
 %function [ t_anc ] = sciancparse( anc_file_name, length, width, anc_output_name )
 %   Parse the ancillary data in SHARAD science files
 %   Michael Christoffersen
@@ -17,7 +17,7 @@ function [ t_anc ] = anc_Parse( sci_file_name,length,width,anc_output_name )
 
 bitwidth = 8*width;
 
-sciancdata = fopen(sci_file_name,'r','b');
+sciancdata = fopen(anc_file_name,'r','b');
 
 SCET_BLOCK_WHOLE = fread(sciancdata,[length,1],'uint32',width-4);
 

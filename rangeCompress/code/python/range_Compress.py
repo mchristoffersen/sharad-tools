@@ -3,6 +3,7 @@ import numpy as np
 import scipy
 import matplotlib.pyplot as plt
 import glob, os, sys, time
+import pandas as pd
 from read_Lbl import lbl_Parse
 from read_Aux import aux_Parse
 from read_Anc import anc_Parse
@@ -21,7 +22,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
 
     github: b-tober
     Updated by: Brandon S. Tober
-    Last Updated: 11Jan2019
+    Last Updated: 01Mar2019
     -----------
     Example call:
 
@@ -48,7 +49,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     BitsPerSample = lblDic['INSTR_MODE_ID']['BitsPerSample']
 
     # toggle on to downsize for testing purposes
-    records = int(records / 1000)
+    # records = int(records / 100)
 
     # presumming is just for visualization purposes
     stackCols = int(np.ceil(records/stackFac))
@@ -90,6 +91,10 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     # parse ancilliary data
     ancil = anc_Parse(ancil, records)
     print('Ancilliary data parsed')
+
+    # create index to hold values of PRI in seconds
+    pri = np.array([1428,1492,1290,2856,2984,2580])
+    pri = pri * 1e-6
     
     # decompress science data
     sci = sci_Decompress(sci, lblDic['COMPRESSION'], instrPresum, BitsPerSample, ancil['SDI_BIT_FIELD'][:])
@@ -107,7 +112,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
         ampStack = np.zeros((3600, stackCols))   
         window = np.pad(np.kaiser(2048,beta),(0,4096 - refChirpMF.shape[1]),'constant')        
 
-    geomData = np.zeros((records,10))
+    geomData = np.zeros((records,13))
 
     #-------------------
     # setup complete; begin range compression
@@ -154,24 +159,30 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     for _i in range(records):
         geomData[_i,0] = int(runName.split('_')[1] + runName.split('_')[2])
         geomData[_i,1] = int(_i)
-        geomData[_i,2] = auxDF['SUB_SC_PLANETOCENTRIC_LATITUDE'][_i]
-        geomData[_i,3] = auxDF['SUB_SC_EAST_LONGITUDE'][_i]
-        geomData[_i,4] = auxDF['SPACECRAFT_ALTITUDE'][_i]
-        geomData[_i,5] = auxDF['Z_MARS_SC_POSITION_VECTOR'][_i]
-        geomData[_i,6] = auxDF['MARS_SC_RADIAL_VELOCITY'][_i]
-        geomData[_i,7] = auxDF['MARS_SC_TANGENTIAL_VELOCITY'][_i]
-        geomData[_i,8] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
-        geomData[_i,9] = ancil['RECEIVE_WINDOW_OPENING_TIME'][_i]
-
+        geomData[_i,2] = auxDF['X_MARS_SC_POSITION_VECTOR'][_i]
+        geomData[_i,3] = auxDF['Y_MARS_SC_POSITION_VECTOR'][_i]
+        geomData[_i,4] = auxDF['Z_MARS_SC_POSITION_VECTOR'][_i]
+        geomData[_i,5] = auxDF['SPACECRAFT_ALTITUDE'][_i]
+        geomData[_i,6] = auxDF['SUB_SC_EAST_LONGITUDE'][_i]
+        geomData[_i,7] = auxDF['SUB_SC_PLANETOCENTRIC_LATITUDE'][_i]
+        geomData[_i,8] = auxDF['SUB_SC_PLANEGOCENTRIC_LATITUDE'][_i]
+        geomData[_i,9] = auxDF['MARS_SC_RADIAL_VELOCITY'][_i]
+        geomData[_i,10] = auxDF['MARS_SC_TANGENTIAL_VELOCITY'][_i]
+        geomData[_i,11] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
+        if (1/pri[(ancil['OST_LINE']['PULSE_REPETITION_INTERVAL'][_i]) - 1]) > 670.24 and (1/pri[(ancil['OST_LINE']['PULSE_REPETITION_INTERVAL'][_i]) - 1]) < 775.19:                               # time distance between start of transmission and the first sample of the received echo, as per http://pds-geosciences.wustl.edu/missions/mro/sharad.htm SHARAD EDR Data Product Software Interface Specification
+            geomData[_i,12] = int(((pri[(ancil['OST_LINE']['PULSE_REPETITION_INTERVAL'][_i]) - 1]) + (ancil['RECEIVE_WINDOW_OPENING_TIME'][_i] * 37.5e-9) - 11.98e-6) / 37.5e-9)
+        else:
+            geomData[_i,12] = int(((ancil['RECEIVE_WINDOW_OPENING_TIME'][_i] * 37.5e-9) - 11.98e-6) / 37.5e-9)
     print('Saving all data')
+
     # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
     rgram(ampOut, data_path, runName, chirp, windowName, rel = True)
-    np.savetxt(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n',fmt = '%s')
+    np.savetxt(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n', fmt ='%s')
     np.save(data_path + 'processed/data/rgram/comp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_raw.npy', EDRData)
     np.save(data_path + 'processed/data/rgram/amp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_amp.npy', ampOut)
     np.save(data_path + 'processed/data/rgram/stack/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_stack.npy', ampStack)
 
-    t1 = time.time()    # end time
+    t1 = time.time()        # end time
     print('--------------------------------')
     print('Total Runtime: ' + str(round((t1 - t0),4)) + ' seconds')
     print('--------------------------------')
