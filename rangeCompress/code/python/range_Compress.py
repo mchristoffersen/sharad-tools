@@ -165,7 +165,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
         geomData[_i,5] = auxDF['SPACECRAFT_ALTITUDE'][_i]
         geomData[_i,6] = auxDF['SUB_SC_EAST_LONGITUDE'][_i]
         geomData[_i,7] = auxDF['SUB_SC_PLANETOCENTRIC_LATITUDE'][_i]
-        geomData[_i,8] = auxDF['SUB_SC_PLANEGOCENTRIC_LATITUDE'][_i]
+        geomData[_i,8] = auxDF['SUB_SC_PLANETOGRAPHIC_LATITUDE'][_i]
         geomData[_i,9] = auxDF['MARS_SC_RADIAL_VELOCITY'][_i]
         geomData[_i,10] = auxDF['MARS_SC_TANGENTIAL_VELOCITY'][_i]
         geomData[_i,11] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
@@ -190,7 +190,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
 
 if __name__ == '__main__':
     # get correct data path if depending on current OS
-    data_path = '/MARS/orig/supl/SHARAD/EDR/hebrus_valles_sn/'
+    data_path = '/MARS/orig/supl/SHARAD/EDR/bh_nh_bt/'
     if os.getcwd().split('/')[1] == 'media':
         data_path = '/media/anomalocaris/Swaps' + data_path
     elif os.getcwd().split('/')[1] == 'mnt':
@@ -216,23 +216,23 @@ if __name__ == '__main__':
         sys.exit()
 
     # uncomment for testing single obs., enter lbl file as sys.argv[1] or for parellelizing range compression with list of .lbl files
-    # lbl_file = sys.argv[1]
-    # lblName = data_path + lbl_file
-    # runName = lbl_file.rstrip('_a.lbl')
-    # auxName = data_path + runName + '_a_a.dat'
-    # EDRName = data_path + runName + '_a_s.dat'
-    # main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
+    lbl_file = sys.argv[1]
+    lblName = data_path + lbl_file
+    runName = lbl_file.rstrip('_a.lbl')
+    auxName = data_path + runName + '_a_a.dat'
+    EDRName = data_path + runName + '_a_s.dat'
+    main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
 
-    for file in os.listdir(data_path):
-        if file.endswith('.lbl'):
-            lbl_file = file
-            lblName = data_path + lbl_file
-            runName = lbl_file.rstrip('_a.lbl')
-            auxName = data_path + runName + '_a_a.dat'
-            EDRName = data_path + runName + '_a_s.dat'
+    # for file in os.listdir(data_path):
+    #     if file.endswith('.lbl'):
+    #         lbl_file = file
+    #         lblName = data_path + lbl_file
+    #         runName = lbl_file.rstrip('_a.lbl')
+    #         auxName = data_path + runName + '_a_a.dat'
+    #         EDRName = data_path + runName + '_a_s.dat'
 
-            # if (not os.path.isfile(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv')):
-            if (not os.path.isfile(data_path + 'processed/browse/tiff/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc.tiff')):
-                main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
-            else :
-                print('\n' + runName + ' already processed!\n')
+    #         # if (not os.path.isfile(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv')):
+    #         if (not os.path.isfile(data_path + 'processed/browse/tiff/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc.tiff')):
+    #             main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
+    #         else :
+    #             print('\n' + runName + ' already processed!\n')
