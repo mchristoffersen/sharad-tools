@@ -137,7 +137,7 @@ OBJECT = TABLE
       DATA_TYPE              = IEEE_REAL
       DESCRIPTION            = "RECEIVE_WINDOW_OPENING_TIME converted to time distance.
 	  
-	                            RECEIVE_WINDOW_OPENING_TIME is the opening time of the 
+                                RECEIVE_WINDOW_OPENING_TIME is the opening time of the 
                                 receiver, measured from the start of the transmission of the 
                                 pulse and expressed in units of the sampling interval of
                                 the analog-to-digital converter, which is
