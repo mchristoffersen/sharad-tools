@@ -138,18 +138,18 @@ OBJECT = TABLE
       DESCRIPTION            = "RECEIVE_WINDOW_OPENING_TIME converted to time distance.
 	  
 	                            RECEIVE_WINDOW_OPENING_TIME is the opening time of the 
-								receiver, measured from the start of the transmission of the 
-								pulse and expressed in units of the sampling interval of
+                                receiver, measured from the start of the transmission of the 
+                                pulse and expressed in units of the sampling interval of
                                 the analog-to-digital converter, which is
                                 0.0375 microseconds long. 
 								
-								If the PRF is between 670.24 and 775.19 Hz,
-								the PRI must be added to the RECEIVE_WINDOW_OPENING_TIME. The 
-								RECEIVE_WINDOW_OPENING_TIME must first be mulyiplied by 0.0375 microseconds.
+                                If the PRF is between 670.24 and 775.19 Hz,
+                                the PRI must be added to the RECEIVE_WINDOW_OPENING_TIME. The 
+                                RECEIVE_WINDOW_OPENING_TIME must first be mulyiplied by 0.0375 microseconds.
 								
-								An extra delay of 11.98 microseconds is also taken in to account, being
-								subtracted from the time distance between start of transmission and the
-								first sample of the received echo."
+                                An extra delay of 11.98 microseconds is also taken in to account, being
+                                subtracted from the time distance between start of transmission and the
+                                first sample of the received echo."
     END_OBJECT               = COLUMN
 	
 END_OBJECT = TABLE
