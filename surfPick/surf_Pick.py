@@ -143,8 +143,8 @@ if __name__ == '__main__':
     
     # get correct data paths if depending on current OS
     mars_path = '/MARS'
-    in_path = mars_path + '/orig/supl/SHARAD/EDR/hebrus_valles_sn/'
-    out_path = mars_path + '/targ/xtra/SHARAD/surfPow/hebrus_valles_sn/'
+    in_path = mars_path + '/orig/supl/SHARAD/EDR/bh_nh_bt/'
+    out_path = mars_path + '/targ/xtra/SHARAD/surfPow/bh_nh_bt/'
     if os.getcwd().split('/')[1] == 'media':
         mars_path = '/media/anomalocaris/Swaps' + mars_path
         in_path = '/media/anomalocaris/Swaps' + in_path
