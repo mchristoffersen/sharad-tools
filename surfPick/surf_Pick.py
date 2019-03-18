@@ -1,5 +1,5 @@
 # import necessary libraries
-from nadir import *
+# from nadir import *
 import os,sys
 from PIL import Image
 import math
