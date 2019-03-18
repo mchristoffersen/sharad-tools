@@ -206,18 +206,28 @@ def GetNav_geom(navfile):
   for i in navdat_raw:
     if(len(i) > 0):
       i = i.split(',')
-      navdat.append(Loc(float(i[3]),float(i[2]),float(i[4])*1000))    # long, lat, spacecraft radius (converted to meters)
+      navdat.append(Loc(float(i[2])*1000,float(i[3])*1000,float(i[4])*1000))    # y,x,z position vectors (converted to meters)
 
-  navdat.csys = '+proj=longlat +a=3396190 +b=3376200 +no_defs'
+
+  # Transform x,y,z position vectors from 3D cartesian to geographic coords
+  geocsys = '+proj=longlat +a=3396190 +b=3376200 +no_defs'
+  navdat.csys = '+proj=geocent +a=3396190 +b=3376200 +no_defs'
+  navdat = navdat.transform(geocsys)
   
   # Adjust with areoid ... this relies on specific directory structure
   aer = Dem('/mnt/d/MARS/code/modl/MRO/simc/test/temp/dem/mega_16.tif')
-  
+
   aer_nadir = navdat.toground(aer)
 
   for i in range(len(navdat)):
     if(aer_nadir[i].z == aer.nd):
       aer_nadir[i].z = aer_nadir[i-1].z
+
+    ## TESTING - NEED TO TRANSFORM TO CARTESIAN
+    print(navdat[i].x,navdat[i].y,navdat[i].z)
+    sys.exit()
+    print('\n')
+    ##
     ellip_spher_diff = ((3396190 - 3376200)*abs(np.cos((navdat[i].y)*(np.pi/180)))) + 190
     ellip_aer_diff = ellip_spher_diff - aer_nadir[i].z
     newr = navdat[i].z + ellip_aer_diff

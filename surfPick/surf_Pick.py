@@ -6,9 +6,9 @@ import math
 import numpy as np
 import scipy.misc
 import time
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
-def main(rgramFile, surf = 'nadir'):
+def main(rgramFile, surfType = 'nadir'):
     '''
     script extracts power of surface return from radargram
     surface return can be defined as either first return (fret), nadir return, or 
@@ -22,18 +22,18 @@ def main(rgramFile, surf = 'nadir'):
     '''
     t0 = time.time()                                                                                                        # start time
     print('--------------------------------')
-    print(rgramName)
-    print('--------------------------------')
-    navFile = np.genfromtxt(in_path + 'processed/data/geom/' + fileName + '_geom.csv', delimiter = ',', dtype = None)        # open geom nav file for rgram to append surface echo power to each trace                                                 
+    print('Extracting surface power [' + surfType + '] for observation: ' + fileName)
+    navFile = np.genfromtxt(in_path + 'processed/data/geom/' + fileName + '_geom.csv', delimiter = ',', dtype = None)       # open geom nav file for rgram to append surface echo power to each trace                                                 
     imarray = np.load(rgramFile)
 
-    # imarray = imarray[:,0:100:1]	                                                                                        # decrease the imarray to make testing faster
-    # navFile = navFile[0:100:1,:]	
-                                                                                           
+    # imarray = imarray[:,::10]	                                                                                            # decrease the imarray to make testing faster
+    # navFile = navFile[::10,:]
+                                                                                         
     (r,c) = imarray.shape   
     C = np.empty((r,c))	                                                                                                    # create empty criteria array to localize surface echo for each trace
+    pow = np.power(imarray,2)                                                                                               # convert amplitude radargram to power (squared amp)
 
-    if surf == 'nadir':
+    if surfType == 'nadir':
 
         ## Grab megt and mega from /disk/qnap-2/MARS/code/modl/MRO/simc/test/temp/dem/
         dem_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/megt_128_merge.tif'
@@ -44,7 +44,7 @@ def main(rgramFile, surf = 'nadir'):
 
         navdat = GetNav_geom(navPath)
 
-        shift = navFile[:,9]
+        shift = navFile[:,12]
  
         topo = Dem(dem_path)
 
@@ -52,98 +52,89 @@ def main(rgramFile, surf = 'nadir'):
 
         nadbin = np.zeros(len(navdat))
         nadbin2 = np.zeros(len(navdat))
-        navdatz = np.zeros(len(navdat))
-        nadlocz = np.zeros(len(navdat))
+
 
         for i in range(len(navdat)):
             nadbin[i] = int(((navdat[i].z-nad_loc[i].z)*2/speedlight)/binsize) - shift[i]
             nadbin2[i] = int(((navdat[i].z-nad_loc[i].z)*2/speedlight)/binsize)
-            navdatz[i] = navdat[i].z
-            nadlocz[i] = nad_loc[i].z
 
-        print(navdatz[0] - nadlocz[0])
-        plt.subplot(2,1,1)
-        plt.plot(navdatz)
-        plt.subplot(2,1,2)
-        plt.plot(nadlocz)
-        plt.show()   
+        # plt.subplot(2,2,1)
+        # plt.title('PRI')
+        # plt.plot(navFile[:,10])
+        # plt.subplot(2,2,2)
+        # plt.title('RECEIVE_WINDOW_OPEINING_TIME')
+        # plt.plot(navFile[:,11])
+        # plt.subplot(2,2,3)
+        # plt.title('RECEIVE_WINDOW_POSITION_SHIFT')
+        # plt.plot(shift)
+        # plt.subplot(2,2,4)
+        # plt.title('nadir_bin')
+        # plt.plot(nadbin)
+        # plt.suptitle('0589902_001')
+        # plt.show()
+        # sys.exit()
 
-
-        plt.subplot(2,2,1)
-        plt.title('PRI')
-        plt.plot(navFile[:,10])
-        plt.subplot(2,2,2)
-        plt.title('RECEIVE_WINDOW_OPEINING_TIME')
-        plt.plot(navFile[:,11])
-        plt.subplot(2,2,3)
-        plt.title('RECEIVE_WINDOW_POSITION_SHIFT')
-        plt.plot(shift)
-        plt.subplot(2,2,4)
-        plt.title('nadir_bin')
-        plt.plot(nadbin)
-        plt.suptitle('0589902_001')
-        plt.show()
-        sys.exit()
         surf = nadbin
 
-    elif surf == 'fret':
+    elif surfType == 'fret':
         '''       
         criteria for surface echo - indicator is Pt * dPt-1/dt, 
         where P is the signal energy applied on each grame sample (t).
         Indicator weights energy of a sample by the derivative preceding it
         '''
 
-        gradient = np.gradient(imarray, axis = 0)                                                                           # find gradient of each trace in RGRAM
+        gradient = np.gradient(pow, axis = 0)                                                                           # find gradient of each trace in RGRAM
 
-        C[100:r,:] = imarray[100:r,:]*gradient[99:r-1,:]                                                                    # vectorized criteria calculation
+        C[100:r,:] = pow[100:r,:]*gradient[99:r-1,:]                                                                    # vectorized criteria calculation
         
         C_max_ind = np.argmax(C, axis = 0)	                                                                                # find indices of max critera seletor for each column
 
         surf = C_max_ind
     
-    elif surf == 'max':
+    elif surfType == 'max':
         print('Code not set up to handle max power return as of yet - BT')
         sys.exit()
         
     # rescale rgram for visualization to plot surfPick
-    maxAmp = np.argmax(imarray, axis = 0)                                                                                   # find max power (or amplitude) in each trace to compare with fret algorithm
-    dB = 10 * np.log10(imarray / np.mean(imarray[:50,:]))                                                                       # scale image array by max pixel to create jpg output with fret index
-    imarrayScale = ((dB / np.amax(dB)) * 255)
-    imarrayScale[ np.where(imarrayScale > 50) ] = 255
-
+    maxPow = np.argmax(pow, axis = 0)                                                                                   # find max power (or amplitude) in each trace to compare with fret algorithm
+    noise_floor = np.mean(pow[:50,:])                                                                                       # define a noise floor from average power of flattened first 50 rows
+    dB = 10 * np.log10(pow / noise_floor)                                                                                   # scale image array by max pixel to create jpg output with fret index
+    maxdB = np.amax(dB, axis = 0)
+    imarrayScale = dB / maxdB * 255
+    imarrayScale[np.where(imarrayScale < 0)] = 0.
+    imarrayScale[np.where(imarrayScale > 255)] = 255.
+    imarrayScale = np.abs(imarrayScale - 255)
 
     surfIndex = np.zeros((r,c,3), 'uint8')	                                                                                # create empty surf index and power arrays
     surfPow = np.empty((c,1))
 
-
     surfIndex[:,:,0] = surfIndex[:,:,1] = surfIndex[:,:,2] = imarrayScale[:,:]                                              # create surf index image - show scaled radargram as base
     
-    surfIndex[maxAmp, np.arange(c),0:2] = 0                                                                                 # indicate max power along track as red
-    surfIndex[maxAmp, np.arange(c),0] = 255  
+    surfIndex[maxPow, np.arange(c),0:2] = 0                                                                                 # indicate max power along track as red
+    surfIndex[maxPow, np.arange(c),0] = 255  
 
     surfIndex[surf, np.arange(c),0] = surfIndex[surf, np.arange(c),1] = 255                                                 # make index given by fret algorithm yellow
     surfIndex[surf, np.arange(c),2] = 0
     
-    surfAmp = imarray[surf, np.arange(c)]                                                                                   # record power in dB
+    surfAmp = np.reshape(imarray[surf, np.arange(c)], (c,1))                                                                # record power in dB
     surfPow = 20 * (np.reshape((np.log10(surfAmp)),(c,1)))
 
-    if navFile.shape[1] == 10:                                                                                              # append surf pow values to geom.tab file. this should be the 11th column
-        navFile = np.append(navFile, surfPow, 1)
+    if navFile.shape[1] == 13:                                                                                              # append surf pow values to geom.tab file. this should be the 11th column
+        navFile = np.append(navFile, surfAmp, 1)
 
     else:                                                                                                                   # if surfPow with specified surf has already been run and it is being re-run, overwrite 6th column with new pow values
-        navFile[:,11] = surfPow[:,0]
-        
-    np.savetxt(out_path + 'geom/' + fileName + '_geom2.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s')
-    np.savetxt(out_path + '/fret/' + fileName + '_surf_pow.txt', surfPow, delimiter=',', newline = '\n', comments = '', header = 'PDB', fmt='%.8f')
+        navFile[:,14] = surfAmp[:,0]
+
+    np.savetxt(out_path + fileName + '_geom_' + surfType + '.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s')
+    np.savetxt(out_path + fileName + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', newline = '\n', comments = '', header = 'PDB', fmt='%.8f')
 
     try:
         surfArray = Image.fromarray(surfIndex[:,::32], 'RGB')                                                               # downsample by taking every 32nd trace for output fret image
-        scipy.misc.imsave(data_path + 'out/fret/' + fileName + '_' + surf + '.jpg', surfArray)
+        scipy.misc.imsave(out_path + fileName + '_' + surfType + '.png', surfArray)
     except Exception as err:
         print(err)
 
     t1 = time.time()                                                                                                        # end time
-    print('--------------------------------')
     print('Total Runtime: ' + str(round((t1 - t0),4)) + ' seconds')
     print('--------------------------------')
     return
@@ -151,9 +142,9 @@ def main(rgramFile, surf = 'nadir'):
 if __name__ == '__main__':
     
     # get correct data paths if depending on current OS
-    mars_path = '/MARS/'
-    in_path = '/MARS/orig/supl/SHARAD/EDR/hebrus_valles_sn/'
-    out_path = '/MARS/targ/xtra/SHARAD/surfPow/hebrus_valles_sn/'
+    mars_path = '/MARS'
+    in_path = mars_path + '/orig/supl/SHARAD/EDR/hebrus_valles_sn/'
+    out_path = mars_path + '/targ/xtra/SHARAD/surfPow/hebrus_valles_sn/'
     if os.getcwd().split('/')[1] == 'media':
         mars_path = '/media/anomalocaris/Swaps' + mars_path
         in_path = '/media/anomalocaris/Swaps' + in_path
@@ -163,9 +154,9 @@ if __name__ == '__main__':
         in_path = '/mnt/d' + in_path
         out_path = '/mnt/d' + out_path
     elif os.getcwd().split('/')[1] == 'disk':
-        mars_path = '/disk/qnap-2/' + mars_path
-        in_path = '/disk/qnap-2/' + in_path
-        out_path = '/disk/qnap-2/' + out_path
+        mars_path = '/disk/qnap-2' + mars_path
+        in_path = '/disk/qnap-2' + in_path
+        out_path = '/disk/qnap-2' + out_path
     else:
         print('Data path not found')
         sys.exit()
@@ -175,16 +166,15 @@ if __name__ == '__main__':
     rgramName = fileName.split('_')[0] + fileName.split('_')[1]                                                             # SHARAD rgram obs. #
     navPath = in_path + 'processed/data/geom/' + fileName + '_geom.csv'                                                     # path to nav file for obs.  
     rgramFile = in_path + 'processed/data/rgram/amp/' + rgramFile                                                           # attach input data path to beginning of rgram file name
-    surf = 'nadir'                                                                                                          # define the desired surface pick = [fret,narid,max]
+    surfType = 'fret'                                                                                                           # define the desired surface pick = [fret,narid,max]
 
     
     # check if surfPow has already been determined for desired obs. - if it hasn't run obs.
     if (not os.path.isfile(out_path + fileName \
-         + '_geom_' + surf + 'Pow.csv')):
-        print('\nExtracting surface power for observation: ' + fileName + '\n')
-        main(rgramFile, surf = surf)
+         + '_geom_' + surfType + 'Pow.csv')):
+        main(rgramFile, surfType = surfType)
     else:
-        print('\nSurface power extraction [' + surf + '] of observation' + rgramName \
+        print('\nSurface power extraction [' + surfType + '] of observation' + rgramName \
             + ' already completed! Moving to next line!')
 
         
