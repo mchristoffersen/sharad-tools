@@ -1,12 +1,12 @@
 # import necessary libraries
-# from nadir import *
+from nadir import *
 import os,sys
 from PIL import Image
 import math
 import numpy as np
 import scipy.misc
 import time
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 def main(rgramFile, surfType = 'nadir'):
     '''
@@ -58,21 +58,21 @@ def main(rgramFile, surfType = 'nadir'):
             nadbin[i] = int(((navdat[i].z-nad_loc[i].z)*2/speedlight)/binsize) - shift[i]
             nadbin2[i] = int(((navdat[i].z-nad_loc[i].z)*2/speedlight)/binsize)
 
-        # plt.subplot(2,2,1)
-        # plt.title('PRI')
-        # plt.plot(navFile[:,10])
-        # plt.subplot(2,2,2)
-        # plt.title('RECEIVE_WINDOW_OPEINING_TIME')
-        # plt.plot(navFile[:,11])
-        # plt.subplot(2,2,3)
-        # plt.title('RECEIVE_WINDOW_POSITION_SHIFT')
-        # plt.plot(shift)
-        # plt.subplot(2,2,4)
-        # plt.title('nadir_bin')
-        # plt.plot(nadbin)
-        # plt.suptitle('0589902_001')
-        # plt.show()
-        # sys.exit()
+        plt.subplot(2,2,1)
+        plt.title('PRI')
+        plt.plot(navFile[:,10])
+        plt.subplot(2,2,2)
+        plt.title('RECEIVE_WINDOW_OPEINING_TIME')
+        plt.plot(navFile[:,11])
+        plt.subplot(2,2,3)
+        plt.title('RECEIVE_WINDOW_POSITION_SHIFT')
+        plt.plot(shift)
+        plt.subplot(2,2,4)
+        plt.title('nadir_bin')
+        plt.plot(nadbin)
+        plt.suptitle('0589902_001')
+        plt.show()
+        sys.exit()
 
         surf = nadbin
 
@@ -143,8 +143,8 @@ if __name__ == '__main__':
     
     # get correct data paths if depending on current OS
     mars_path = '/MARS'
-    in_path = mars_path + '/orig/supl/SHARAD/EDR/bh_nh_bt/'
-    out_path = mars_path + '/targ/xtra/SHARAD/surfPow/bh_nh_bt/'
+    in_path = mars_path + '/orig/supl/SHARAD/EDR/hebrus_valles_sn/'
+    out_path = mars_path + '/targ/xtra/SHARAD/surfPow/hebrus_valles_sn/'
     if os.getcwd().split('/')[1] == 'media':
         mars_path = '/media/anomalocaris/Swaps' + mars_path
         in_path = '/media/anomalocaris/Swaps' + in_path
@@ -166,7 +166,7 @@ if __name__ == '__main__':
     rgramName = fileName.split('_')[0] + fileName.split('_')[1]                                                             # SHARAD rgram obs. #
     navPath = in_path + 'processed/data/geom/' + fileName + '_geom.csv'                                                     # path to nav file for obs.  
     rgramFile = in_path + 'processed/data/rgram/amp/' + rgramFile                                                           # attach input data path to beginning of rgram file name
-    surfType = 'fret'                                                                                                           # define the desired surface pick = [fret,narid,max]
+    surfType = 'nadir'                                                                                                           # define the desired surface pick = [fret,narid,max]
 
     
     # check if surfPow has already been determined for desired obs. - if it hasn't run obs.

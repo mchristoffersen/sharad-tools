@@ -206,8 +206,13 @@ def GetNav_geom(navfile):
   for i in navdat_raw:
     if(len(i) > 0):
       i = i.split(',')
-      navdat.append(Loc(float(i[2])*1000,float(i[3])*1000,float(i[4])*1000))    # y,x,z position vectors (converted to meters)
-
+      navdat.append(Loc(float(i[2])*1000,float(i[3])*1000,float(i[4])*1000))    # x,y,z position vectors (converted to meters)
+  
+  # testing
+  print('x_vec:  \t' + str(navdat[0].x))
+  print('y_vec:  \t' + str(navdat[0].y))
+  print('z_vec:  \t' + str(navdat[0].z))
+  
 
   # Transform x,y,z position vectors from 3D cartesian to geographic coords
   geocsys = '+proj=longlat +a=3396190 +b=3376200 +no_defs'
@@ -224,7 +229,10 @@ def GetNav_geom(navfile):
       aer_nadir[i].z = aer_nadir[i-1].z
 
     ## TESTING - NEED TO TRANSFORM TO CARTESIAN
-    print(navdat[i].x,navdat[i].y,navdat[i].z)
+    print('transform navdat...')
+    print('long:   \t' + str(navdat[0].x))
+    print('lat:    \t' + str(navdat[0].y))
+    print('rad [m]:\t' + str(navdat[0].z))
     sys.exit()
     print('\n')
     ##
