@@ -233,13 +233,15 @@ def GetNav_geom(navfile):
     print('long:   \t' + str(navdat[0].x))
     print('lat:    \t' + str(navdat[0].y))
     print('rad [m]:\t' + str(navdat[0].z))
-    sys.exit()
-    print('\n')
     ##
     ellip_spher_diff = ((3396190 - 3376200)*abs(np.cos((navdat[i].y)*(np.pi/180)))) + 190
     ellip_aer_diff = ellip_spher_diff - aer_nadir[i].z
     newr = navdat[i].z + ellip_aer_diff
     navdat[i].z = newr
+    print('corrected radius...')
+    print('rad [m]:\t' + str(navdat[0].z))
+    sys.exit()
+
 
   return navdat
 
