@@ -35,44 +35,52 @@ def main(rgramFile, surfType = 'nadir'):
 
     if surfType == 'nadir':
 
-        ## Grab megt and mega from /disk/qnap-2/MARS/code/modl/MRO/simc/test/temp/dem/
+        nadbin = np.zeros(c)
+
+        ## Grab megt and mega from /disk/qnap-2/MARS/code/modl/MRO/simc/test/temp/dem/ mola dem and aeroid
         dem_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/megt_128_merge.tif'
+        aer_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/mega_16.tif'
 
         binsize = .0375e-6
 
         speedlight = 3e8
 
-        navdat = GetNav_geom(navPath)
-
         shift = navFile[:,12]
+
+        navdat = GetNav_geom(navPath)
  
         topo = Dem(dem_path)
 
         nad_loc = navdat.toground(topo,navdat.csys)
 
-        nadbin = np.zeros(len(navdat))
-        nadbin2 = np.zeros(len(navdat))
+        aer = Dem(aer_path)
 
+        aer_nadir = navdat.toground(aer)
 
         for i in range(len(navdat)):
+            if(aer_nadir[i].z == aer.nd):
+                aer_nadir[i].z = aer_nadir[i-1].z
+            navdat[i].z = navdat[i].z - aer_nadir[i].z                                                           # MRO elevation above aeroid: subtract out spheroid and aeroid
+            if np.abs(nad_loc[i].z) > 1e10:
+                nad_loc[i].z = nad_loc[i-1].z
             nadbin[i] = int(((navdat[i].z-nad_loc[i].z)*2/speedlight)/binsize) - shift[i]
-            nadbin2[i] = int(((navdat[i].z-nad_loc[i].z)*2/speedlight)/binsize)
+            nadbin[i] = nadbin[i] % 3600
 
-        plt.subplot(2,2,1)
-        plt.title('PRI')
-        plt.plot(navFile[:,10])
-        plt.subplot(2,2,2)
-        plt.title('RECEIVE_WINDOW_OPEINING_TIME')
-        plt.plot(navFile[:,11])
-        plt.subplot(2,2,3)
-        plt.title('RECEIVE_WINDOW_POSITION_SHIFT')
-        plt.plot(shift)
-        plt.subplot(2,2,4)
-        plt.title('nadir_bin')
-        plt.plot(nadbin)
-        plt.suptitle('0589902_001')
-        plt.show()
-        sys.exit()
+
+
+        # plt.subplot(2,2,1)
+        # plt.title('PRI')
+        # plt.plot(navFile[:,10])
+        # plt.subplot(2,2,2)
+        # plt.title('RECEIVE_WINDOW_OPEINING_TIME')
+        # plt.plot(navFile[:,11])
+        # plt.subplot(2,2,3)
+        # plt.title('RECEIVE_WINDOW_POSITION_SHIFT')
+        # plt.plot(shift)
+        # plt.subplot(2,2,4)
+        # plt.title('nadir_bin')
+        # plt.plot(nadbin)
+        # plt.show()
 
         surf = nadbin
 
@@ -103,7 +111,7 @@ def main(rgramFile, surfType = 'nadir'):
     imarrayScale = dB / maxdB * 255
     imarrayScale[np.where(imarrayScale < 0)] = 0.
     imarrayScale[np.where(imarrayScale > 255)] = 255.
-    imarrayScale = np.abs(imarrayScale - 255)
+    # imarrayScale = np.abs(imarrayScale - 255)                                                                             # reverse color scheme black on white
 
     surfIndex = np.zeros((r,c,3), 'uint8')	                                                                                # create empty surf index and power arrays
     surfPow = np.empty((c,1))
@@ -112,6 +120,8 @@ def main(rgramFile, surfType = 'nadir'):
     
     surfIndex[maxPow, np.arange(c),0:2] = 0                                                                                 # indicate max power along track as red
     surfIndex[maxPow, np.arange(c),0] = 255  
+
+    surf = surf.astype(int)
 
     surfIndex[surf, np.arange(c),0] = surfIndex[surf, np.arange(c),1] = 255                                                 # make index given by fret algorithm yellow
     surfIndex[surf, np.arange(c),2] = 0
@@ -167,8 +177,7 @@ if __name__ == '__main__':
     navPath = in_path + 'processed/data/geom/' + fileName + '_geom.csv'                                                     # path to nav file for obs.  
     rgramFile = in_path + 'processed/data/rgram/amp/' + rgramFile                                                           # attach input data path to beginning of rgram file name
     surfType = 'nadir'                                                                                                           # define the desired surface pick = [fret,narid,max]
-
-    
+  
     # check if surfPow has already been determined for desired obs. - if it hasn't run obs.
     if (not os.path.isfile(out_path + fileName \
          + '_geom_' + surfType + 'Pow.csv')):
