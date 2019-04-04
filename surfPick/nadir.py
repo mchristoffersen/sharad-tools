@@ -208,56 +208,9 @@ def GetNav_geom(navfile):
       i = i.split(',')
       navdat.append(Loc(float(i[2])*1000,float(i[3])*1000,float(i[4])*1000))    # x,y,z position vectors (converted to meters)
   
-  # testing
-  # print('x_vec:  \t' + str(navdat[0].x))
-  # print('y_vec:  \t' + str(navdat[0].y))
-  # print('z_vec:  \t' + str(navdat[0].z))
-
-  # print(np.sqrt((navdat[0].x)**2 + (navdat[0].y)**2 + (navdat[0].z)**2))
-  
-
   # Transform x,y,z position vectors from 3D cartesian to geographic coords
   geocsys = '+proj=longlat +a=3396000 +b=3396000 +no_defs'
   navdat.csys = '+proj=geocent +a=3396000 +b=3396000 +no_defs'
   navdat = navdat.transform(geocsys)                                            # spheroid referenced lat, long, rad [m]
   
-  
-  # # Adjust with areoid ... this relies on specific directory structure
-  # aer = Dem('../../modl/MRO/simc/test/temp/dem/mega_16.tif')
-
-  # aer_nadir = navdat.toground(aer)
-
-  # for i in range(len(navdat)):
-  #   if(aer_nadir[i].z == aer.nd):
-  #     aer_nadir[i].z = aer_nadir[i-1].z
-  #   navdat[i].z = navdat[i].z  - aer_nadir[i].z                                 # MRO elevation above aeroid: subtract out spheroid and aeroid (add 339600 to get radius from center of MARS to MRO)
-
-  
-
-    ## TESTING - NEED TO TRANSFORM TO CARTESIAN
-    # print('transform navdat...')
-    # print('long:   \t' + str(navdat[0].x))
-    # print('lat:    \t' + str(navdat[0].y))
-    # print('rad [m]:\t' + str(navdat[0].z))
-    ##
-    # ellip_spher_diff = ((3396190 - 3376200)*abs(np.cos((navdat[i].y)*(np.pi/180)))) + 190
-    # ellip_aer_diff = ellip_spher_diff - aer_nadir[i].z
-    # newr = navdat[i].z + ellip_aer_diff
-    # navdat[i].z = newr
-    # print('corrected radius...')
-    # print('rad [m]:\t' + str(navdat[0].z))
-    # sys.exit()
-
-
   return navdat
-
-
-####    ####    ####    ####
-
-
-
-'''
-need to get proj data for EDRs
-need to get reference datum for EDRs
-need to add z(radius) to EDR nav data
-'''
