@@ -18,7 +18,7 @@ def main(rgramFile, surfType = 'nadir'):
 
     author: Brandon S. Tober
     created: 30January2018
-    updated: 04APR19
+    updated: 24APR19
     '''
     t0 = time.time()                                                                                                        # start time
     print('--------------------------------')
@@ -34,7 +34,6 @@ def main(rgramFile, surfType = 'nadir'):
         binsize = .0375e-6
         speedlight = 3e8#299792458
         shift = navFile[:,12]                                                                                              # receive window opening time shift from EDR aux data
-        # shift = (shift - (2.4375e-6 / 37.5e-9)).astype(int)
 
         dem_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/megt_128_merge.tif'                                       # Grab megt and mega,  mola dem and aeroid 
         aer_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/mega_16.tif'
@@ -121,6 +120,10 @@ def main(rgramFile, surfType = 'nadir'):
     ampScale[np.where(ampScale > 255)] = 255.
     # ampScale = np.abs(ampScale - 255)                                                                                       # reverse color scheme black on white
 
+    print(np.median(np.abs(surf - maxPow)))
+    plt.plot(np.abs(surf - maxPow))
+    plt.show()
+
     imarray = np.zeros((r,c,3), 'uint8')                                                                                    # create empty surf index and power arrays
     imarray[:,:,0] = imarray[:,:,1] = imarray[:,:,2] = ampScale[:,:]                                                        # create surf index image - show scaled radargram as base
 
@@ -144,9 +147,15 @@ def main(rgramFile, surfType = 'nadir'):
 if __name__ == '__main__':
     
     # get correct data paths if depending on current OS
+    # ---------------
+    # set to desired parameters
+    # ---------------
+    study_area = 'hebrus_valles_sn/'
+    surfType = 'nadir'                                                                                                      # define the desired surface pick = [fret,narid,max]
+    # ---------------
     mars_path = '/MARS'
-    in_path = mars_path + '/orig/supl/SHARAD/EDR/hebrus_valles_sn/'
-    out_path = mars_path + '/targ/xtra/SHARAD/surfPow/hebrus_valles_sn/'
+    in_path = mars_path + '/orig/supl/SHARAD/EDR/' + study_area
+    out_path = mars_path + '/targ/xtra/SHARAD/EDR/surfPow/' + study_area
     if os.getcwd().split('/')[1] == 'media':
         mars_path = '/media/anomalocaris/Swaps' + mars_path
         in_path = '/media/anomalocaris/Swaps' + in_path
@@ -168,7 +177,6 @@ if __name__ == '__main__':
     rgramName = fileName.split('_')[0] + fileName.split('_')[1]                                                             # SHARAD rgram obs. #
     navPath = in_path + 'processed/data/geom/' + fileName + '_geom.csv'                                                     # path to nav file for obs.  
     rgramFile = in_path + 'processed/data/rgram/amp/' + rgramFile                                                           # attach input data path to beginning of rgram file name
-    surfType = 'nadir'                                                                                                      # define the desired surface pick = [fret,narid,max]
   
     # check if surfPow has already been determined for desired obs. - if it hasn't run obs.
     if (not os.path.isfile(out_path + fileName \

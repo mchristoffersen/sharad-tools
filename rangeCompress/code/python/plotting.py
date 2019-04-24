@@ -36,7 +36,7 @@ def rgram(amp, path, runName, chirp, windowName, rel = True):
     rgram[np.where(rgram < 0)] = 0.
     rgram[np.where(rgram > 255)] = 255.
     # rgram = Image.fromarray(rgram)
-    imName = path + 'processed/browse/tiff/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc.tiff'
+    imName = path + 'browse/tiff/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc.tiff'
     try:
         # rgram.save(imName)
         plt.imsave(imName, rgram, cmap = 'gray')
