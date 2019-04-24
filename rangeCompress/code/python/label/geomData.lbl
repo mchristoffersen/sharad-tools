@@ -149,7 +149,10 @@ OBJECT = TABLE
 								
                                 An extra delay of 11.98 microseconds is also taken in to account, being
                                 subtracted from the time distance between start of transmission and the
-                                first sample of the received echo."
+                                first sample of the received echo.
+								
+								RECEIVE_WINDOW_OPENING_TIME with additional time delay is converted to time, in seconds.
+								Value must be divided by 0.0375 microseconds to get samples."
     END_OBJECT               = COLUMN
 	
 END_OBJECT = TABLE

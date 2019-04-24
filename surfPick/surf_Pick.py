@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 def main(rgramFile, surfType = 'nadir'):
     '''
-    script extracts power of surface return from radargram
+    function extracts power of surface return from radargram
     surface return can be defined as either first return (fret), nadir return, or 
     the max power return - return from which most radar energy penetrates surface (max)
     this will run through all .img radargrams in directory.
@@ -32,9 +32,9 @@ def main(rgramFile, surfType = 'nadir'):
 
         nadbin = np.zeros(c)                                                                                                # empty array to hold pixel location for each trace of nadir location
         binsize = .0375e-6
-        speedlight = 299792458
-        shift = navFile[:,12]                                                                                               # receive window opening time shift from EDR aux data
-
+        speedlight = 3e8#299792458
+        shift = navFile[:,12]                                                                                              # receive window opening time shift from EDR aux data
+        # shift = (shift - (2.4375e-6 / 37.5e-9)).astype(int)
 
         dem_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/megt_128_merge.tif'                                       # Grab megt and mega,  mola dem and aeroid 
         aer_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/mega_16.tif'
@@ -55,7 +55,7 @@ def main(rgramFile, surfType = 'nadir'):
             navdat[i].z = navdat[i].z - aer_nadir[i].z                                                                      # MRO elevation above aeroid: subtract out spheroid and aeroid
             if np.abs(nad_loc[i].z) > 1e10:                                                                                 # account for no data values from mola dem - assign previous value if n.d.
                 nad_loc[i].z = nad_loc[i-1].z
-            nadbin[i] = int(((navdat[i].z-nad_loc[i].z)*2/speedlight)/binsize) - shift[i]                                   # take MRO height above aeroid, subtract mola elevation, account for SHARAD receive window opening time shift and convert to pixels 
+            nadbin[i] = int((((navdat[i].z-nad_loc[i].z) * 2 / speedlight) - shift[i]) / binsize)                           # take MRO height above aeroid, subtract mola elevation, account for SHARAD receive window opening time shift and convert to pixels 
             nadbin[i] = nadbin[i] % 3600                                                                                    # take modulo in case pixel is location of nadir is greater then max rgram dimensions
 
         # plt.subplot(2,2,1)
@@ -86,7 +86,7 @@ def main(rgramFile, surfType = 'nadir'):
 
         C[100:r,:] = pow[100:r,:]*gradient[99:r-1,:]                                                                        # vectorized criteria calculation
         
-        C_max_ind = np.argmax(C, axis = 0)	                                                                                # find indices of max critera seletor for each column
+        C_max_ind = np.argmax(C, axis = 0)                                                                                  # find indices of max critera seletor for each column
 
         surf = C_max_ind
     
@@ -97,7 +97,6 @@ def main(rgramFile, surfType = 'nadir'):
 
     # record surface power in text file and geomdata file
     surf = surf.astype(int)
-    surfPow = np.empty((c,1))
     surfAmp = np.reshape(amp[surf, np.arange(c)], (c,1))                                                                    # record power in dB
     surfPow = 20 * (np.log10(surfAmp))
 
@@ -114,48 +113,26 @@ def main(rgramFile, surfType = 'nadir'):
 
 
     maxPow = np.argmax(pow, axis = 0)                                                                                       # find max power in each trace
-    # stack data to reduce for visualization
-    stackFac = 16
-    stackCols = int(np.ceil(amp.shape[1]/stackFac))
-    ampStack = np.zeros((3600, stackCols))   
-    surfStack = np.zeros(stackCols)
-    maxStack = np.zeros(stackCols)
-    for _i in range(stackCols - 1):
-        ampStack[:,_i] = np.mean(amp[:,stackFac*_i:stackFac*(_i+1)], axis = 1)
-        surfStack[_i] = np.mean(surf[stackFac*_i:stackFac*(_i+1)])
-        maxStack[_i] = np.mean(maxPow[stackFac*_i:stackFac*(_i+1)])
-    # account for traces left if number of traces is not divisible by stackFac
-    ampStack[:,-1] = np.mean(amp[:,stackFac*(_i+1):-1], axis = 1)
-    surfStack[-1] = np.mean(surf[stackFac*(_i+1):-1])
-    maxStack[-1] = np.mean(maxPow[stackFac*(_i+1):-1])
-    
-   
-    surfStack = surfStack.astype(int)
-    maxStack = maxStack.astype(int)
-
-
-    # rescale rgram for visualization to plot surfPick
-    powStack = np.power(ampStack,2)                                                                                         # convert amplitude radargram to power (squared amp)
-    noise_floor = np.mean(powStack[:50,:])                                                                                  # define a noise floor from average power of flattened first 50 rows
-    dB = 10 * np.log10(powStack / noise_floor)                                                                              # scale image array by max pixel to create jpg output with fret index
+    noise_floor = np.mean(pow[:50,:])                                                                                       # define a noise floor from average power of flattened first 50 rows
+    dB = 10 * np.log10(pow / noise_floor)                                                                                   # scale image array by max pixel to create jpg output with fret index
     maxdB = np.amax(dB, axis = 0)
     ampScale = dB / maxdB * 255
     ampScale[np.where(ampScale < 0)] = 0.
     ampScale[np.where(ampScale > 255)] = 255.
     # ampScale = np.abs(ampScale - 255)                                                                                       # reverse color scheme black on white
 
-    imarray = np.zeros((r,stackCols,3), 'uint8')	                                                                        # create empty surf index and power arrays
+    imarray = np.zeros((r,c,3), 'uint8')                                                                                    # create empty surf index and power arrays
     imarray[:,:,0] = imarray[:,:,1] = imarray[:,:,2] = ampScale[:,:]                                                        # create surf index image - show scaled radargram as base
 
-    imarray[maxStack, np.arange(stackCols),0:2] = 0                                                                         # indicate max power along track as red
-    imarray[maxStack, np.arange(stackCols),0] = 255  
+    imarray[maxPow, np.arange(c),0:2] = 0                                                                                   # indicate max power along track as red
+    imarray[maxPow, np.arange(c),0] = 255  
 
-    imarray[surfStack, np.arange(stackCols),0] = imarray[surfStack, np.arange(stackCols),1] = 255                           # make index given by fret algorithm yellow
-    imarray[surfStack, np.arange(stackCols),2] = 0
+    imarray[surf, np.arange(c),0] = imarray[surf, np.arange(c),1] = 255                                                     # make index given by fret algorithm yellow
+    imarray[surf, np.arange(c),2] = 0
 
     try:
-        im = Image.fromarray(imarray, 'RGB')                                                             
-        scipy.misc.imsave(out_path + fileName + '_' + surfType + '.png', im)
+        im = Image.fromarray(imarray[:,::32], 'RGB')                                                             
+        scipy.misc.imsave(out_path + fileName + '_' + surfType + 'shiftArb.png', im)
     except Exception as err:
         print(err)
 

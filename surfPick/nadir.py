@@ -2,7 +2,13 @@ from osgeo import gdal, osr
 from gdalconst import *
 import numpy as np
 import sys
+'''
+set of functions and classes for finding nadir location of SHARAD radargrams.
 
+authors: Michael Christoffersen & Brandon S. Tober
+created: 30January2018
+updated: 05APR19
+'''
 class Dem:
   # Holds an array of DEM data and relevant metadata
   def __init__(self,dem_path):

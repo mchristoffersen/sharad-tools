@@ -15,12 +15,10 @@ def rgram(amp, path, runName, chirp, windowName, rel = True):
     """
     # stack data to reduce for visualization
     stackFac = 16
-    stackCols = int(np.ceil(amp.shape[1]/stackFac))
+    stackCols = int(np.floor(amp.shape[1]/stackFac))
     ampStack = np.zeros((3600, stackCols))   
-    for _i in range(stackCols - 1):
+    for _i in range(stackCols):
         ampStack[:,_i] = np.mean(amp[:,stackFac*_i:stackFac*(_i+1)], axis = 1)
-    # account for traces left if number of traces is not divisible by stackFac
-    ampStack[:,-1] = np.mean(amp[:,stackFac*(_i+1):-1], axis = 1)
 
     pow = np.power(ampStack,2)                  # convert stacked amplitude to power
     noise_floor = np.mean(pow[:50,:])           # define a noise floor from average power of flattened first 50 rows
