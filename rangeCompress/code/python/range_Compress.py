@@ -18,22 +18,29 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     -----------
     This python function is used to pulse compress raw SHARAD EDRs to return chirp compressed science record. Output should be complex voltage.
     This code was adapted from Matthew Perry's @mr-perry FrankenRDR work, along with Michael Chrostoffersen's sharad-tools. Certain packages were directly updated from their work (ie. FrankenRDR-readLBL, readAnc, readAux). 
-    This code simply aims to pulse compress the raw data, without performing any other processing steps.
+    This code simply aims to range compress the raw data.
+    -----------
+    Outputs:
+    - raw-complex valued range compressed data
+    - range compressed amplitude data
+    - stacked range compressed amplitude data
+    - nav data
+    - stacked nav data
+    - stacked radargram from range compressed amplitude data
+    -----------
+    Example call:  
+    set desired parameters in __main__
 
+    *if running through files in a directly:
+        python range_Compress.py
+    
+    *elif using sys.argv[1] with list of file(s):
+        python range_Compress.py 'files'
+    -----------
     github: btobers
     Updated by: Brandon S. Tober
     Last Updated: 24APR2019
     -----------
-    Example call:
-
-    EDRName = '/media/anomalocaris/Swaps/Google_Drive/MARS/orig/edr_test/e_5050702_001_ss19_700_a_s.dat'
-    auxName =  '/media/anomalocaris/Swaps/Google_Drive/MARS/orig/edr_test/e_5050702_001_ss19_700_a_a.dat'
-    lblName =  '/media/anomalocaris/Swaps/Google_Drive/MARS/orig/edr_test/e_5050702_001_ss19_700_a.lbl'
-    chirp = 'calib'
-    stackFac = 8
-    beta = 0
-
-    main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac)
     """
     t0 = time.time()                                            # start time
     print('--------------------------------')
@@ -207,6 +214,9 @@ if __name__ == '__main__':
         sys.exit()
     chirp = 'calib'
     stackFac = 5            # stack factor - going with 5 to be safe and not incoherently stack - should be odd so center trace can be chosen for nav data
+    if (stackFac % 2) == 0:
+        print('Stacking factor should be odd-numbered')
+        sys.exit()
     beta = 0                # beta value for kaiser window [0 = rectangular, 5 	Similar to a Hamming, 6	Similar to a Hann, 8.6 	Similar to a Blackman]
     if beta == 0:
         windowName = 'unif'

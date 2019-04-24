@@ -135,13 +135,10 @@ OBJECT = TABLE
       NAME                   = RECEIVE_WINDOW_POSITION
       COLUMN_NUMBER          = 13
       DATA_TYPE              = IEEE_REAL
-      DESCRIPTION            = "RECEIVE_WINDOW_OPENING_TIME converted to time distance.
-	  
-                                RECEIVE_WINDOW_OPENING_TIME is the opening time of the 
-                                receiver, measured from the start of the transmission of the 
-                                pulse and expressed in units of the sampling interval of
-                                the analog-to-digital converter, which is
-                                0.0375 microseconds long. 
+      DESCRIPTION            = "Opening time of the receiver, measured from the start of 
+                                the transmission of the pulse and expressed in units of 
+                                the sampling interval of the analog-to-digital converter, 
+                                which is 0.0375 microseconds long. 
 								
                                 If the PRF is between 670.24 and 775.19 Hz,
                                 the PRI must be added to the RECEIVE_WINDOW_OPENING_TIME. The 
@@ -151,8 +148,8 @@ OBJECT = TABLE
                                 subtracted from the time distance between start of transmission and the
                                 first sample of the received echo.
 								
-								RECEIVE_WINDOW_OPENING_TIME with additional time delay is converted to time, in seconds.
-								Value must be divided by 0.0375 microseconds to get samples."
+                                RECEIVE_WINDOW_OPENING_TIME with additional time delay is converted to time, in seconds.
+                                Value must be divided by 0.0375 microseconds to get samples."
     END_OBJECT               = COLUMN
 	
 END_OBJECT = TABLE
