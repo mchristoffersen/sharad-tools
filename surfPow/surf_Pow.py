@@ -8,7 +8,7 @@ import scipy.misc
 import time
 import matplotlib.pyplot as plt
 
-def main(rgramFile, surfType = 'nadir'):
+def main(rgramPath, surfType = 'nadir'):
     '''
     function extracts power of surface return from radargram
     surface return can be defined as either first return (fret), nadir return, or 
@@ -22,18 +22,21 @@ def main(rgramFile, surfType = 'nadir'):
     '''
     t0 = time.time()                                                                                                        # start time
     print('--------------------------------')
+    fileName = rgramPath.split('/')[-1]
+    fileName = fileName.split('_')[0] + '_' + fileName.split('_')[1]
+    navPath = in_path + 'data/geom/' + fileName + '_geom.csv'
     print('Extracting surface power [' + surfType + '] for observation: ' + fileName)
-    navFile = np.genfromtxt(in_path + 'processed/data/geom/' + fileName + '_geom.csv', delimiter = ',', dtype = None)       # open geom nav file for rgram to append surface echo power to each trace                                                 
-    amp = np.load(rgramFile)
+    navFile = np.genfromtxt(navPath, delimiter = ',', dtype = None)                                                         # open geom nav file for rgram to append surface echo power to each trace                                                 
+    amp = np.load(rgramPath)
     pow = np.power(amp,2)                                                                                                   # convert amplitude radargram to power (squared amp)                                          
     (r,c) = amp.shape   
 
     if surfType == 'nadir':
-
+        print(r,c)
         nadbin = np.zeros(c)                                                                                                # empty array to hold pixel location for each trace of nadir location
         binsize = .0375e-6
         speedlight = 3e8#299792458
-        shift = navFile[:,12]                                                                                              # receive window opening time shift from EDR aux data
+        shift = navFile[:,12]                                                                                               # receive window opening time shift from EDR aux data
 
         dem_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/megt_128_merge.tif'                                       # Grab megt and mega,  mola dem and aeroid 
         aer_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/mega_16.tif'
@@ -47,6 +50,9 @@ def main(rgramFile, surfType = 'nadir'):
         aer = Dem(aer_path)
 
         aer_nadir = navdat.toground(aer)
+        print(len(navdat))
+        print(len(aer_nadir))
+        print(len(nad_loc))
 
         for i in range(len(navdat)):
             if(aer_nadir[i].z == aer.nd):
@@ -56,20 +62,6 @@ def main(rgramFile, surfType = 'nadir'):
                 nad_loc[i].z = nad_loc[i-1].z
             nadbin[i] = int((((navdat[i].z-nad_loc[i].z) * 2 / speedlight) - shift[i]) / binsize)                           # take MRO height above aeroid, subtract mola elevation, account for SHARAD receive window opening time shift and convert to pixels 
             nadbin[i] = nadbin[i] % 3600                                                                                    # take modulo in case pixel is location of nadir is greater then max rgram dimensions
-
-        # plt.subplot(2,2,1)
-        # plt.title('PRI')
-        # plt.plot(navFile[:,10])
-        # plt.subplot(2,2,2)
-        # plt.title('RECEIVE_WINDOW_OPEINING_TIME')
-        # plt.plot(navFile[:,11])
-        # plt.subplot(2,2,3)
-        # plt.title('RECEIVE_WINDOW_POSITION_SHIFT')
-        # plt.plot(shift)
-        # plt.subplot(2,2,4)
-        # plt.title('nadir_bin')
-        # plt.plot(nadbin)
-        # plt.show()
 
         surf = nadbin
 
@@ -120,9 +112,9 @@ def main(rgramFile, surfType = 'nadir'):
     ampScale[np.where(ampScale > 255)] = 255.
     # ampScale = np.abs(ampScale - 255)                                                                                       # reverse color scheme black on white
 
-    print(np.median(np.abs(surf - maxPow)))
-    plt.plot(np.abs(surf - maxPow))
-    plt.show()
+    # print(np.median(np.abs(surf - maxPow)))
+    # plt.plot(np.abs(surf - maxPow))
+    # plt.show()
 
     imarray = np.zeros((r,c,3), 'uint8')                                                                                    # create empty surf index and power arrays
     imarray[:,:,0] = imarray[:,:,1] = imarray[:,:,2] = ampScale[:,:]                                                        # create surf index image - show scaled radargram as base
@@ -135,7 +127,7 @@ def main(rgramFile, surfType = 'nadir'):
 
     try:
         im = Image.fromarray(imarray[:,::32], 'RGB')                                                             
-        scipy.misc.imsave(out_path + fileName + '_' + surfType + 'shiftArb.png', im)
+        scipy.misc.imsave(out_path + fileName + '_' + surfType + '.png', im)
     except Exception as err:
         print(err)
 
@@ -150,11 +142,11 @@ if __name__ == '__main__':
     # ---------------
     # set to desired parameters
     # ---------------
-    study_area = 'hebrus_valles_sn/'
+    study_area = 'edr_test/'
     surfType = 'nadir'                                                                                                      # define the desired surface pick = [fret,narid,max]
     # ---------------
     mars_path = '/MARS'
-    in_path = mars_path + '/orig/supl/SHARAD/EDR/' + study_area
+    in_path = mars_path + '/targ/xtra/SHARAD/EDR/rangeCompress/' + study_area
     out_path = mars_path + '/targ/xtra/SHARAD/EDR/surfPow/' + study_area
     if os.getcwd().split('/')[1] == 'media':
         mars_path = '/media/anomalocaris/Swaps' + mars_path
@@ -172,18 +164,35 @@ if __name__ == '__main__':
         print('Data path not found')
         sys.exit()
    
-    rgramFile = sys.argv[1]                                                                                                 # input radargram - range compressed - amplitude output
-    fileName = rgramFile.split('_')[0] + '_' + rgramFile.split('_')[1]                                                      # base fileName
-    rgramName = fileName.split('_')[0] + fileName.split('_')[1]                                                             # SHARAD rgram obs. #
-    navPath = in_path + 'processed/data/geom/' + fileName + '_geom.csv'                                                     # path to nav file for obs.  
-    rgramFile = in_path + 'processed/data/rgram/amp/' + rgramFile                                                           # attach input data path to beginning of rgram file name
+    # ---------------
+    # set up for running on single obs, or list of obs with parallels using sys.argv[1]
+    # ---------------
+    rgramPath = sys.argv[1]                                                                                                 # input radargram - range compressed - amplitude output
+    fileName = rgramPath.split('_')[0] + '_' + rgramPath.split('_')[1]                                                      # base fileName
+    rgramPath = in_path + 'data/rgram/amp/' + rgramPath                                                           # attach input data path to beginning of rgram file name
   
     # check if surfPow has already been determined for desired obs. - if it hasn't run obs.
     if (not os.path.isfile(out_path + fileName \
          + '_geom_' + surfType + 'Pow.csv')):
-        main(rgramFile, surfType = surfType)
+        main(rgramPath, surfType = surfType)
     else:
-        print('\nSurface power extraction [' + surfType + '] of observation' + rgramName \
-            + ' already completed! Moving to next line!')
+        print('\nSurface power extraction [' + surfType + '] of observation' + fileName \
+            + ' already completed!')
+    
+    # ---------------
+    # set up for running on directory on obs at a time - this currently does not work - navdat gets appended to for nadir surface with each obs.
+    # ---------------
+    # for file in os.listdir(in_path + 'data/rgram/amp/'):
+    #     if file.endswith('slc_amp.npy'):
+    #         rgramPath = file
+    #         rgramPath = in_path + 'data/rgram/amp/' + rgramPath
+    #         fileName = rgramPath.split('/')[-1]
+    #         fileName = fileName.split('_')[0] + '_' + fileName.split('_')[1]
+
+    #         if (not os.path.isfile(out_path + fileName + '_' + surfType + '.png')):
+    #             main(rgramPath, surfType = surfType)
+    #         else :
+    #             print('\nSurface power extraction [' + surfType + '] of observation ' + fileName \
+    #         + ' already completed! Moving to next line!')
 
         
