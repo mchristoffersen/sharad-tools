@@ -31,34 +31,34 @@ def main(rgramPath, surfType = 'nadir'):
     pow = np.power(amp,2)                                                                                                   # convert amplitude radargram to power (squared amp)                                          
     (r,c) = amp.shape   
 
+    nadbin = np.zeros(c)                                                                                                # empty array to hold pixel location for each trace of nadir location
+    binsize = .0375e-6
+    speedlight = 3e8#299792458
+    shift = navFile[:,12]                                                                                               # receive window opening time shift from EDR aux data
+
+    dem_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/megt_128_merge.tif'                                       # Grab megt and mega,  mola dem and aeroid 
+    aer_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/mega_16.tif'
+
+    navdat = GetNav_geom(navPath)
+
+    topo = Dem(dem_path)
+
+    nad_loc = navdat.toground(topo,navdat.csys)
+
+    aer = Dem(aer_path)
+
+    aer_nadir = navdat.toground(aer)
+
+    for i in range(len(navdat)):
+        if(aer_nadir[i].z == aer.nd):
+            aer_nadir[i].z = aer_nadir[i-1].z
+        navdat[i].z = navdat[i].z - aer_nadir[i].z                                                                      # MRO elevation above aeroid: subtract out spheroid and aeroid
+        if np.abs(nad_loc[i].z) > 1e10:                                                                                 # account for no data values from mola dem - assign previous value if n.d.
+            nad_loc[i].z = nad_loc[i-1].z
+        nadbin[i] = int(((((navdat[i].z-nad_loc[i].z) * 2 / speedlight) - shift[i]) / binsize) + 55)                    # take MRO height above aeroid, subtract mola elevation, account for SHARAD receive window opening time shift and convert to pixels 
+        nadbin[i] = nadbin[i] % 3600                                                                                    # take modulo in case pixel is location of nadir is greater then max rgram dimensions
+    
     if surfType == 'nadir':
-        nadbin = np.zeros(c)                                                                                                # empty array to hold pixel location for each trace of nadir location
-        binsize = .0375e-6
-        speedlight = 3e8#299792458
-        shift = navFile[:,12]                                                                                               # receive window opening time shift from EDR aux data
-
-        dem_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/megt_128_merge.tif'                                       # Grab megt and mega,  mola dem and aeroid 
-        aer_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/mega_16.tif'
-
-        navdat = GetNav_geom(navPath)
- 
-        topo = Dem(dem_path)
-
-        nad_loc = navdat.toground(topo,navdat.csys)
-
-        aer = Dem(aer_path)
-
-        aer_nadir = navdat.toground(aer)
-
-        for i in range(len(navdat)):
-            if(aer_nadir[i].z == aer.nd):
-                aer_nadir[i].z = aer_nadir[i-1].z
-            navdat[i].z = navdat[i].z - aer_nadir[i].z                                                                      # MRO elevation above aeroid: subtract out spheroid and aeroid
-            if np.abs(nad_loc[i].z) > 1e10:                                                                                 # account for no data values from mola dem - assign previous value if n.d.
-                nad_loc[i].z = nad_loc[i-1].z
-            nadbin[i] = int(((((navdat[i].z-nad_loc[i].z) * 2 / speedlight) - shift[i]) / binsize) + 55)                    # take MRO height above aeroid, subtract mola elevation, account for SHARAD receive window opening time shift and convert to pixels 
-            nadbin[i] = nadbin[i] % 3600                                                                                    # take modulo in case pixel is location of nadir is greater then max rgram dimensions
-
         surf = nadbin
 
     elif surfType == 'fret':
@@ -72,10 +72,18 @@ def main(rgramPath, surfType = 'nadir'):
         gradient = np.gradient(pow, axis = 0)                                                                               # find gradient of each trace in RGRAM
 
         C[100:r,:] = pow[100:r,:]*gradient[99:r-1,:]                                                                        # vectorized criteria calculation
-        
-        C_max_ind = np.argmax(C, axis = 0)                                                                                  # find indices of max critera seletor for each column
+        print(nadbin.shape)
+        for i in range(10):
+            print(nadbin[i] - 50)
+            print(nadbin[i] + 50)
+        window = C[int(nadbin[:] - 50) : int(nadbin[:] + 50),:]
 
-        surf = C_max_ind
+        
+        C_max_window_ind = np.argmax(window, axis = 0)                                                                      # find indices of max critera seletor for each column
+
+        surf = C_max_window_ind
+
+        surf[:,:] = surf[:,:] + nadbin[:,:] - 50
     
     elif surfType == 'max':
         print('Code not set up to handle max power return as of yet - BT')
@@ -139,7 +147,7 @@ if __name__ == '__main__':
     # set to desired parameters
     # ---------------
     study_area = 'hebrus_valles_sn/'
-    surfType = 'nadir'                                                                                                      # define the desired surface pick = [fret,narid,max]
+    surfType = 'fret'                                                                                                      # define the desired surface pick = [fret,narid,max]
     # ---------------
     mars_path = '/MARS'
     in_path = mars_path + '/targ/xtra/SHARAD/EDR/rangeCompress/' + study_area
