@@ -32,7 +32,6 @@ def main(rgramPath, surfType = 'nadir'):
     (r,c) = amp.shape   
 
     if surfType == 'nadir':
-        print(r,c)
         nadbin = np.zeros(c)                                                                                                # empty array to hold pixel location for each trace of nadir location
         binsize = .0375e-6
         speedlight = 3e8#299792458
@@ -50,9 +49,6 @@ def main(rgramPath, surfType = 'nadir'):
         aer = Dem(aer_path)
 
         aer_nadir = navdat.toground(aer)
-        print(len(navdat))
-        print(len(aer_nadir))
-        print(len(nad_loc))
 
         for i in range(len(navdat)):
             if(aer_nadir[i].z == aer.nd):
@@ -60,7 +56,7 @@ def main(rgramPath, surfType = 'nadir'):
             navdat[i].z = navdat[i].z - aer_nadir[i].z                                                                      # MRO elevation above aeroid: subtract out spheroid and aeroid
             if np.abs(nad_loc[i].z) > 1e10:                                                                                 # account for no data values from mola dem - assign previous value if n.d.
                 nad_loc[i].z = nad_loc[i-1].z
-            nadbin[i] = int((((navdat[i].z-nad_loc[i].z) * 2 / speedlight) - shift[i]) / binsize)                           # take MRO height above aeroid, subtract mola elevation, account for SHARAD receive window opening time shift and convert to pixels 
+            nadbin[i] = int(((((navdat[i].z-nad_loc[i].z) * 2 / speedlight) - shift[i]) / binsize) + 55)                    # take MRO height above aeroid, subtract mola elevation, account for SHARAD receive window opening time shift and convert to pixels 
             nadbin[i] = nadbin[i] % 3600                                                                                    # take modulo in case pixel is location of nadir is greater then max rgram dimensions
 
         surf = nadbin
@@ -142,7 +138,7 @@ if __name__ == '__main__':
     # ---------------
     # set to desired parameters
     # ---------------
-    study_area = 'edr_test/'
+    study_area = 'hebrus_valles_sn/'
     surfType = 'nadir'                                                                                                      # define the desired surface pick = [fret,narid,max]
     # ---------------
     mars_path = '/MARS'
