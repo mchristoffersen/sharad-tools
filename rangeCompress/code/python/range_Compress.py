@@ -3,7 +3,6 @@ import numpy as np
 import scipy
 import matplotlib.pyplot as plt
 import glob, os, sys, time
-import pandas as pd
 from read_Lbl import lbl_Parse
 from read_Aux import aux_Parse
 from read_Anc import anc_Parse
