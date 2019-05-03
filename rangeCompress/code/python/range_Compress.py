@@ -15,24 +15,31 @@ from read_EDR import EDR_Parse, sci_Decompress
 def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     """
     -----------
-    This python script is used to pulse compress raw SHARAD EDRs to return chirp compressed science record. Output should be complex voltage.
+    This python function is used to pulse compress raw SHARAD EDRs to return chirp compressed science record. Output should be complex voltage.
     This code was adapted from Matthew Perry's @mr-perry FrankenRDR work, along with Michael Chrostoffersen's sharad-tools. Certain packages were directly updated from their work (ie. FrankenRDR-readLBL, readAnc, readAux). 
-    This code simply aims to pulse compress the raw data, without performing any other processing steps.
-
-    github: b-tober
-    Updated by: Brandon S. Tober
-    Last Updated: 11Jan2019
+    This code simply aims to range compress the raw data.
     -----------
-    Example call:
+    Outputs:
+    - raw-complex valued range compressed data
+    - range compressed amplitude data
+    - stacked range compressed amplitude data
+    - nav data
+    - stacked nav data
+    - stacked radargram from range compressed amplitude data
+    -----------
+    Example call:  
+    set desired parameters in __main__
 
-    EDRName = '/media/anomalocaris/Swaps/Google_Drive/MARS/orig/edr_test/e_5050702_001_ss19_700_a_s.dat'
-    auxName =  '/media/anomalocaris/Swaps/Google_Drive/MARS/orig/edr_test/e_5050702_001_ss19_700_a_a.dat'
-    lblName =  '/media/anomalocaris/Swaps/Google_Drive/MARS/orig/edr_test/e_5050702_001_ss19_700_a.lbl'
-    chirp = 'calib'
-    stackFac = 8
-    beta = 0
-
-    main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac)
+    *if running through files in a directly:
+        python range_Compress.py
+    
+    *elif using sys.argv[1] with list of file(s):
+        python range_Compress.py 'files'
+    -----------
+    github: btobers
+    Updated by: Brandon S. Tober
+    Last Updated: 24APR2019
+    -----------
     """
     t0 = time.time()                                            # start time
     print('--------------------------------')
@@ -48,10 +55,10 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     BitsPerSample = lblDic['INSTR_MODE_ID']['BitsPerSample']
 
     # toggle on to downsize for testing purposes
-    records = int(records / 1000)
+    # records = int(records / 100)
 
     # presumming is just for visualization purposes
-    stackCols = int(np.ceil(records/stackFac))
+    stackCols = int(np.floor(records/stackFac))
 
     # parse aux file into data frame
     auxDF = aux_Parse(auxName)
@@ -90,6 +97,10 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     # parse ancilliary data
     ancil = anc_Parse(ancil, records)
     print('Ancilliary data parsed')
+
+    # create index to hold values of PRI in seconds
+    pri = np.array([1428,1492,1290,2856,2984,2580])
+    pri = pri * 1e-6
     
     # decompress science data
     sci = sci_Decompress(sci, lblDic['COMPRESSION'], instrPresum, BitsPerSample, ancil['SDI_BIT_FIELD'][:])
@@ -107,14 +118,15 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
         ampStack = np.zeros((3600, stackCols))   
         window = np.pad(np.kaiser(2048,beta),(0,4096 - refChirpMF.shape[1]),'constant')        
 
-    geomData = np.zeros((records,10))
+    geomData = np.zeros((records,13))
+    geomData_stack = np.zeros((stackCols,13))
 
     #-------------------
     # setup complete; begin range compression
     #------------------- 
 
     if chirp =='calib':
-        refChirpMF_pad = np.pad(refChirpMF,[(0,0),(0,4096 - refChirpMF.shape[1])], 'constant')      # zeros pad reference chirp to length 2049 prior to range compression to account for missing sample in fourier spectra
+        refChirpMF_pad = np.pad(refChirpMF,[(0,0),(0,4096 - refChirpMF.shape[1])], 'constant')      # zeros pad reference chirp to length 4096 prior to range compression to account for missing sample in fourier spectra
         sciPad = np.pad(sci,[(0,4096 - sci.shape[0]),(0,0)],'constant')                             # zero-pad science data to length of 4096
 
         for _i in range(records):
@@ -142,54 +154,82 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     # convert complex-valued voltage return to magnitude
     ampOut = np.abs(EDRData)
 
-    # stack data
-    for _i in range(stackCols - 1):
-        ampStack[:,_i] = np.mean(ampOut[:,stackFac*_i:stackFac*(_i+1)], axis = 1)
-
-    # account for traces left if number of traces is not divisible by stackFac
-    ampStack[:,-1] = np.mean(ampOut[:,stackFac*(_i+1):-1], axis = 1)
-    print('Stacking complete')
-
     # create geom array with relavant data for each record
     for _i in range(records):
-        geomData[_i,0] = runName.split('_')[1] + runName.split('_')[2]
+        geomData[_i,0] = int(runName.split('_')[1] + runName.split('_')[2])
         geomData[_i,1] = int(_i)
-        geomData[_i,2] = auxDF['SUB_SC_PLANETOCENTRIC_LATITUDE'][_i]
-        geomData[_i,3] = auxDF['SUB_SC_EAST_LONGITUDE'][_i]
-        geomData[_i,4] = auxDF['SPACECRAFT_ALTITUDE'][_i]
-        geomData[_i,5] = auxDF['Z_MARS_SC_POSITION_VECTOR'][_i]
-        geomData[_i,6] = auxDF['MARS_SC_RADIAL_VELOCITY'][_i]
-        geomData[_i,7] = auxDF['MARS_SC_TANGENTIAL_VELOCITY'][_i]
-        geomData[_i,8] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
-        geomData[_i,9] = ancil['RECEIVE_WINDOW_OPENING_TIME'][_i] * .0375e-6
+        geomData[_i,2] = auxDF['X_MARS_SC_POSITION_VECTOR'][_i]
+        geomData[_i,3] = auxDF['Y_MARS_SC_POSITION_VECTOR'][_i]
+        geomData[_i,4] = auxDF['Z_MARS_SC_POSITION_VECTOR'][_i]
+        geomData[_i,5] = auxDF['SPACECRAFT_ALTITUDE'][_i]
+        geomData[_i,6] = auxDF['SUB_SC_EAST_LONGITUDE'][_i]
+        geomData[_i,7] = auxDF['SUB_SC_PLANETOCENTRIC_LATITUDE'][_i]
+        geomData[_i,8] = auxDF['SUB_SC_PLANETOGRAPHIC_LATITUDE'][_i]
+        geomData[_i,9] = auxDF['MARS_SC_RADIAL_VELOCITY'][_i]
+        geomData[_i,10] = auxDF['MARS_SC_TANGENTIAL_VELOCITY'][_i]
+        geomData[_i,11] = auxDF['SOLAR_ZENITH_ANGLE'][_i]
+        if (1/pri[(ancil['OST_LINE']['PULSE_REPETITION_INTERVAL'][_i]) - 1]) > 670.24 and (1/pri[(ancil['OST_LINE']['PULSE_REPETITION_INTERVAL'][_i]) - 1]) < 775.19:                               # time distance between start of transmission and the first sample of the received echo, as per http://pds-geosciences.wustl.edu/missions/mro/sharad.htm SHARAD EDR Data Product Software Interface Specification
+            geomData[_i,12] = ((pri[(ancil['OST_LINE']['PULSE_REPETITION_INTERVAL'][_i]) - 1]) + (ancil['RECEIVE_WINDOW_OPENING_TIME'][_i] * 37.5e-9) - 11.98e-6)
+        else:
+            geomData[_i,12] = ((ancil['RECEIVE_WINDOW_OPENING_TIME'][_i] * 37.5e-9) - 11.98e-6)
+
+    # stack data - amp radar data and geomdata - note: this cuts off remainder traces at the end if records not divisible by stackFac! 
+    # also takes center trace from subset of stacked traces for geomData
+    # currently set up for block stacking, may try and incorportate rolling average at some point
+    for _i in range(stackCols):
+        ampStack[:,_i] = np.mean(ampOut[:,stackFac*_i:stackFac*(_i+1)], axis = 1)
+        geomData_stack[_i,0] = int(runName.split('_')[1] + runName.split('_')[2])
+        geomData_stack[_i,1] = int(_i)
+        geomData_stack[_i,2:] = geomData[int((stackFac*_i) + (((stackFac+1) / 2) - 1)),2:]
+    print('Stacking complete')
+
 
     print('Saving all data')
     # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
-    rgram(ampOut, data_path, runName, chirp, windowName, rel = True)
-    np.savetxt(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n',fmt = '%s')
-    np.save(data_path + 'processed/data/rgram/comp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_raw.npy', EDRData)
-    np.save(data_path + 'processed/data/rgram/amp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_amp.npy', ampOut)
-    np.save(data_path + 'processed/data/rgram/stack/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_stack.npy', ampStack)
+    rgram(ampOut, out_path, runName, chirp, windowName, rel = True)
+    np.savetxt(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n', fmt ='%s')
+    np.savetxt(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom_stack.csv', geomData_stack, delimiter = ',', newline = '\n', fmt ='%s')
+    np.save(out_path + 'data/rgram/comp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_raw.npy', EDRData)
+    np.save(out_path + 'data/rgram/amp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_amp.npy', ampOut)
+    np.save(out_path + 'data/rgram/stack/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_stack.npy', ampStack)
 
-    t1 = time.time()    # end time
+    t1 = time.time()        # end time
     print('--------------------------------')
     print('Total Runtime: ' + str(round((t1 - t0),4)) + ' seconds')
     print('--------------------------------')
     return
 
 if __name__ == '__main__':
-    # get correct data path if depending on current OS
-    data_path = '/MARS/orig/supl/SHARAD/EDR/hebrus_valles_sn/'
+    # get correct data paths if depending on current OS
+    # ---------------
+    # set to desired parameters
+    # ---------------
+    study_area = 'bh_nh_bt/'  
+    chirp = 'calib'
+    beta = 0                # beta value for kaiser window [0 = rectangular, 5 	Similar to a Hamming, 6	Similar to a Hann, 8.6 	Similar to a Blackman]
+    stackFac = 5            # stack factor - going with 5 to be safe and not incoherently stack - should be odd so center trace can be chosen for nav data                                     
+    # ---------------
+    mars_path = '/MARS'
+    in_path = mars_path + '/orig/supl/SHARAD/EDR/' + study_area
+    out_path = mars_path + '/targ/xtra/SHARAD/EDR/rangeCompress/' + study_area
     if os.getcwd().split('/')[1] == 'media':
-        data_path = '/media/anomalocaris/Swaps' + data_path
+        mars_path = '/media/anomalocaris/Swaps' + mars_path
+        in_path = '/media/anomalocaris/Swaps' + in_path
+        out_path = '/media/anomalocaris/Swaps' + out_path
     elif os.getcwd().split('/')[1] == 'mnt':
-        data_path = '/mnt/d' + data_path
+        mars_path = '/mnt/d' + mars_path
+        in_path = '/mnt/d' + in_path
+        out_path = '/mnt/d' + out_path
+    elif os.getcwd().split('/')[1] == 'disk':
+        mars_path = '/disk/qnap-2' + mars_path
+        in_path = '/disk/qnap-2' + in_path
+        out_path = '/disk/qnap-2' + out_path
     else:
         print('Data path not found')
         sys.exit()
-    chirp = 'calib'
-    stackFac = 4            # stack factor - going with 4 to be safe and not incoherently stack
-    beta = 0                # beta value for kaiser window [0 = rectangular, 5 	Similar to a Hamming, 6	Similar to a Hann, 8.6 	Similar to a Blackman]
+    if (stackFac % 2) == 0:
+        print('Stacking factor should be odd-numbered')
+        sys.exit()
     if beta == 0:
         windowName = 'unif'
     elif beta == 5:
@@ -202,24 +242,24 @@ if __name__ == '__main__':
         print('Unknown window type')
         sys.exit()
 
-    # uncomment for testing single obs., enter lbl file as sys.argv[1]
-    # lbl_file = sys.argv[1]
-    # lblName = data_path + lbl_file
-    # runName = lbl_file.rstrip('_a.lbl')
-    # auxName = data_path + runName + '_a_a.dat'
-    # EDRName = data_path + runName + '_a_s.dat'
-    # main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
+    # uncomment for testing single obs., enter lbl file as sys.argv[1] or for parellelizing range compression with list of .lbl files
+    lbl_file = sys.argv[1]
+    lblName = in_path + lbl_file
+    runName = lbl_file.rstrip('_a.lbl')
+    auxName = in_path + runName + '_a_a.dat'
+    EDRName = in_path + runName + '_a_s.dat'
+    main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
 
-    for file in os.listdir(data_path):
-        if file.endswith('.lbl'):
-            lbl_file = file
-            lblName = data_path + lbl_file
-            runName = lbl_file.rstrip('_a.lbl')
-            auxName = data_path + runName + '_a_a.dat'
-            EDRName = data_path + runName + '_a_s.dat'
+    # for file in os.listdir(in_path):
+    #     if file.endswith('.lbl'):
+    #         lbl_file = file
+    #         lblName = in_path + lbl_file
+    #         runName = lbl_file.rstrip('_a.lbl')
+    #         auxName = in_path + runName + '_a_a.dat'
+    #         EDRName = in_path + runName + '_a_s.dat'
 
-            # if (not os.path.isfile(data_path + 'processed/data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv')):
-            if (not os.path.isfile(data_path + 'processed/browse/tiff/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc.tiff')):
-                main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
-            else :
-                print('\n' + runName + ' already processed!\n')
+    # #         # if (not os.path.isfile(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv')):
+    #         if (not os.path.isfile(out_path + 'browse/tiff/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc.tiff')):
+    #             main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
+    #         else :
+    #             print('\n' + runName + ' already processed!\n')

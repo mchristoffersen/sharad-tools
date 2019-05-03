@@ -1,5 +1,5 @@
-function [ t_anc ] = sciancparse( anc_file_name,length,bitmode,anc_output_name )
-%function [ t_anc ] = sciancparse( anc_file_name, length, bitmode, anc_output_name )
+function [ t_anc ] = anc_Parse( sci_file_name,length,width,anc_output_name )
+%function [ t_anc ] = sciancparse( anc_file_name, length, width, anc_output_name )
 %   Parse the ancillary data in SHARAD science files
 %   Michael Christoffersen
 %   April 2016
@@ -17,7 +17,7 @@ function [ t_anc ] = sciancparse( anc_file_name,length,bitmode,anc_output_name )
 
 bitwidth = 8*width;
 
-sciancdata = fopen(anc_file_name,'r','b');
+sciancdata = fopen(sci_file_name,'r','b');
 
 SCET_BLOCK_WHOLE = fread(sciancdata,[length,1],'uint32',width-4);
 
@@ -245,10 +245,10 @@ fseek(sciancdata,174,'bof');
 PHASE_COMPENSATION_STEP = fread(sciancdata, [length,1],'real*4',width-4);
 
 fseek(sciancdata,178,'bof');
-RECIEVE_WINDOW_OPENING_TIME = fread(sciancdata, [length,1],'real*4',width-4);
+RECIEVE_WINDOW_OPENING_TIME = fread(sciancdata, [length,1],'single',width-4);
 
 fseek(sciancdata,182,'bof');
-RECIEVE_WINDOW_POSITION = fread(sciancdata, [length,1],'real*4',width-4);
+RECIEVE_WINDOW_POSITION = fread(sciancdata, [length,1],'uint32',width-4);
 
 fclose(sciancdata);
 

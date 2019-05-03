@@ -21,39 +21,32 @@ OBJECT = TABLE
     END_OBJECT               = COLUMN
 
     OBJECT                   = COLUMN
-      NAME                   = SUB_SC_PLANETOCENTRIC_LATITUDE
+      NAME                   = X_MARS_SC_POSITION_VECTOR
       COLUMN_NUMBER          = 3
       DATA_TYPE              = IEEE_REAL
-      UNIT                   = DEGREES
-      DESCRIPTION            = "IAU 2000 planetocentric latitude of the sub
-                                spacecraft point that is the point on Mars
-                                that lies directly beneath the spacecraft."
-    END_OBJECT               = COLUMN
-	
-    OBJECT                   = COLUMN
-      NAME                   = SUB_SC_EAST_LONGITUDE
-      COLUMN_NUMBER          = 4
-      DATA_TYPE              = IEEE_REAL
-      UNIT                   = DEGREES
-      DESCRIPTION            = "IAU 2000 longitude of the sub spacecraft point
-                                that is the point on Mars that lies directly
-                                beneath the spacecraft."
-    END_OBJECT               = COLUMN
-	
-    OBJECT                   = COLUMN
-      NAME                   = SPACECRAFT_ALTITUDE
-      COLUMN_NUMBER          = 5
-      DATA_TYPE              = IEEE_REAL
       UNIT                   = KILOMETERS
-      DESCRIPTION            = "distance from the spacecraft to the IAU 2000
-                                Mars ellipsoid measured normal to the
-                                surface."
+      DESCRIPTION            = "X component of the position vector from Mars
+                                center to the spacecraft expressed in the
+                                planetocentric IAU 2000 reference frame, and
+                                corrected for light time and stellar
+                                aberration."
     END_OBJECT               = COLUMN
-	
 
     OBJECT                   = COLUMN
+      NAME                   = Y_MARS_SC_POSITION_VECTOR
+      COLUMN_NUMBER          = 4
+      DATA_TYPE              = IEEE_REAL
+      UNIT                   = KILOMETERS
+      DESCRIPTION            = "Y component of the position vector from Mars
+                                center to the spacecraft expressed in the
+                                planetocentric IAU 2000 reference frame, and
+                                corrected for light time and stellar
+                                aberration."
+    END_OBJECT               = COLUMN	
+	
+    OBJECT                   = COLUMN
       NAME                   = Z_MARS_SC_POSITION_VECTOR
-      COLUMN_NUMBER          = 6
+      COLUMN_NUMBER          = 5
       DATA_TYPE              = IEEE_REAL
       UNIT                   = KILOMETERS
       DESCRIPTION            = "Z component of the position vector from Mars
@@ -64,8 +57,49 @@ OBJECT = TABLE
     END_OBJECT               = COLUMN
 
     OBJECT                   = COLUMN
-      NAME                   = MARS_SC_RADIAL_VELOCITY
+      NAME                   = SPACECRAFT_ALTITUDE
+      COLUMN_NUMBER          = 6
+      DATA_TYPE              = IEEE_REAL
+      UNIT                   = KILOMETERS
+      DESCRIPTION            = "distance from the spacecraft to the IAU 2000
+                                Mars ellipsoid measured normal to the
+                                surface."
+    END_OBJECT               = COLUMN	
+	
+    OBJECT                   = COLUMN
+      NAME                   = SUB_SC_EAST_LONGITUDE
       COLUMN_NUMBER          = 7
+      DATA_TYPE              = IEEE_REAL
+      UNIT                   = DEGREES
+      DESCRIPTION            = "IAU 2000 longitude of the sub spacecraft point
+                                that is the point on Mars that lies directly
+                                beneath the spacecraft."
+    END_OBJECT               = COLUMN
+	
+    OBJECT                   = COLUMN
+      NAME                   = SUB_SC_PLANETOCENTRIC_LATITUDE
+      COLUMN_NUMBER          = 8
+      DATA_TYPE              = IEEE_REAL
+      UNIT                   = DEGREES
+      DESCRIPTION            = "IAU 2000 planetocentric latitude of the sub
+                                spacecraft point that is the point on Mars
+                                that lies directly beneath the spacecraft."
+    END_OBJECT               = COLUMN
+	
+    OBJECT                   = COLUMN
+      NAME                   = SUB_SC_PLANETOGRAPHIC_LATITUDE
+      COLUMN_NUMBER          = 9
+      DATA_TYPE              = IEEE_REAL
+      BYTES                  = 8
+      UNIT                   = DEGREES
+      DESCRIPTION            = "IAU 2000 planetographic latitude of the sub
+                                spacecraft point that is the point on Mars
+                                that lies directly beneath the spacecraft."
+    END_OBJECT               = COLUMN
+
+    OBJECT                   = COLUMN
+      NAME                   = MARS_SC_RADIAL_VELOCITY
+      COLUMN_NUMBER          = 10
       DATA_TYPE              = IEEE_REAL
       UNIT                   = "KILOMETERS/SECOND"
       DESCRIPTION            = "Radial component of the velocity vector of the
@@ -77,7 +111,7 @@ OBJECT = TABLE
 
     OBJECT                   = COLUMN
       NAME                   = MARS_SC_TANGENTIAL_VELOCITY
-      COLUMN_NUMBER          = 8
+      COLUMN_NUMBER          = 11
       DATA_TYPE              = IEEE_REAL
       UNIT                   = "KILOMETERS/SECOND"
       DESCRIPTION            = "Tangential component of the velocity vector of
@@ -89,7 +123,7 @@ OBJECT = TABLE
 	
     OBJECT                   = COLUMN
       NAME                   = SOLAR_ZENITH_ANGLE
-      COLUMN_NUMBER          = 9
+      COLUMN_NUMBER          = 12
       DATA_TYPE              = IEEE_REAL
       UNIT                   = DEGREES
       DESCRIPTION            = "Angle between the nadir at the sub-spacecraft
@@ -98,16 +132,24 @@ OBJECT = TABLE
     END_OBJECT               = COLUMN
 	
     OBJECT                   = COLUMN
-      NAME                   = RECEIVE_WINDOW_OPENING_TIME
-      COLUMN_NUMBER          = 10
+      NAME                   = RECEIVE_WINDOW_POSITION
+      COLUMN_NUMBER          = 13
       DATA_TYPE              = IEEE_REAL
-      UNIT                   = SECONDS
-      DESCRIPTION            = "Opening time of the receiver, measured from
-                                the start of the transmission of the pulse. 
-								Originally expressed in units of the sampling 
-								interval of the analog-to-digital converter, 
-								which is 0.0375 microseconds long. Converted 
-								to seconds by multiplying by .0375e-6 s"
+      DESCRIPTION            = "Opening time of the receiver, measured from the start of 
+                                the transmission of the pulse and expressed in units of 
+                                the sampling interval of the analog-to-digital converter, 
+                                which is 0.0375 microseconds long. 
+								
+                                If the PRF is between 670.24 and 775.19 Hz,
+                                the PRI must be added to the RECEIVE_WINDOW_OPENING_TIME. The 
+                                RECEIVE_WINDOW_OPENING_TIME must first be mulyiplied by 0.0375 microseconds.
+								
+                                An extra delay of 11.98 microseconds is also taken in to account, being
+                                subtracted from the time distance between start of transmission and the
+                                first sample of the received echo.
+								
+                                RECEIVE_WINDOW_OPENING_TIME with additional time delay is converted to time, in seconds.
+                                Value must be divided by 0.0375 microseconds to get samples."
     END_OBJECT               = COLUMN
 	
 END_OBJECT = TABLE
