@@ -162,7 +162,7 @@ if __name__ == '__main__':
     # ---------------
     # set to desired parameters
     # ---------------
-    study_area = 'hebrus_valles_sn/'
+    study_area = 'edr_test/'
     surfType = 'fret'                                                                                                       # define the desired surface pick = [fret,narid,max]
     window = 100                                                                                                            # define window for computing fret algorithm around window of nadir location
     # ---------------

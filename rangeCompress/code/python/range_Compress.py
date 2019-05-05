@@ -204,7 +204,7 @@ if __name__ == '__main__':
     # ---------------
     # set to desired parameters
     # ---------------
-    study_area = 'bh_nh_bt/'  
+    study_area = 'edr_test/'  
     chirp = 'calib'
     beta = 0                # beta value for kaiser window [0 = rectangular, 5 	Similar to a Hamming, 6	Similar to a Hann, 8.6 	Similar to a Blackman]
     stackFac = 5            # stack factor - going with 5 to be safe and not incoherently stack - should be odd so center trace can be chosen for nav data                                     
@@ -243,23 +243,23 @@ if __name__ == '__main__':
         sys.exit()
 
     # uncomment for testing single obs., enter lbl file as sys.argv[1] or for parellelizing range compression with list of .lbl files
-    lbl_file = sys.argv[1]
-    lblName = in_path + lbl_file
-    runName = lbl_file.rstrip('_a.lbl')
-    auxName = in_path + runName + '_a_a.dat'
-    EDRName = in_path + runName + '_a_s.dat'
-    main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
+    # lbl_file = sys.argv[1]
+    # lblName = in_path + lbl_file
+    # runName = lbl_file.rstrip('_a.lbl')
+    # auxName = in_path + runName + '_a_a.dat'
+    # EDRName = in_path + runName + '_a_s.dat'
+    # main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
 
-    # for file in os.listdir(in_path):
-    #     if file.endswith('.lbl'):
-    #         lbl_file = file
-    #         lblName = in_path + lbl_file
-    #         runName = lbl_file.rstrip('_a.lbl')
-    #         auxName = in_path + runName + '_a_a.dat'
-    #         EDRName = in_path + runName + '_a_s.dat'
+    for file in os.listdir(in_path):
+        if file.endswith('.lbl'):
+            lbl_file = file
+            lblName = in_path + lbl_file
+            runName = lbl_file.rstrip('_a.lbl')
+            auxName = in_path + runName + '_a_a.dat'
+            EDRName = in_path + runName + '_a_s.dat'
 
-    # #         # if (not os.path.isfile(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv')):
-    #         if (not os.path.isfile(out_path + 'browse/tiff/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc.tiff')):
-    #             main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
-    #         else :
-    #             print('\n' + runName + ' already processed!\n')
+    #         # if (not os.path.isfile(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv')):
+            if (not os.path.isfile(out_path + 'browse/tiff/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc.tiff')):
+                main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
+            else :
+                print('\n' + runName + ' already processed!\n')
