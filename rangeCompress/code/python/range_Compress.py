@@ -38,7 +38,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     -----------
     github: btobers
     Updated by: Brandon S. Tober
-    Last Updated: 24APR2019
+    Last Updated: 06MAY19
     -----------
     """
     t0 = time.time()                                            # start time
@@ -176,22 +176,24 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     # stack data - amp radar data and geomdata - note: this cuts off remainder traces at the end if records not divisible by stackFac! 
     # also takes center trace from subset of stacked traces for geomData
     # currently set up for block stacking, may try and incorportate rolling average at some point
-    for _i in range(stackCols):
-        ampStack[:,_i] = np.mean(ampOut[:,stackFac*_i:stackFac*(_i+1)], axis = 1)
-        geomData_stack[_i,0] = int(runName.split('_')[1] + runName.split('_')[2])
-        geomData_stack[_i,1] = int(_i)
-        geomData_stack[_i,2:] = geomData[int((stackFac*_i) + (((stackFac+1) / 2) - 1)),2:]
-    print('Stacking complete')
+    if stackFac != 0
+        for _i in range(stackCols):
+            ampStack[:,_i] = np.mean(ampOut[:,stackFac*_i:stackFac*(_i+1)], axis = 1)
+            geomData_stack[_i,0] = int(runName.split('_')[1] + runName.split('_')[2])
+            geomData_stack[_i,1] = int(_i)
+            geomData_stack[_i,2:] = geomData[int((stackFac*_i) + (((stackFac+1) / 2) - 1)),2:]
+        np.savetxt(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom_stack.csv', geomData_stack, delimiter = ',', newline = '\n', fmt ='%s')
+        np.save(out_path + 'data/rgram/stack/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_stack.npy', ampStack)
+        print('Stacking complete')
 
 
-    print('Saving all data')
-    # create radargrams from presummed data to ../../orig/supl/SHARAD/EDR/EDR_pc_brucevisualize output, also save data
+    # create radargram and save data
     rgram(ampOut, out_path, runName, chirp, windowName, rel = True)
     np.savetxt(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n', fmt ='%s')
-    np.savetxt(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom_stack.csv', geomData_stack, delimiter = ',', newline = '\n', fmt ='%s')
-    np.save(out_path + 'data/rgram/comp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_raw.npy', EDRData)
+    # np.save(out_path + 'data/rgram/comp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_raw.npy', EDRData)
     np.save(out_path + 'data/rgram/amp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_amp.npy', ampOut)
-    np.save(out_path + 'data/rgram/stack/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_stack.npy', ampStack)
+    print('Data output complete')
+    
 
     t1 = time.time()        # end time
     print('--------------------------------')
@@ -202,12 +204,12 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
 if __name__ == '__main__':
     # get correct data paths if depending on current OS
     # ---------------
-    # set to desired parameters
+    # INPUTS - set to desired parameters
     # ---------------
-    study_area = 'edr_test/'  
+    study_area = 'bh_nh_bt/'  
     chirp = 'calib'
     beta = 0                # beta value for kaiser window [0 = rectangular, 5 	Similar to a Hamming, 6	Similar to a Hann, 8.6 	Similar to a Blackman]
-    stackFac = 5            # stack factor - going with 5 to be safe and not incoherently stack - should be odd so center trace can be chosen for nav data                                     
+    stackFac = 0            # stack factor - going with 5 to be safe and not incoherently stack - should be odd so center trace can be chosen for nav data                                     
     # ---------------
     mars_path = '/MARS'
     in_path = mars_path + '/orig/supl/SHARAD/EDR/' + study_area
@@ -227,8 +229,8 @@ if __name__ == '__main__':
     else:
         print('Data path not found')
         sys.exit()
-    if (stackFac % 2) == 0:
-        print('Stacking factor should be odd-numbered')
+    if (stackFac != 0) and ((stackFac % 2) == 0):
+        print('If stacking, stackFac should be odd-numbered')
         sys.exit()
     if beta == 0:
         windowName = 'unif'
@@ -243,23 +245,25 @@ if __name__ == '__main__':
         sys.exit()
 
     # uncomment for testing single obs., enter lbl file as sys.argv[1] or for parellelizing range compression with list of .lbl files
-    # lbl_file = sys.argv[1]
-    # lblName = in_path + lbl_file
-    # runName = lbl_file.rstrip('_a.lbl')
-    # auxName = in_path + runName + '_a_a.dat'
-    # EDRName = in_path + runName + '_a_s.dat'
-    # main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
+    lbl_file = sys.argv[1]
+    lblName = in_path + lbl_file
+    runName = lbl_file.rstrip('_a.lbl')
+    auxName = in_path + runName + '_a_a.dat'
+    EDRName = in_path + runName + '_a_s.dat'
+    main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
 
-    for file in os.listdir(in_path):
-        if file.endswith('.lbl'):
-            lbl_file = file
-            lblName = in_path + lbl_file
-            runName = lbl_file.rstrip('_a.lbl')
-            auxName = in_path + runName + '_a_a.dat'
-            EDRName = in_path + runName + '_a_s.dat'
 
-    #         # if (not os.path.isfile(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv')):
-            if (not os.path.isfile(out_path + 'browse/tiff/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc.tiff')):
-                main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
-            else :
-                print('\n' + runName + ' already processed!\n')
+    # uncomment for processing directory of obs.
+    # for file in os.listdir(in_path):
+    #     if file.endswith('.lbl'):
+    #         lbl_file = file
+    #         lblName = in_path + lbl_file
+    #         runName = lbl_file.rstrip('_a.lbl')
+    #         auxName = in_path + runName + '_a_a.dat'
+    #         EDRName = in_path + runName + '_a_s.dat'
+
+    # #         # if (not os.path.isfile(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv')):
+    #         if (not os.path.isfile(out_path + 'browse/tiff/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc.tiff')):
+    #             main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
+    #         else :
+    #             print('\n' + runName + ' already processed!\n')
