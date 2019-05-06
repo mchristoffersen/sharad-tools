@@ -58,7 +58,8 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     # records = int(records / 100)
 
     # presumming is just for visualization purposes
-    stackCols = int(np.floor(records/stackFac))
+    if stackFac != 0:
+        stackCols = int(np.floor(records/stackFac))
 
     # parse aux file into data frame
     auxDF = aux_Parse(auxName)
@@ -110,16 +111,20 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     # set up empty data arrays to hold Output and kaiser window of specified beta value
     if chirp =='ideal' or chirp == 'synth' or chirp == 'UPB':
         EDRData = np.zeros((3600,records), complex)
-        ampStack = np.zeros((3600, stackCols))
         window = np.kaiser(3600, beta)
+        if stackFac != 0: 
+            ampStack = np.zeros((3600, stackCols))
 
     elif chirp == 'calib':
         EDRData = np.zeros((4096,records), complex)
-        ampStack = np.zeros((3600, stackCols))   
-        window = np.pad(np.kaiser(2048,beta),(0,4096 - refChirpMF.shape[1]),'constant')        
+        window = np.pad(np.kaiser(2048,beta),(0,4096 - refChirpMF.shape[1]),'constant') 
+        if stackFac != 0:
+            ampStack = np.zeros((3600, stackCols))   
+       
 
     geomData = np.zeros((records,13))
-    geomData_stack = np.zeros((stackCols,13))
+    if stackFac != 0:
+        geomData_stack = np.zeros((stackCols,13))
 
     #-------------------
     # setup complete; begin range compression
