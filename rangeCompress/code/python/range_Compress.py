@@ -176,7 +176,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     # stack data - amp radar data and geomdata - note: this cuts off remainder traces at the end if records not divisible by stackFac! 
     # also takes center trace from subset of stacked traces for geomData
     # currently set up for block stacking, may try and incorportate rolling average at some point
-    if stackFac != 0
+    if stackFac != 0:
         for _i in range(stackCols):
             ampStack[:,_i] = np.mean(ampOut[:,stackFac*_i:stackFac*(_i+1)], axis = 1)
             geomData_stack[_i,0] = int(runName.split('_')[1] + runName.split('_')[2])
@@ -185,6 +185,8 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
         np.savetxt(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom_stack.csv', geomData_stack, delimiter = ',', newline = '\n', fmt ='%s')
         np.save(out_path + 'data/rgram/stack/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_stack.npy', ampStack)
         print('Stacking complete')
+    else:
+        print('No stacking specified')
 
 
     # create radargram and save data
