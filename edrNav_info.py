@@ -40,7 +40,7 @@ for root, dirs, files in os.walk(in_path):
                     navDat = np.zeros((records,5))
 
                     navDat[:,0] = int(runName.split('_')[1] + runName.split('_')[2])
-                    navDat[:,1] = int(np.arange(records)).reshape(records,1)
+                    navDat[:,1] = int(np.arange(records))[:]
                     navDat[:,2] = auxDF['SUB_SC_PLANETOCENTRIC_LATITUDE'][:]
                     navDat[:,3] = auxDF['SUB_SC_EAST_LONGITUDE'][:]
                     navDat[:,4] = auxDF['SOLAR_ZENITH_ANGLE'][:]
