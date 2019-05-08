@@ -37,12 +37,13 @@ for root, dirs, files in os.walk(in_path):
                     auxDF = aux_Parse(aux_path)
 
                     # pre-allocate empty numpy array to hold nav data
-                    navDat = np.zeros((records,4))
+                    navDat = np.zeros((records,5))
 
                     navDat[:,0] = int(runName.split('_')[1] + runName.split('_')[2])
-                    navDat[:,1] = auxDF['SUB_SC_PLANETOCENTRIC_LATITUDE'][:]
-                    navDat[:,2] = auxDF['SUB_SC_EAST_LONGITUDE'][:]
-                    navDat[:,3] = auxDF['SOLAR_ZENITH_ANGLE'][:]
+                    navDat[:,1] = int(np.arange(records))
+                    navDat[:,2] = auxDF['SUB_SC_PLANETOCENTRIC_LATITUDE'][:]
+                    navDat[:,3] = auxDF['SUB_SC_EAST_LONGITUDE'][:]
+                    navDat[:,4] = auxDF['SOLAR_ZENITH_ANGLE'][:]
 
                     # save data
                     np.savetxt(out_path + runName.split('_')[1] + '_' + runName.split('_')[2] + '_nav.csv', navDat, delimiter = ',', newline = '\n', fmt ='%s')
