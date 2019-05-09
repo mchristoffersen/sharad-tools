@@ -18,7 +18,7 @@ def main(rgramPath, surfType = 'nadir'):
 
     author: Brandon S. Tober
     created: 30January2018
-    updated: 03MAY2019
+    updated: 09MAY19
     '''
     t0 = time.time()                                                                                                        # start time
     fileName = rgramPath.split('/')[-1]
@@ -107,15 +107,6 @@ def main(rgramPath, surfType = 'nadir'):
     else:                                                                                                                   # if surfPow with specified surf has already been run and it is being re-run, overwrite 6th column with new pow values
         navFile[:,14] = surfAmp[:,0]
 
-    if dataSet == 'amp':
-        np.savetxt(out_path + fileName + '_geom_' + surfType + '.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s')
-        np.savetxt(out_path + fileName + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', \
-        newline = '\n', fmt='%.8f')
-    elif dataSet == 'stack':
-        np.savetxt(out_path + fileName + '_geom_' + dataSet + '_' + surfType + '.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s')
-        np.savetxt(out_path + fileName + '_' + dataSet + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', \
-        newline = '\n', fmt='%.8f')
-
     maxPow = np.argmax(pow, axis = 0)                                                                                       # find max power in each trace
     noise_floor = np.mean(pow[:50,:])                                                                                       # define a noise floor from average power of flattened first 50 rows
     dB = 10 * np.log10(pow / noise_floor)                                                                                   # scale image array by max pixel to create jpg output with fret index
@@ -143,11 +134,17 @@ def main(rgramPath, surfType = 'nadir'):
 
     try:
         if dataSet == 'amp':
-            im = Image.fromarray(imarray[:,::32], 'RGB')            
+            im = Image.fromarray(imarray[:,::32], 'RGB')                        
             scipy.misc.imsave(out_path + fileName + '_' + surfType + '.png', im)
-        elif dataSet == 'stack':                                   
-            im = Image.fromarray(imarray[:,::5], 'RGB')
+            np.savetxt(out_path + fileName + '_' + surfType + '_geom.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s')
+            np.savetxt(out_path + fileName + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', \
+        newline = '\n', comments = '', header = 'PDB', fmt='%.8f')
+        elif dataSet == 'stack':
+            im = Image.fromarray(imarray[:,::4], 'RGB')                                   
             scipy.misc.imsave(out_path + fileName + '_' + dataSet + '_' + surfType + '.png', im)
+            np.savetxt(out_path + fileName + '_' + dataSet + '_' + surfType + '_geom.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s')
+            np.savetxt(out_path + fileName + '_' + dataSet + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', \
+        newline = '\n', comments = '', header = 'PDB', fmt='%.8f')
     except Exception as err:
         print(err)
 
@@ -164,7 +161,7 @@ if __name__ == '__main__':
     # ---------------
     study_area = 'edr_test/'
     surfType = 'fret'                                                                                                       # define the desired surface pick = [fret,narid,max]
-    window = 100                                                                                                            # define window for computing fret algorithm around window of nadir location
+    window = 20                                                                                                            # define window for computing fret algorithm around window of nadir location
     # ---------------
     mars_path = '/MARS'
     in_path = mars_path + '/targ/xtra/SHARAD/EDR/rangeCompress/' + study_area
@@ -189,12 +186,10 @@ if __name__ == '__main__':
     # set up for running on single obs, or list of obs with parallels using sys.argv[1]
     # ---------------
     rgramPath = sys.argv[1]                                                                                                 # input radargram - range compressed - amplitude output
-    if (rgramPath.split('_')[-1]).split('.')[0] == 'amp':
-        dataSet = 'amp'
-    elif (rgramPath.split('_')[-1]).split('.')[0] == 'stack':
-        dataSet = 'stack'
     fileName = rgramPath.split('_')[0] + '_' + rgramPath.split('_')[1]                                                      # base fileName
-    rgramPath = in_path + 'data/rgram/' + dataSet + '/' + rgramPath                                                           # attach input data path to beginning of rgram file name
+    dataSet = (rgramPath.split('_')[-1]).split('.')[0]                                                                      # data set to use (amp or stack)
+    rgramPath = in_path + 'data/rgram/' + dataSet + '/' + rgramPath                                                         # attach input data path to beginning of rgram file name
+  
     # check if surfPow has already been determined for desired obs. - if it hasn't run obs.
     if (not os.path.isfile(out_path + fileName \
          + '_geom_' + surfType + 'Pow.csv')):

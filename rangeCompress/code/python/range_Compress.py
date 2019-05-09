@@ -216,7 +216,7 @@ if __name__ == '__main__':
     study_area = 'bh_nh_bt/'  
     chirp = 'calib'
     beta = 0                # beta value for kaiser window [0 = rectangular, 5 	Similar to a Hamming, 6	Similar to a Hann, 8.6 	Similar to a Blackman]
-    stackFac = 0            # stack factor - going with 5 to be safe and not incoherently stack - should be odd so center trace can be chosen for nav data                                     
+    stackFac = 0            # stack factor - if nonzero, should be odd so center trace can be chosen for nav data                                     
     # ---------------
     mars_path = '/MARS'
     in_path = mars_path + '/orig/supl/SHARAD/EDR/' + study_area
