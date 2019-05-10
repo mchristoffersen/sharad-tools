@@ -18,7 +18,7 @@ def main(rgramPath, surfType = 'nadir'):
 
     author: Brandon S. Tober
     created: 30January2018
-    updated: 09MAY19
+    updated: 10MAY19
     '''
     t0 = time.time()                                                                                                        # start time
     fileName = rgramPath.split('/')[-1]
@@ -74,32 +74,29 @@ def main(rgramPath, surfType = 'nadir'):
         '''
         C = np.empty((r,c))	                                                                                                # create empty criteria array to localize surface echo for each trace
         
-        C_wind = np.zeros((2*window,c))
+        C_wind = np.zeros((window,c))
         
         gradient = np.gradient(pow, axis = 0)                                                                               # find gradient of each trace in RGRAM
 
         C[100:r,:] = pow[100:r,:]*gradient[99:r-1,:]                                                                        # vectorized criteria calculation
 
-
         for _i in range(c):
-            C_wind[:,_i] = C[nadbin[_i] - window : nadbin[_i] + window,_i]
+            C_wind[:,_i] = C[nadbin[_i] - (window / 2) : nadbin[_i] + (window / 2),_i]
         
         C_max_window_ind = np.argmax(C_wind, axis = 0)                                                                      # find indices of max critera seletor for each column
 
         surf = C_max_window_ind
 
-        surf[:] = surf[:] + nadbin[:] - window
+        surf[:] = surf[:] + nadbin[:] - (window / 2)
     
     elif surfType == 'max':
         print('Code not set up to handle max power return as of yet - BT')
         sys.exit()
 
-
     # record surface power in text file and geomdata file
     surf = surf.astype(int)
     surfAmp = np.reshape(amp[surf, np.arange(c)], (c,1))                                                                    # record power in dB
     surfPow = 20 * (np.log10(surfAmp))
-
 
     if navFile.shape[1] == 13:                                                                                              # append surf pow values to geom.tab file. this should be the 13th column
         navFile = np.append(navFile, surfAmp, 1)
@@ -116,10 +113,6 @@ def main(rgramPath, surfType = 'nadir'):
     ampScale[np.where(ampScale > 255)] = 255.
     # ampScale = np.abs(ampScale - 255)                                                                                       # reverse color scheme black on white
 
-    # print(np.median(np.abs(surf - maxPow)))
-    # plt.plot(np.abs(surf - maxPow))
-    # plt.show()
-
     imarray = np.zeros((r,c,3), 'uint8')                                                                                    # create empty surf index and power arrays
     imarray[:,:,0] = imarray[:,:,1] = imarray[:,:,2] = ampScale[:,:]                                                        # create surf index image - show scaled radargram as base
 
@@ -132,21 +125,23 @@ def main(rgramPath, surfType = 'nadir'):
     imarray[surf, np.arange(c),0] = imarray[surf, np.arange(c),1] = 255                                                     # make index given by fret algorithm yellow
     imarray[surf, np.arange(c),2] = 0
 
-    try:
-        if dataSet == 'amp':
+    if dataSet == 'amp':
+        np.savetxt(out_path + fileName + '_' + surfType + '_geom.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s')
+        np.savetxt(out_path + fileName + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', newline = '\n', comments = '', fmt='%.8f')
+        try:
             im = Image.fromarray(imarray[:,::32], 'RGB')                        
             scipy.misc.imsave(out_path + fileName + '_' + surfType + '.png', im)
-            np.savetxt(out_path + fileName + '_' + surfType + '_geom.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s')
-            np.savetxt(out_path + fileName + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', \
-        newline = '\n', comments = '', header = 'PDB', fmt='%.8f')
-        elif dataSet == 'stack':
-            im = Image.fromarray(imarray[:,::4], 'RGB')                                   
+        except Exception as err:
+            print(err)
+            
+    elif dataSet == 'stack':
+        np.savetxt(out_path + fileName + '_' + dataSet + '_' + surfType + '_geom.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s')
+        np.savetxt(out_path + fileName + '_' + dataSet + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', newline = '\n', comments = '', fmt='%.8f')
+        try:
+            im = Image.fromarray(imarray[:,::4], 'RGB')
             scipy.misc.imsave(out_path + fileName + '_' + dataSet + '_' + surfType + '.png', im)
-            np.savetxt(out_path + fileName + '_' + dataSet + '_' + surfType + '_geom.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s')
-            np.savetxt(out_path + fileName + '_' + dataSet + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', \
-        newline = '\n', comments = '', header = 'PDB', fmt='%.8f')
-    except Exception as err:
-        print(err)
+        except Exception as err:
+            print(err)
 
     t1 = time.time()                                                                                                        # end time
     print('Total Runtime: ' + str(round((t1 - t0),4)) + ' seconds')
@@ -159,9 +154,9 @@ if __name__ == '__main__':
     # ---------------
     # set to desired parameters
     # ---------------
-    study_area = 'edr_test/'
+    study_area = 'bh_nh_bt/'
     surfType = 'fret'                                                                                                       # define the desired surface pick = [fret,narid,max]
-    window = 20                                                                                                            # define window for computing fret algorithm around window of nadir location
+    window = 50                                                                                                             # define window for computing fret algorithm around window of nadir location - larger window may be used as nadir location does not currently line up well for all obs. larger window may account for this.
     # ---------------
     mars_path = '/MARS'
     in_path = mars_path + '/targ/xtra/SHARAD/EDR/rangeCompress/' + study_area
@@ -213,5 +208,3 @@ if __name__ == '__main__':
     #         else :
     #             print('\nSurface power extraction [' + surfType + '] of observation ' + fileName \
     #         + ' already completed! Moving to next line!')
-
-        
