@@ -8,7 +8,7 @@ import scipy.misc
 import time
 import matplotlib.pyplot as plt
 
-def main(track, surfType = 'nadir'):
+def main(rgramPath, surfType = 'nadir'):
     '''
     function extracts power of surface return from radargram
     surface return can be defined as either first return (fret), nadir return, or 
@@ -21,7 +21,7 @@ def main(track, surfType = 'nadir'):
     updated: 10MAY19
     '''
     t0 = time.time()                                                                                                        # start time
-    fileName = track.split('/')[-1]
+    fileName = rgramPath.split('/')[-1]
     fileName = fileName.split('_')[0] + '_' + fileName.split('_')[1]
 
     print('--------------------------------')
@@ -33,7 +33,7 @@ def main(track, surfType = 'nadir'):
         navPath = in_path + 'data/geom/' + fileName + '_geom_stack.csv'
 
     navFile = np.genfromtxt(navPath, delimiter = ',', dtype = None)                                                         # open geom nav file for rgram to append surface echo power to each trace                                                 
-    amp = np.load(track)
+    amp = np.load(rgramPath)
     pow = np.power(amp,2)                                                                                                   # convert amplitude radargram to power (squared amp)                                          
     (r,c) = amp.shape   
     nadbin = np.zeros(c)                                                                                                # empty array to hold pixel location for each trace of nadir location
@@ -180,26 +180,22 @@ if __name__ == '__main__':
     # ---------------
     # set up for running on single obs, or list of obs with parallels using sys.argv[1]
     # ---------------
-    rgramList = sys.argv[1]                                                                                                 # input radargram - range compressed - amplitude output
-    with open(rgramList) as f:
-        for track in f:    
-            track = track.rstrip()
-            fileName = track.split('_')[0] + '_' + track.split('_')[1]                                                      # base fileName
-            dataSet = (track.split('_')[-1]).split('.')[0]                                                                  # data set to use (amp or stack)
-            track = in_path + 'data/rgram/' + dataSet + '/' + track                                                         # attach input data path to beginning of rgram file name
+    rgramPath = sys.argv[1]                                                                                                 # input radargram - range compressed - amplitude output
+    fileName = rgramPath.split('_')[0] + '_' + rgramPath.split('_')[1]                                                      # base fileName
+    dataSet = (rgramPath.split('_')[-1]).split('.')[0]                                                                      # data set to use (amp or stack)
+    rgramPath = in_path + 'data/rgram/' + dataSet + '/' + rgramPath                                                         # attach input data path to beginning of rgram file name
   
-            # check if surfPow has already been determined for desired obs. - if it hasn't run obs.
-            if dataSet == 'amp':
-                if (not os.path.isfile(out_path + fileName + '_' + surfType + '_geom.csv')):
-                    main(track, surfType = surfType)
-                else:
-                    print('\nSurface power extraction [' + surfType + '] of observation' + fileName + ' already completed!')
-
-            elif dataSet == 'stack':
-                if (not os.path.isfile(out_path + fileName + '_' + dataSet + '_' + surfType + '_geom.csv')):
-                    main(track, surfType = surfType)
-                else:
-                    print('\nSurface power extraction [' + surfType + '] of observation' + fileName + ' already completed!')
+    # check if surfPow has already been determined for desired obs. - if it hasn't run obs.
+    if dataSet == 'amp':
+        if (not os.path.isfile(out_path + fileName + '_' + surfType + '_geom.csv')):
+            main(rgramPath, surfType = surfType)
+        else:
+            print('\nSurface power extraction [' + surfType + '] of observation' + fileName + ' already completed!')
+    elif dataSet == 'stack':
+        if (not os.path.isfile(out_path + fileName + '_' + dataSet + '_' + surfType + '_geom.csv')):
+            main(rgramPath, surfType = surfType)
+        else:
+            print('\nSurface power extraction [' + surfType + '] of observation' + fileName + ' already completed!')
     
     # ---------------
     # set up for running on directory on obs at a time - this currently does not work - navdat gets appended to for nadir surface with each obs.
