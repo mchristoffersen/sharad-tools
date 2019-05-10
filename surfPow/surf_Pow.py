@@ -186,9 +186,12 @@ if __name__ == '__main__':
     rgramPath = in_path + 'data/rgram/' + dataSet + '/' + rgramPath                                                         # attach input data path to beginning of rgram file name
   
     # check if surfPow has already been determined for desired obs. - if it hasn't run obs.
-    if (not os.path.isfile(out_path + fileName \
-         + '_geom_' + surfType + 'Pow.csv')):
-        main(rgramPath, surfType = surfType)
+    if dataSet == 'amp':
+        if (not os.path.isfile(out_path + fileName + '_' + surfType + '_geom.csv')):
+            main(rgramPath, surfType = surfType)
+    elif dataSet == 'stack':
+        if (not os.path.isfile(out_path + fileName + '_' + dataSet + '_' + surfType + '_geom.csv')):
+            main(rgramPath, surfType = surfType)
     else:
         print('\nSurface power extraction [' + surfType + '] of observation' + fileName \
             + ' already completed!')
