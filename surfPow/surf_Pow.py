@@ -81,7 +81,7 @@ def main(rgramPath, surfType = 'nadir'):
         C[100:r,:] = pow[100:r,:]*gradient[99:r-1,:]                                                                        # vectorized criteria calculation
 
         for _i in range(c):
-            C_wind[:,_i] = C[nadbin[_i] - (window / 2) : nadbin[_i] + (window / 2),_i]
+            C_wind[:,_i] = C[nadbin[_i] - int(window / 2) : nadbin[_i] + int(window / 2),_i]
         
         C_max_window_ind = np.argmax(C_wind, axis = 0)                                                                      # find indices of max critera seletor for each column
 
