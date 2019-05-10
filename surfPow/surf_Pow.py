@@ -183,9 +183,10 @@ if __name__ == '__main__':
     rgramList = sys.argv[1]                                                                                                 # input radargram - range compressed - amplitude output
     with open(rgramList) as f:
         for track in f:    
+            track = track.rstrip()
             fileName = track.split('_')[0] + '_' + track.split('_')[1]                                                      # base fileName
-            dataSet = (track.split('_')[-1]).split('.')[0]                                                                      # data set to use (amp or stack)
-            line = in_path + 'data/rgram/' + dataSet + '/' + track.rstrip()                                                         # attach input data path to beginning of rgram file name
+            dataSet = (track.split('_')[-1]).split('.')[0]                                                                  # data set to use (amp or stack)
+            track = in_path + 'data/rgram/' + dataSet + '/' + track                                                         # attach input data path to beginning of rgram file name
   
             # check if surfPow has already been determined for desired obs. - if it hasn't run obs.
             if dataSet == 'amp':
