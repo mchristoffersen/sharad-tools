@@ -274,10 +274,6 @@ if __name__ == '__main__':
     runName = (lbl_file.split('/')[-1]).rstrip('_a.lbl')
     auxName = in_path + runName + '_a_a.dat'
     EDRName = in_path + runName + '_a_s.dat'
-    print(lbl_file)
-    print(runName)
-    print(EDRName)
-    sys.exit()
     main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
 
     # uncomment for processing directory of obs.
