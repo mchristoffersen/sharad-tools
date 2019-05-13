@@ -260,18 +260,18 @@ if __name__ == '__main__':
         sys.exit()
 
     # uncomment for testing single obs., enter lbl file as sys.argv[1] or for parellelizing range compression with list of .lbl files
-    # lbl_file = sys.argv[1]
-    # lblName = in_path + lbl_file
-    # runName = lbl_file.rstrip('_a.lbl')
+    # lblName = sys.argv[1]
+    # lblName = in_path + lblName
+    # runName = lblName.rstrip('_a.lbl')
     # auxName = in_path + runName + '_a_a.dat'
     # EDRName = in_path + runName + '_a_s.dat'
     # main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
 
     # setup for searching SHARAD EDR PDS directory for files in list
     file = sys.argv[1]
-    lbl_file = list(glob.iglob('/disk/daedalus/sharaddownload/**/*' + file + '*.lbl', recursive = True))[0]
-    in_path = lbl_file.rstrip(lbl_file.split('/')[-1])
-    runName = (lbl_file.split('/')[-1]).rstrip('_a.lbl')
+    lblName = list(glob.iglob('/disk/daedalus/sharaddownload/**/*' + file + '*.lbl', recursive = True))[0]
+    in_path = lblName.rstrip(lblName.split('/')[-1])
+    runName = (lblName.split('/')[-1]).rstrip('_a.lbl')
     auxName = in_path + runName + '_a_a.dat'
     EDRName = in_path + runName + '_a_s.dat'
     main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
@@ -279,9 +279,9 @@ if __name__ == '__main__':
     # uncomment for processing directory of obs.
     # for file in os.listdir(in_path):
     #     if file.endswith('.lbl'):
-    #         lbl_file = file
-    #         lblName = in_path + lbl_file
-    #         runName = lbl_file.rstrip('_a.lbl')
+    #         lblName = file
+    #         lblName = in_path + lblName
+    #         runName = lblName.rstrip('_a.lbl')
     #         auxName = in_path + runName + '_a_a.dat'
     #         EDRName = in_path + runName + '_a_s.dat'
 
