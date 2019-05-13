@@ -275,6 +275,7 @@ if __name__ == '__main__':
     runName = (lbl_file.split('/')[-1]).rstrip('_a.lbl')
     print(runName)
     print(type(runName))
+    print(lbl_file.split('/')[:-1])
     auxName = lbl_file.split('/')[:-1] + runName + '_a_a.dat'
     EDRName = lbl_file.split('/')[:-1] + runName + '_a_s.dat'
     print(lbl_file)
