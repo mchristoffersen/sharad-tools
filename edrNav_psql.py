@@ -1,7 +1,8 @@
 import psycopg2
-import sys, os
+import sys, os, time
  
 def main():
+	t0 = time.time()
 	#Define our connection string
 	conn_string = "host='localhost' dbname='sharad' user='btober' password='secret'"
 
@@ -36,6 +37,11 @@ def main():
 	conn.commit()
 	cursor.close()
 	conn.close()
+
+	t1 = time.time()        # end time
+    print('--------------------------------')
+    print('Total Runtime: ' + str(round((t1 - t0),4)) + ' seconds')
+    print('--------------------------------')
 
 if __name__ == "__main__":
 	main()
