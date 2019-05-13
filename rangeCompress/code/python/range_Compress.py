@@ -238,8 +238,13 @@ if __name__ == '__main__':
         print('Data path not found')
         sys.exit()
 
+    # create necessary output directories
     try:
-        os.makedirs(out_path)
+        os.makedirs(out_path + 'data/rgram/amp/')
+        os.makedirs(out_path + 'data/rgram/stack/')
+        os.makedirs(out_path + 'data/rgram/comp/')
+        os.makedirs(out_path + 'data/geom/')
+        os.makedirs(out_path + 'browse/tiff/')
     except FileExistsError:
         pass
 
