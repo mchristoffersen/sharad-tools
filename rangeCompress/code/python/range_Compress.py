@@ -269,7 +269,7 @@ if __name__ == '__main__':
 
     # setup for searching SHARAD EDR PDS directory for files in list
     file = sys.argv[1]
-    lbl_file = list(glob.iglob('/disk/qnap-2/MARS/orig/supl/SHARAD/EDR/**/*' + file + '.lbl', recursive = True))
+    lbl_file = list(glob.iglob('/disk/daedalus/sharaddownload/**/*' + file + '.lbl', recursive = True))
     print(lbl_file)
     sys.exit()
     lblName = lbl_file
