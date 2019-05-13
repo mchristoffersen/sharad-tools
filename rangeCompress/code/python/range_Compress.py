@@ -270,7 +270,11 @@ if __name__ == '__main__':
     # setup for searching SHARAD EDR PDS directory for files in list
     file = sys.argv[1]
     lbl_file = str(list(glob.iglob('/disk/daedalus/sharaddownload/**/*' + file + '*.lbl', recursive = True))[0])
+    print(lbl_file)
+    print(type(lbl_file))
     runName = (lbl_file.split('/')[-1]).rstrip('_a.lbl')
+    print(runName)
+    print(type(runName))
     auxName = lbl_file.split('/')[:-1] + runName + '_a_a.dat'
     EDRName = lbl_file.split('/')[:-1] + runName + '_a_s.dat'
     print(lbl_file)
