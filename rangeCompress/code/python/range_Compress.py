@@ -238,8 +238,10 @@ if __name__ == '__main__':
         print('Data path not found')
         sys.exit()
 
-    if not os.path.exists(out_path):
+    try:
         os.makedirs(out_path)
+    except FileExistsError:
+        pass
 
     if (stackFac != 0) and ((stackFac % 2) == 0):
         print('If stacking, stackFac should be odd-numbered')
@@ -267,7 +269,9 @@ if __name__ == '__main__':
 
     # setup for searching SHARAD EDR PDS directory for files in list
     file = sys.argv[1]
-    lbl_file = list(glob.iglob('/disk/qnap-2/MARS/orig/supl/SHARAD/EDR/**/*' + file + '.lbl', recursive = True))[0]
+    lbl_file = list(glob.iglob('/disk/qnap-2/MARS/orig/supl/SHARAD/EDR/**/*' + file + '.lbl', recursive = True))
+    print(lbl_file)
+    sys.exit()
     lblName = lbl_file
     runName = lblName.rstrip('_a.lbl')
     auxName = runName + '_a_a.dat'
