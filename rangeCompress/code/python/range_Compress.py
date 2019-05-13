@@ -270,10 +270,13 @@ if __name__ == '__main__':
     # setup for searching SHARAD EDR PDS directory for files in list
     file = sys.argv[1]
     lbl_file = list(glob.iglob('/disk/daedalus/sharaddownload/**/*' + file + '*.lbl', recursive = True))[0]
-    lblName = lbl_file
-    runName = lblName.rstrip('_a.lbl')
-    auxName = runName + '_a_a.dat'
-    EDRName = runName + '_a_s.dat'
+    runName = (lbl_file.split('/')[-1]).rstrip('_a.lbl')
+    auxName = lbl_file.split('/')[:-1] + runName + '_a_a.dat'
+    EDRName = lbl_file.split('/')[:-1] + runName + '_a_s.dat'
+    print(lbl_file)
+    print(runName)
+    print(EDRName)
+    sys.exit()
     main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
 
     # uncomment for processing directory of obs.
