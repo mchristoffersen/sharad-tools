@@ -213,7 +213,7 @@ if __name__ == '__main__':
     # ---------------
     # INPUTS - set to desired parameters
     # ---------------
-    study_area = 'bh_nh_bt/'  
+    study_area = 'bh_sh_bt/'  
     chirp = 'calib'
     beta = 0                # beta value for kaiser window [0 = rectangular, 5 	Similar to a Hamming, 6	Similar to a Hann, 8.6 	Similar to a Blackman]
     stackFac = 0            # stack factor - if nonzero, should be odd so center trace can be chosen for nav data                                     
@@ -221,6 +221,8 @@ if __name__ == '__main__':
     mars_path = '/MARS'
     in_path = mars_path + '/orig/supl/SHARAD/EDR/' + study_area
     out_path = mars_path + '/targ/xtra/SHARAD/EDR/rangeCompress/' + study_area
+    if not os.path.exists(out_path):
+        os.makedirs(out_path)
     if os.getcwd().split('/')[1] == 'media':
         mars_path = '/media/anomalocaris/Swaps' + mars_path
         in_path = '/media/anomalocaris/Swaps' + in_path
@@ -252,13 +254,21 @@ if __name__ == '__main__':
         sys.exit()
 
     # uncomment for testing single obs., enter lbl file as sys.argv[1] or for parellelizing range compression with list of .lbl files
-    lbl_file = sys.argv[1]
-    lblName = in_path + lbl_file
-    runName = lbl_file.rstrip('_a.lbl')
-    auxName = in_path + runName + '_a_a.dat'
-    EDRName = in_path + runName + '_a_s.dat'
-    main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
+    # lbl_file = sys.argv[1]
+    # lblName = in_path + lbl_file
+    # runName = lbl_file.rstrip('_a.lbl')
+    # auxName = in_path + runName + '_a_a.dat'
+    # EDRName = in_path + runName + '_a_s.dat'
+    # main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
 
+    # setup for searching SHARAD EDR PDS directory for files in list
+    file = sys.argv[1]
+    lbl_file = list(glob.iglob('/disk/qnap-2/MARS/orig/supl/SHARAD/EDR/**/*' + file + '.lbl', recursive = True))[0]
+    lblName = lbl_file
+    runName = lblName.rstrip('_a.lbl')
+    auxName = runName + '_a_a.dat'
+    EDRName = runName + '_a_s.dat'
+    main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
 
     # uncomment for processing directory of obs.
     # for file in os.listdir(in_path):
