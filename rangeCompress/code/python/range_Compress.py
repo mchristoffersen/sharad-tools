@@ -221,8 +221,7 @@ if __name__ == '__main__':
     mars_path = '/MARS'
     in_path = mars_path + '/orig/supl/SHARAD/EDR/' + study_area
     out_path = mars_path + '/targ/xtra/SHARAD/EDR/rangeCompress/' + study_area
-    if not os.path.exists(out_path):
-        os.makedirs(out_path)
+
     if os.getcwd().split('/')[1] == 'media':
         mars_path = '/media/anomalocaris/Swaps' + mars_path
         in_path = '/media/anomalocaris/Swaps' + in_path
@@ -238,9 +237,14 @@ if __name__ == '__main__':
     else:
         print('Data path not found')
         sys.exit()
+
+    if not os.path.exists(out_path):
+        os.makedirs(out_path)
+
     if (stackFac != 0) and ((stackFac % 2) == 0):
         print('If stacking, stackFac should be odd-numbered')
         sys.exit()
+
     if beta == 0:
         windowName = 'unif'
     elif beta == 5:
