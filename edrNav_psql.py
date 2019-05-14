@@ -4,7 +4,7 @@ import sys, os, time
 def main():
 	t0 = time.time()
 	#Define our connection string
-	conn_string = "host='localhost' dbname='sharad' user='btober' password='secret'"
+	conn_string = "host='localhost' dbname='sharad' user='btober' password='password'"
 
 	# print the connection string we will use to connect
 	print("Connecting to database\n ->" + (conn_string))

@@ -47,22 +47,23 @@ def main(rgramPath, surfType = 'nadir'):
     navdat = GetNav_geom(navPath)                                                                                       # convert x,y,z MRO position vectors to spheroid referenced lat,long, radius
 
     topo = Dem(dem_path)                                                                                                # create DEM class from aeroid
-
-    nad_loc = navdat.toground(topo,navdat.csys)                                                                         # convert nav DEM to ground points, x,y,z
+    nad_loc = navdat.toground(topo,navdat.csys)                                                                         # convert nav DEM to ground points, x,y,z - spheroid referenced
 
     aer = Dem(aer_path)                                                                                                 # create DEM class from aeroid
-
-    aer_nadir = navdat.toground(aer)                                                                                    # convert aeroid DEM to ground points, x,y,z
+    aer_nadir = navdat.toground(aer,navdat.csys)                                                                        # convert aeroid DEM to ground points, x,y,z - spheroid referenced
 
     for i in range(len(navdat)):
         if(aer_nadir[i].z == aer.nd):
-            aer_nadir[i].z = aer_nadir[i-1].z
-        navdat[i].z = navdat[i].z - aer_nadir[i].z                                                                      # MRO elevation above aeroid: subtract out spheroid and aeroid
+            aer_nadir[i].z = aer_nadir[i-1].z                                                                           # account for aeroid no data values
+        navdat[i].z = navdat[i].z - aer_nadir[i].z                                                                      # MRO elevation above aeroid: subtract out aeroid
+        
         if np.abs(nad_loc[i].z) > 1e10:                                                                                 # account for no data values from mola dem - assign previous value if n.d.
             nad_loc[i].z = nad_loc[i-1].z
-        nadbin[i] = int(((((navdat[i].z-nad_loc[i].z) * 2 / speedlight) - shift[i]) / binsize) + 55)                    # take MRO height above aeroid, subtract mola elevation, account for SHARAD receive window opening time shift and convert to pixels 
+ 
+        nadbin[i] = ((((navdat[i].z-nad_loc[i].z) * 2 / speedlight) - shift[i]) / binsize) + 55                         # take MRO height above aeroid, subtract mola elevation, account for SHARAD receive window opening time shift and convert to pixels 
         nadbin[i] = nadbin[i] % 3600                                                                                    # take modulo in case pixel is location of nadir is greater then max rgram dimensions
     nadbin = nadbin.astype(int)
+ 
     if surfType == 'nadir':
         surf = nadbin
 
@@ -154,7 +155,7 @@ if __name__ == '__main__':
     # ---------------
     # set to desired parameters
     # ---------------
-    study_area = 'bh_nh_bt/'
+    study_area = 'edr_test/'
     surfType = 'fret'                                                                                                       # define the desired surface pick = [fret,narid,max]
     window = 50                                                                                                             # define window for computing fret algorithm around window of nadir location - larger window may be used as nadir location does not currently line up well for all obs. larger window may account for this.
     # ---------------
