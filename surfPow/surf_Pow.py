@@ -44,15 +44,15 @@ def main(rgramPath, surfType = 'nadir'):
     dem_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/megt_128_merge.tif'                                       # Grab megt and mega,  mola dem and aeroid 
     aer_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/mega_16.tif'
 
-    navdat = GetNav_geom(navPath)
+    navdat = GetNav_geom(navPath)                                                                                       # convert x,y,z MRO position vectors to spheroid referenced lat,long, radius
 
-    topo = Dem(dem_path)
+    topo = Dem(dem_path)                                                                                                # create DEM class from aeroid
 
-    nad_loc = navdat.toground(topo,navdat.csys)
+    nad_loc = navdat.toground(topo,navdat.csys)                                                                         # convert nav DEM to ground points, x,y,z
 
-    aer = Dem(aer_path)
+    aer = Dem(aer_path)                                                                                                 # create DEM class from aeroid
 
-    aer_nadir = navdat.toground(aer)
+    aer_nadir = navdat.toground(aer)                                                                                    # convert aeroid DEM to ground points, x,y,z
 
     for i in range(len(navdat)):
         if(aer_nadir[i].z == aer.nd):
