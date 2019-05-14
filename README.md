@@ -15,10 +15,10 @@ This repo holds tools for working with SHARAD data. Right now there are three:
  
  ## psql ##
  Python scripts for database management of SHARAD EDRs. 
- #edrNav_info.py parses EDRs to create csv files for each track with lat, long, sza
- #edrNav_DB.txt contains postgresql commands to create table to hold EDR nav information for querying
- #edrNav_psql_import.py imports EDR nav csv files to postgresql database
- #sharadList_mod.py modifies query list output from postgresql database to match PDS SHARAD filenames
+ *edrNav_info.py parses EDRs to create csv files for each track with lat, long, sza
+ *edrNav_DB.txt contains postgresql commands to create table to hold EDR nav information for querying
+ *edrNav_psql_import.py imports EDR nav csv files to postgresql database
+ *sharadList_mod.py modifies query list output from postgresql database to match PDS SHARAD filenames
  
  ## firstReturn ##
  A set of python sripts for extracting the firt return power (reflectivity) from SHARAD tracks -- old
