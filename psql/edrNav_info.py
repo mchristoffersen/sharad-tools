@@ -1,11 +1,17 @@
-# Python script to parse all EDR aux data and compile lat long info for postgres ingest
+'''
+Python script to parse all EDR aux data and compile lat long info for postgres ingest
 
-# Written by: Brandon S. Tober
-# Date: 03MAY2019
+run from psql/ directory:
+python edrNav_info.py
+
+Written by: Brandon S. Tober
+Date: 03MAY2019
+'''
 
 # import necessary libraries
 import os,sys,time
 import numpy as np
+sys.path.append('..') # Adds higher directory to python modules path.
 from rangeCompress.code.python.read_Aux import aux_Parse
 from rangeCompress.code.python.read_Lbl import lbl_Parse
 
@@ -14,7 +20,6 @@ in_path =  '/disk/daedalus/sharaddownload/'
 out_path = '/disk/qnap-2/MARS/orig/supl/SHARAD/EDR/nav/'
 
 t_start = time.time()
-
 for root, dirs, files in os.walk(in_path):
     if 'data' in root:
         for file in files:
