@@ -1,5 +1,10 @@
 import psycopg2
 import sys, os, time
+
+'''Script to upload EDR nav info csv files to postgresql database
+Database should be set using commands in edr_navDB.txt - run these commands through postgresql database.
+.csv files should be structured with 5 columns - track number, trace number, lat, long, sza
+'''
  
 def main():
 	t0 = time.time()
