@@ -157,7 +157,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     print('Range compression complete')
 
     # convert complex-valued voltage return to magnitude
-    ampOut = np.abs(EDRData)
+    ampOut = np.abs(EDRData).astype('float32')
 
     # create geom array with relavant data for each record
     for _i in range(records):
