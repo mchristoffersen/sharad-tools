@@ -1,0 +1,12 @@
+CREATE TABLE sref.bh_sh(
+	line   TEXT,
+	trace   INT,
+	lat   FLOAT,
+	long   FLOAT,
+	sza   FLOAT,
+	sref   FLOAT
+);
+
+CREATE INDEX idx_loc_bh_sh_sref ON sref.bh_sh (lat,lon);
+CREATE INDEX idx_line_bh_sh_sref ON sref.bh_sh (line);
+CREATE INDEX idx_sza_bh_sh_sref ON sref.bh_sh (sza);
