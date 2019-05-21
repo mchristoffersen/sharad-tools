@@ -155,7 +155,7 @@ if __name__ == '__main__':
     # ---------------
     # set to desired parameters
     # ---------------
-    study_area = 'edr_test/'
+    study_area = sys.argv[1]
     surfType = 'fret'                                                                                                       # define the desired surface pick = [fret,narid,max]
     window = 50                                                                                                             # define window for computing fret algorithm around window of nadir location - larger window may be used as nadir location does not currently line up well for all obs. larger window may account for this.
     # ---------------
@@ -177,11 +177,17 @@ if __name__ == '__main__':
     else:
         print('Data path not found')
         sys.exit()
+
+    # create necessary output directories
+    try:
+        os.makedirs(out_path)
+    except FileExistsError:
+        pass
    
     # ---------------
     # set up for running on single obs, or list of obs with parallels using sys.argv[1]
     # ---------------
-    rgramPath = sys.argv[1]                                                                                                 # input radargram - range compressed - amplitude output
+    rgramPath = sys.argv[2]                                                                                                 # input radargram - range compressed - amplitude output
     fileName = rgramPath.split('_')[0] + '_' + rgramPath.split('_')[1]                                                      # base fileName
     dataSet = (rgramPath.split('_')[-1]).split('.')[0]                                                                      # data set to use (amp or stack)
     rgramPath = in_path + 'data/rgram/' + dataSet + '/' + rgramPath                                                         # attach input data path to beginning of rgram file name
