@@ -16,6 +16,13 @@ def main(rgramPath, surfType = 'nadir'):
     this will run through all .img radargrams in directory.
     designed to run on directory structured like PDS.
 
+    example call:
+
+    python surf_Pow.py [study_area] [range compressed amplitude data]
+
+    argv[1] is study area within $MARS/targ/xtra/SHARAD/EDR/rangeCompress/
+    argv[2] is single obs. or list of obs. within  $MARS/targ/xtra/SHARAD/EDR/rangeCompress/[study_area]/data/rgram/amp/
+
     author: Brandon S. Tober
     created: 30January2018
     updated: 10MAY19
@@ -155,7 +162,7 @@ if __name__ == '__main__':
     # ---------------
     # set to desired parameters
     # ---------------
-    study_area = sys.argv[1]
+    study_area = str(sys.argv[1]) + '/' 
     surfType = 'fret'                                                                                                       # define the desired surface pick = [fret,narid,max]
     window = 50                                                                                                             # define window for computing fret algorithm around window of nadir location - larger window may be used as nadir location does not currently line up well for all obs. larger window may account for this.
     # ---------------
