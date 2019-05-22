@@ -121,7 +121,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
         EDRData = np.zeros((4096,records), complex)
         window = np.pad(np.kaiser(2048,beta),(0,4096 - refChirpMF.shape[1]),'constant') 
         if stackFac != 0:
-            ampStack = np.zeros((4096, stackCols))   
+            ampStack = np.zeros((3600, stackCols))   
        
 
     geomData = np.zeros((records,13))
