@@ -28,17 +28,19 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     - stacked radargram from range compressed amplitude data
     -----------
     Example call:  
+
+
+    python range_Compress.py argv[1] argv[2]
+
+    where argv[1] is study region
+    and argv[2] is obs. or list of obs. 
+
     set desired parameters in __main__
 
-    *if running through files in a directly:
-        python range_Compress.py
-    
-    *elif using sys.argv[1] with list of file(s):
-        python range_Compress.py 'files'
     -----------
     github: btobers
     Updated by: Brandon S. Tober
-    Last Updated: 06MAY19
+    Last Updated: 22May2019
     -----------
     """
     t0 = time.time()                                            # start time
@@ -213,10 +215,10 @@ if __name__ == '__main__':
     # ---------------
     # INPUTS - set to desired parameters
     # ---------------
-    study_area = 'bh_sh_bt/'  
+    study_area = str(sys.argv[1]) + '/'   
     chirp = 'calib'
     beta = 0                # beta value for kaiser window [0 = rectangular, 5 	Similar to a Hamming, 6	Similar to a Hann, 8.6 	Similar to a Blackman]
-    stackFac = 0            # stack factor - if nonzero, should be odd so center trace can be chosen for nav data                                     
+    stackFac = 5            # stack factor - if nonzero, should be odd so center trace can be chosen for nav data                                     
     # ---------------
     mars_path = '/MARS'
     in_path = mars_path + '/orig/supl/SHARAD/EDR/' + study_area
@@ -265,21 +267,21 @@ if __name__ == '__main__':
         sys.exit()
 
     # uncomment for testing single obs., enter lbl file as sys.argv[1] or for parellelizing range compression with list of .lbl files
-    # lblName = sys.argv[1]
-    # lblName = in_path + lblName
-    # runName = lblName.rstrip('_a.lbl')
-    # auxName = in_path + runName + '_a_a.dat'
-    # EDRName = in_path + runName + '_a_s.dat'
-    # main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
-
-    # setup for searching SHARAD EDR PDS directory for files in list
-    file = sys.argv[1]
-    lblName = list(glob.iglob('/disk/daedalus/sharaddownload/**/*' + file + '*.lbl', recursive = True))[0]
-    in_path = lblName.rstrip(lblName.split('/')[-1])
-    runName = (lblName.split('/')[-1]).rstrip('_a.lbl')
+    lblName = sys.argv[2]
+    lblName = in_path + lblName
+    runName = lblName.rstrip('_a.lbl')
     auxName = in_path + runName + '_a_a.dat'
     EDRName = in_path + runName + '_a_s.dat'
     main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
+
+    # setup for searching SHARAD EDR PDS directory for files in list
+    # file = sys.argv[2]
+    # lblName = list(glob.iglob('/disk/daedalus/sharaddownload/**/*' + file + '*.lbl', recursive = True))[0]
+    # in_path = lblName.rstrip(lblName.split('/')[-1])
+    # runName = (lblName.split('/')[-1]).rstrip('_a.lbl')
+    # auxName = in_path + runName + '_a_a.dat'
+    # EDRName = in_path + runName + '_a_s.dat'
+    # main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
 
     # uncomment for processing directory of obs.
     # for file in os.listdir(in_path):
