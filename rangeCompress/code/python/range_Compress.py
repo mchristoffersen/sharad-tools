@@ -268,8 +268,8 @@ if __name__ == '__main__':
 
     # uncomment for testing single obs., enter lbl file as sys.argv[1] or for parellelizing range compression with list of .lbl files
     lblName = sys.argv[2]
-    lblName = in_path + lblName
     runName = lblName.rstrip('_a.lbl')
+    lblName = in_path + lblName
     auxName = in_path + runName + '_a_a.dat'
     EDRName = in_path + runName + '_a_s.dat'
     main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
