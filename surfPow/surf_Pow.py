@@ -25,7 +25,7 @@ def main(rgramPath, surfType = 'nadir'):
 
     author: Brandon S. Tober
     created: 30January2018
-    updated: 10MAY19
+    updated: 22May2019
     '''
     t0 = time.time()                                                                                                        # start time
     fileName = rgramPath.split('/')[-1]
@@ -81,21 +81,39 @@ def main(rgramPath, surfType = 'nadir'):
         Indicator weights energy of a sample by the derivative preceding it
         '''
         C = np.empty((r,c))	                                                                                                # create empty criteria array to localize surface echo for each trace
-        
         C_wind = np.zeros((window,c))
-        
-        gradient = np.gradient(pow, axis = 0)                                                                               # find gradient of each trace in RGRAM
 
+        gradient = np.gradient(pow, axis = 0)                                                                               # find gradient of each trace in RGRAM
         C[100:r,:] = pow[100:r,:]*gradient[99:r-1,:]                                                                        # vectorized criteria calculation
 
-        for _i in range(c):
-            C_wind[:,_i] = C[nadbin[_i] - int(window / 2) : nadbin[_i] + int(window / 2),_i]
-        
-        C_max_window_ind = np.argmax(C_wind, axis = 0)                                                                      # find indices of max critera seletor for each column
+        good = []                                                                                                           # intialize list of traces where windowing did work 
+        bad = []                                                                                                            # intialize list of traces where windowing did not work    
+                
+        try:
+            for _i in range(c):
+                if (nadbin[_i] - int(window / 2) > 0) and (nadbin[_i] + int(window / 2) < r):
+                    C_wind[:,_i] = C[nadbin[_i] - int(window / 2) : nadbin[_i] + int(window / 2),_i]
+                    good.append(str(_i))
 
-        surf = C_max_window_ind
+                else:
+                    bad.append(str(_i))                                                                                     # keep track of traces where windowing did not work
+            
+            good = np.asarray(good).astype(int)
+            bad = np.asarray(bad).astype(int)
+            
+            C_max_window_ind = np.argmax(C_wind, axis = 0)                                                                  # find indices of max critera seletor for each column            
+            C_max_window_ind[bad[:]] = np.argmax(C[:,bad[:]], axis = 0)                                                     # where windowing does not work, provide max fret pixel from entire trace
+            
+            surf = C_max_window_ind
+            surf[good[:]] = surf[good[:]] + nadbin[good[:]] - (window / 2)                                                  # where windowing does work, add pixel indices to get proper location
 
-        surf[:] = surf[:] + nadbin[:] - (window / 2)
+        except Exception as err:
+            print(err)
+            print('Calculating first return without windowing')
+            surf = np.argmax(C, axis =0)
+
+
+
     
     elif surfType == 'max':
         print('Code not set up to handle max power return as of yet - BT')
@@ -181,6 +199,10 @@ if __name__ == '__main__':
         mars_path = '/disk/qnap-2' + mars_path
         in_path = '/disk/qnap-2' + in_path
         out_path = '/disk/qnap-2' + out_path
+    elif os.getcwd().split('/')[1] == 'home':
+        mars_path = '/home/btober/Documents' + mars_path
+        in_path = '/home/btober/Documents' + in_path
+        out_path = '/home/btober/Documents' + out_path
     else:
         print('Data path not found')
         sys.exit()
