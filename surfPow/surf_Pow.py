@@ -206,12 +206,6 @@ if __name__ == '__main__':
     else:
         print('Data path not found')
         sys.exit()
-
-    # create necessary output directories
-    try:
-        os.makedirs(out_path)
-    except FileExistsError:
-        pass
    
     # ---------------
     # set up for running on single obs, or list of obs with parallels using sys.argv[1]
@@ -223,11 +217,21 @@ if __name__ == '__main__':
   
     # check if surfPow has already been determined for desired obs. - if it hasn't run obs.
     if dataSet == 'amp':
+        try:
+            os.makedirs(out_path)
+        except FileExistsError:
+            pass
         if (not os.path.isfile(out_path + fileName + '_' + surfType + '_geom.csv')):
             main(rgramPath, surfType = surfType)
         else:
             print('\nSurface power extraction [' + surfType + '] of observation ' + fileName + ' already completed!')
+                
     elif dataSet == 'stack':
+        out_path = out_path + dataSet + '/'
+        try:
+            os.makedirs(out_path)
+        except FileExistsError:
+            pass
         if (not os.path.isfile(out_path + fileName + '_' + dataSet + '_' + surfType + '_geom.csv')):
             main(rgramPath, surfType = surfType)
         else:
