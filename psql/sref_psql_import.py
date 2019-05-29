@@ -22,7 +22,7 @@ def main():
 	print("Connected!")
 	print("----------------\n")
 
-	path = '/home/btober/Documents/sref/bh_sh_bt/'
+	path = '/home/btober/Documents/sref/bh_sh_bt/stack/'
 
 	for filename in os.listdir(path):
 		if(filename.endswith('.csv')):
@@ -32,7 +32,7 @@ def main():
 			data = data.read().replace("-inf","'-Infinity'").split('\n')
 			dline = data[0].split(',')
 			del data[-1]
-			insstr = "INSERT INTO sref.bh_sh VALUES ({}, {}, {}, {}, {}, {})".format(int(float(dline[0])), int(float(dline[1])), dline[7], dline[6], dline[11], dline[-1])
+			insstr = "INSERT INTO sref.bh_sh_stack VALUES ({}, {}, {}, {}, {}, {})".format(int(float(dline[0])), int(float(dline[1])), dline[7], dline[6], dline[11], dline[-1])
 			for i in range(1,len(data)):
 				dline = data[i].split(',');
 				insstr = insstr + ",({}, {}, {}, {}, {}, {})".format(int(float(dline[0])), int(float(dline[1])), dline[7], dline[6], dline[11], dline[-1])
