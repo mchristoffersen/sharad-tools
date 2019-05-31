@@ -1,0 +1,23 @@
+CREATE TABLE rsr.bh_sh(
+	line   TEXT,
+	trace   INT,
+	lat   FLOAT,
+	long   FLOAT,
+	sza   FLOAT,
+    a   FLOAT,
+    chisqr   FLOAT,
+	crl   FLOAT,
+	mu   FLOAT,
+	pt   FLOAT,
+	pc   FLOAT,
+	pn   FLOAT,
+	pc_pn   FLOAT,
+	s   FLOAT,
+	xa   INT,
+	xb   INT,
+	xo   FLOAT
+);
+
+CREATE INDEX idx_loc_bh_sh_rsr ON rsr.bh_sh (lat,long);
+CREATE INDEX idx_line_bh_sh_rsr ON rsr.bh_sh (line);
+CREATE INDEX idx_sza_bh_sh_rsr ON rsr.bh_sh (sza);
