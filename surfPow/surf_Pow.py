@@ -38,6 +38,7 @@ def main(rgramPath, surfType = 'nadir'):
         navPath = in_path + 'data/geom/' + fileName + '_geom.csv'
     elif dataSet =='stack':
         navPath = in_path + 'data/geom/' + fileName + '_geom_stack.csv'
+    print(dataSet)
 
     navFile = np.genfromtxt(navPath, delimiter = ',', dtype = None)                                                         # open geom nav file for rgram to append surface echo power to each trace                                                 
     amp = np.load(rgramPath)
@@ -45,7 +46,7 @@ def main(rgramPath, surfType = 'nadir'):
     (r,c) = amp.shape   
     nadbin = np.zeros(c)                                                                                                # empty array to hold pixel location for each trace of nadir location
     binsize = .0375e-6
-    speedlight = 3e8#299792458
+    speedlight = 299792458
     shift = navFile[:,12]                                                                                               # receive window opening time shift from EDR aux data
 
     dem_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/megt_128_merge.tif'                                       # Grab megt and mega,  mola dem and aeroid 
@@ -67,7 +68,7 @@ def main(rgramPath, surfType = 'nadir'):
         if np.abs(nad_loc[i].z) > 1e10:                                                                                 # account for no data values from mola dem - assign previous value if n.d.
             nad_loc[i].z = nad_loc[i-1].z
  
-        nadbin[i] = ((((navdat[i].z-nad_loc[i].z) * 2 / speedlight) - shift[i]) / binsize) + 55                         # take MRO height above aeroid, subtract mola elevation, account for SHARAD receive window opening time shift and convert to pixels 
+        nadbin[i] = ((((navdat[i].z-nad_loc[i].z) * 2 / speedlight) - shift[i]) / binsize) + 55                         # take MRO height above aeroid, subtract mola elevation, account for SHARAD receive window opening time shift and convert to pixels ### 55 pixels added to place nadir surface at relatively correct place - need to add ionosphereic correction
         nadbin[i] = nadbin[i] % 3600                                                                                    # take modulo in case pixel is location of nadir is greater then max rgram dimensions
     nadbin = nadbin.astype(int)
  
@@ -206,6 +207,12 @@ if __name__ == '__main__':
     else:
         print('Data path not found')
         sys.exit()
+
+    # create necessary output directories
+    try:
+        os.makedirs(out_path)
+    except FileExistsError:
+        pass
    
     # ---------------
     # set up for running on single obs, or list of obs with parallels using sys.argv[1]
@@ -217,21 +224,11 @@ if __name__ == '__main__':
   
     # check if surfPow has already been determined for desired obs. - if it hasn't run obs.
     if dataSet == 'amp':
-        try:
-            os.makedirs(out_path)
-        except FileExistsError:
-            pass
         if (not os.path.isfile(out_path + fileName + '_' + surfType + '_geom.csv')):
             main(rgramPath, surfType = surfType)
         else:
             print('\nSurface power extraction [' + surfType + '] of observation ' + fileName + ' already completed!')
-                
     elif dataSet == 'stack':
-        out_path = out_path + dataSet + '/'
-        try:
-            os.makedirs(out_path)
-        except FileExistsError:
-            pass
         if (not os.path.isfile(out_path + fileName + '_' + dataSet + '_' + surfType + '_geom.csv')):
             main(rgramPath, surfType = surfType)
         else:
