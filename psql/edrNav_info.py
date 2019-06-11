@@ -31,14 +31,14 @@ for root, dirs, files in os.walk(in_path):
 
                 print('--------------------------------')
                 print(runName)
-                print('--------------------------------')        
+                print('--------------------------------')
 
                 try:
                     # read lbl files and parse info
                     lblDic = lbl_Parse(lbl_path)
                     records = lblDic['FILE_RECORDS']
 
-                    # read aux file and parse info  
+                    # read aux file and parse info
                     auxDF = aux_Parse(aux_path)
 
                     # pre-allocate empty numpy array to hold nav data
@@ -53,16 +53,19 @@ for root, dirs, files in os.walk(in_path):
 
                     # save data
                     np.savetxt(out_path + runName.split('_')[1] + '_' + runName.split('_')[2] + '_nav.csv', navDat, delimiter = ',', newline = '\n', fmt ='%s')
-                
+
                 except Exception as err:
-                    print('--------------------------------')  
+                    print('--------------------------------')
+                    print('\n')
                     print(err)
                     bad_files.append(runName)
-                    print(runName)
-                    print('--------------------------------')  
+                    print(bad_files)
+                    print('\n')
+                    print('--------------------------------')
 
 try:
-    print('Saving list of bad files')
+    print('Saving list of bad files!')
+    print(bad_files)
     with open(out_path + 'bad_navFiles.txt', 'w') as f:
         for item in bad_files:
             f.write('%s\n' % item)
@@ -73,6 +76,6 @@ except Exception as err:
 
 t_stop = time.time()
 
-print('--------------------------------')  
+print('--------------------------------')
 print('Total Runtime: ' + str(round(((t_stop - t_start)/4),4)) + ' minutes')
 print('--------------------------------')
