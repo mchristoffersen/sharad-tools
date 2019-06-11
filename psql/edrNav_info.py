@@ -20,6 +20,7 @@ in_path =  '/disk/daedalus/sharaddownload/'
 out_path = '/disk/qnap-2/MARS/orig/supl/SHARAD/EDR/nav/'
 
 t_start = time.time()
+bad_files = []
 for root, dirs, files in os.walk(in_path):
     if 'data' in root:
         for file in files:
@@ -27,7 +28,6 @@ for root, dirs, files in os.walk(in_path):
                 runName = file.rstrip('_a.lbl)')
                 lbl_path = root + '/' + file
                 aux_path = root + '/' +  runName + '_a_a.dat'
-                bad_files = []
 
                 print('--------------------------------')
                 print(runName)
