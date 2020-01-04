@@ -25,14 +25,9 @@ case "$1" in
 esac
 DATE=$(date +"%m_%d_%Y")
 NUMTRACKS=$(wc -l < $3)
+source reflectivity_config.txt
 
 ##CODE###
-# create necessary directories
-mkdir -p /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/data/rgram/amp
-mkdir /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/data/geom
-mkdir -p /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/browse/tiff
-mkdir -p /zippy/MARS/targ/xtra/SHARAD/EDR/surfPow/$2
-
 echo "----------------------------------------------------------------"
 echo "Study region: $2"
 echo "Number of threads: $1"
@@ -44,7 +39,7 @@ echo "----------------------------------------------------------------"
 
 cd /zippy/MARS/code/supl/SHARAD/sharad-tools/rangeCompress/code/python
 
-/usr/bin/parallel -j$1 python3 range_Compress.py $verbose $2 :::: $3
+/usr/bin/parallel -j$1 python3 range_Compress.py $verbose $2 $CHIRP $BETA $STACKFAC :::: $6
 
 echo "Range compression completed"
 echo "----------------------------------------------------------------"
@@ -57,7 +52,7 @@ find . -name "*.npy" -exec basename \{} \; > /zippy/MARS/targ/xtra/SHARAD/EDR/ra
 cd /zippy/MARS/code/supl/SHARAD/sharad-tools
 
 echo "Calculating surface reflectivity"
-/usr/bin/parallel -j$1 python3 surfPow/surf_Pow.py $verbose $2 :::: /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/rc_list_$DATE.txt
+/usr/bin/parallel -j$1 python3 surfPow/surf_Pow.py $verbose $2 $SURFTYPE $WINDOW :::: /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/rc_list_$DATE.txt
 echo "Surface reflectivity calculation completed"
 echo "----------------------------------------------------------------"
 

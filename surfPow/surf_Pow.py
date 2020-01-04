@@ -1,4 +1,5 @@
 # import necessary libraries
+import ..
 from nadir import *
 import os,sys
 from PIL import Image
@@ -35,6 +36,11 @@ def main(rgramPath, surfType = 'nadir'):
     print('--------------------------------')
     print('Extracting surface power [' + surfType + '] for observation: ' + fileName)
     
+
+    dem_path = '/zippy/MARS/code/modl/simc/test/temp/dem/megt_128_merge.tif'                                       # Grab megt and $
+    aer_path = '/zippy/MARS/code/modl/simc/test/temp/dem/mega_16.tif'
+
+
     if dataSet == 'amp':
         navPath = in_path + 'data/geom/' + fileName + '_geom.csv'
     elif dataSet =='stack':
@@ -48,9 +54,6 @@ def main(rgramPath, surfType = 'nadir'):
     binsize = .0375e-6
     speedlight = 299792458
     shift = navFile[:,12]                                                                                               # receive window opening time shift from EDR aux data
-
-    dem_path = '/zippy/MARS/code/modl/simc/test/temp/dem/megt_128_merge.tif'                                       # Grab megt and mega,  mola dem and aeroid 
-    aer_path = '/zippy/MARS/code/modl/simc/test/temp/dem/mega_16.tif'
 
     navdat = GetNav_geom(navPath)                                                                                       # convert x,y,z MRO position vectors to spheroid referenced lat,long, radius
 
@@ -182,9 +185,9 @@ if __name__ == '__main__':
     verbose = int(sys.argv[1])
     if verbose == 0:
         blockPrint()
-    study_area = str(sys.argv[2]) + '/' 
-    surfType = 'fret'                                                                                                       # define the desired surface pick = [fret,narid,max]
-    window = 50                                                                                                             # define window for computing fret algorithm around window of nadir location - larger window may be used as nadir location does not currently line up well for all obs. larger window may account for this.
+    study_area = sys.argv[2] + '/' 
+    surfType = sys.argv[3]                                                                                        # define the desired surface pick = [fret,narid,max]
+    window = int(sys.argv[4])                                                                                             # define window for computing fret algorithm around window of nadir location - larger window may be used as nadir location does not currently line up well for all obs. larger window may account for this.
     # ---------------
     in_path = '/zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/' + study_area
     out_path = '/zippy/MARS/targ/xtra/SHARAD/EDR/surfPow/' + study_area
@@ -217,7 +220,7 @@ if __name__ == '__main__':
     # ---------------
     # set up for running on single obs, or list of obs with parallels using sys.argv[1]
     # ---------------
-    rgramPath = sys.argv[3]                                                                                                 # input radargram - range compressed - amplitude output
+    rgramPath = sys.argv[5]                                                                                                 # input radargram - range compressed - amplitude output
     fileName = rgramPath.split('_')[0] + '_' + rgramPath.split('_')[1]                                                      # base fileName
     dataSet = (rgramPath.split('_')[-1]).split('.')[0]                                                                      # data set to use (amp or stack)
     rgramPath = in_path + 'data/rgram/' + dataSet + '/' + rgramPath                                                         # attach input data path to beginning of rgram file name

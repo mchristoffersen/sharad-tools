@@ -1,0 +1,8 @@
+# range compression config
+CHIRP='calib'		# chirp type - [<calib> for calibrated reference chirps, <ideal> for ideal chirp, <synth> for synthetic chirp, <UPB> for UPB calibrated chirp]
+BETA=0			# beta value for kaiser window [0 = rectangular, 5 Similar to a Hamming, 6 Similar to a Hann, 8.6 Similar to a Blackman]
+STACKFAC=0		# stack factor - if nonzero, should be odd so center trace can be chosen for nav data
+
+# surface power config
+WINDOW=50		# number of samples to use for windowing
+SURFTYPE='fret'                                                                                                       # define the desired surface pick = [fret,narid,max]

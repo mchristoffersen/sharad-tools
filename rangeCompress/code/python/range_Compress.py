@@ -1,4 +1,5 @@
 # Import necessary libraries
+
 import numpy as np
 import scipy
 import matplotlib.pyplot as plt
@@ -31,11 +32,14 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     Example call:  
 
 
-    python range_Compress.py argv[1] argv[2]
+    python range_Compress.py argv[1] argv[2] argv[3] argv[4] argv[5] argv[6]
 
     argv[1] is the verbose setting
     argv[2] is study region
-    argv[3] is obs. or list of obs. 
+    argv[3] is the chirp type
+    argv[4] is the window beta value
+    argv[5] is the stacking factor
+    argv[6] is obs. or list of obs. 
 
     set desired parameters in __main__
 
@@ -221,9 +225,9 @@ if __name__ == '__main__':
     if verbose == 0:
         blockPrint()
     study_area = str(sys.argv[2]) + '/'   
-    chirp = 'calib'
-    beta = 0                # beta value for kaiser window [0 = rectangular, 5 	Similar to a Hamming, 6	Similar to a Hann, 8.6 	Similar to a Blackman]
-    stackFac = 0            # stack factor - if nonzero, should be odd so center trace can be chosen for nav data                                     
+    chirp = str(sys.argv[3])
+    beta = int(sys.argv[4])                # beta value for kaiser window [0 = rectangular, 5 	Similar to a Hamming, 6	Similar to a Hann, 8.6 	Similar to a Blackman]
+    stackFac = int(sys.argv[5])            # stack factor - if nonzero, should be odd so center trace can be chosen for nav data                                     
     # ---------------
     in_path = '/zippy/MARS/orig/supl/SHARAD/EDR/' + study_area
     out_path = '/zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/' + study_area
@@ -279,7 +283,7 @@ if __name__ == '__main__':
     # main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
 
     # setup for searching SHARAD EDR PDS directory for files in list
-    file = sys.argv[3]
+    file = sys.argv[6]
     lblName = list(glob.iglob('/zippy/sharaddownload/**/*' + file + '*.lbl', recursive = True))[0]
     in_path = lblName.rstrip(lblName.split('/')[-1])
     runName = (lblName.split('/')[-1]).rstrip('_a.lbl')
