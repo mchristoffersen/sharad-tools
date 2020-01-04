@@ -39,7 +39,7 @@ echo "----------------------------------------------------------------"
 
 cd /zippy/MARS/code/supl/SHARAD/sharad-tools/rangeCompress/code/python
 
-/usr/bin/parallel -j$1 python3 range_Compress.py $verbose $2 $CHIRP $BETA $STACKFAC :::: $6
+/usr/bin/parallel -j$1 python3 range_Compress.py $verbose $2 $CHIRP $BETA $STACKFAC :::: $3
 
 echo "Range compression completed"
 echo "----------------------------------------------------------------"
