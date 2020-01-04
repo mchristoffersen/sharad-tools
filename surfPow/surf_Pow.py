@@ -229,12 +229,12 @@ if __name__ == '__main__':
         if (not os.path.isfile(out_path + fileName + '_' + surfType + '_geom.csv')):
             main(rgramPath, surfType = surfType)
         else:
-            print('\nSurface power extraction [' + surfType + '] of observation ' + fileName + ' already completed!')
+            print('Surface power extraction [' + surfType + '] of observation ' + fileName + ' already completed!')
     elif dataSet == 'stack':
         if (not os.path.isfile(out_path + fileName + '_' + dataSet + '_' + surfType + '_geom.csv')):
             main(rgramPath, surfType = surfType)
         else:
-            print('\nSurface power extraction [' + surfType + '] of observation ' + fileName + ' already completed!')
+            print('Surface power extraction [' + surfType + '] of observation ' + fileName + ' already completed!')
     
     # ---------------
     # set up for running on directory on obs at a time - this currently does not work - navdat gets appended to for nadir surface with each obs.
