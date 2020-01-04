@@ -35,6 +35,9 @@ echo "Number of tracks to process: $NUMTRACKS"
 echo "Verbose: $verbose"
 echo "----------------------------------------------------------------"
 echo "Beginning range compression"
+echo "Chirp type: $CHIRP"
+echo "Stacking factor: $STACKFAC"
+echo "Beta: $BETA"
 echo "----------------------------------------------------------------"
 
 cd /zippy/MARS/code/supl/SHARAD/sharad-tools/rangeCompress/code/python
@@ -52,6 +55,9 @@ find . -name "*.npy" -exec basename \{} \; > /zippy/MARS/targ/xtra/SHARAD/EDR/ra
 cd /zippy/MARS/code/supl/SHARAD/sharad-tools
 
 echo "Calculating surface reflectivity"
+echo "Surface type: $SURFTYPE"
+echo "Window: $WINDOW"
+echo "----------------------------------------------------------------"
 /usr/bin/parallel -j$1 python3 surfPow/surf_Pow.py $verbose $2 $SURFTYPE $WINDOW :::: /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/rc_list_$DATE.txt
 echo "Surface reflectivity calculation completed"
 echo "----------------------------------------------------------------"

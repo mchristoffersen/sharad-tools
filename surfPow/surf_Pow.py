@@ -1,5 +1,4 @@
 # import necessary libraries
-import ..
 from nadir import *
 import os,sys
 from PIL import Image
