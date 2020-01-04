@@ -10,7 +10,8 @@ from read_Chirp import open_Chirp
 from plotting import rgram
 from read_EDR import EDR_Parse, sci_Decompress
 
-
+def blockPrint():
+    sys.stdout = open(os.devnull, 'w')
 
 def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     """
@@ -32,8 +33,9 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
 
     python range_Compress.py argv[1] argv[2]
 
-    where argv[1] is study region
-    and argv[2] is obs. or list of obs. 
+    argv[1] is the verbose setting
+    argv[2] is study region
+    argv[3] is obs. or list of obs. 
 
     set desired parameters in __main__
 
@@ -57,7 +59,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     BitsPerSample = lblDic['INSTR_MODE_ID']['BitsPerSample']
 
     # toggle on to downsize for testing purposes
-    # records = int(records / 100)
+    records = int(records / 1000)
 
     # presumming is just for visualization purposes
     if stackFac != 0:
@@ -206,7 +208,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
 
     t1 = time.time()        # end time
     print('--------------------------------')
-    print('Total Runtime: ' + str(round((t1 - t0),4)) + ' seconds')
+    print('Runtime: ' + str(round((t1 - t0),4)) + ' seconds')
     print('--------------------------------')
     return
 
@@ -215,30 +217,32 @@ if __name__ == '__main__':
     # ---------------
     # INPUTS - set to desired parameters
     # ---------------
-    study_area = str(sys.argv[1]) + '/'   
+    verbose = int(sys.argv[1])
+    if verbose == 0:
+        blockPrint()
+    study_area = str(sys.argv[2]) + '/'   
     chirp = 'calib'
     beta = 0                # beta value for kaiser window [0 = rectangular, 5 	Similar to a Hamming, 6	Similar to a Hann, 8.6 	Similar to a Blackman]
-    stackFac = 5            # stack factor - if nonzero, should be odd so center trace can be chosen for nav data                                     
+    stackFac = 0            # stack factor - if nonzero, should be odd so center trace can be chosen for nav data                                     
     # ---------------
-    mars_path = '/MARS'
-    in_path = mars_path + '/orig/supl/SHARAD/EDR/' + study_area
-    out_path = mars_path + '/targ/xtra/SHARAD/EDR/rangeCompress/' + study_area
+    in_path = '/zippy/MARS/orig/supl/SHARAD/EDR/' + study_area
+    out_path = '/zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/' + study_area
 
-    if os.getcwd().split('/')[1] == 'media':
-        mars_path = '/media/anomalocaris/Swaps' + mars_path
-        in_path = '/media/anomalocaris/Swaps' + in_path
-        out_path = '/media/anomalocaris/Swaps' + out_path
-    elif os.getcwd().split('/')[1] == 'mnt':
-        mars_path = '/mnt/d' + mars_path
-        in_path = '/mnt/d' + in_path
-        out_path = '/mnt/d' + out_path
-    elif os.getcwd().split('/')[1] == 'disk':
-        mars_path = '/disk/qnap-2' + mars_path
-        in_path = '/disk/qnap-2' + in_path
-        out_path = '/disk/qnap-2' + out_path
-    else:
-        print('Data path not found')
-        sys.exit()
+    # if os.getcwd().split('/')[1] == 'media':
+    #     mars_path = '/media/anomalocaris/Swaps' + mars_path
+    #     in_path = '/media/anomalocaris/Swaps' + in_path
+    #     out_path = '/media/anomalocaris/Swaps' + out_path
+    # elif os.getcwd().split('/')[1] == 'mnt':
+    #     mars_path = '/mnt/d' + mars_path
+    #     in_path = '/mnt/d' + in_path
+    #     out_path = '/mnt/d' + out_path
+    # elif os.getcwd().split('/')[1] == 'zippy':
+    #     mars_path = '/zippy' + mars_path
+    #     in_path = '/zippy' + in_path
+    #     out_path = '/zippy' + out_path
+    # else:
+    #     print('Data path not found')
+    #     sys.exit()
 
     # create necessary output directories
     try:
@@ -266,22 +270,22 @@ if __name__ == '__main__':
         print('Unknown window type')
         sys.exit()
 
-    # uncomment for testing single obs., enter lbl file as sys.argv[1] or for parellelizing range compression with list of .lbl files
-    lblName = sys.argv[2]
-    runName = lblName.rstrip('_a.lbl')
-    lblName = in_path + lblName
-    auxName = in_path + runName + '_a_a.dat'
-    EDRName = in_path + runName + '_a_s.dat'
-    main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
-
-    # setup for searching SHARAD EDR PDS directory for files in list
-    # file = sys.argv[2]
-    # lblName = list(glob.iglob('/disk/daedalus/sharaddownload/**/*' + file + '*.lbl', recursive = True))[0]
-    # in_path = lblName.rstrip(lblName.split('/')[-1])
-    # runName = (lblName.split('/')[-1]).rstrip('_a.lbl')
+    # # uncomment for testing single obs., enter lbl file as sys.argv[1] or for parellelizing range compression with list of .lbl files
+    # lblName = sys.argv[2]
+    # runName = lblName.rstrip('_a.lbl')
+    # lblName = in_path + lblName
     # auxName = in_path + runName + '_a_a.dat'
     # EDRName = in_path + runName + '_a_s.dat'
     # main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
+
+    # setup for searching SHARAD EDR PDS directory for files in list
+    file = sys.argv[3]
+    lblName = list(glob.iglob('/zippy/sharaddownload/**/*' + file + '*.lbl', recursive = True))[0]
+    in_path = lblName.rstrip(lblName.split('/')[-1])
+    runName = (lblName.split('/')[-1]).rstrip('_a.lbl')
+    auxName = in_path + runName + '_a_a.dat'
+    EDRName = in_path + runName + '_a_s.dat'
+    main(EDRName, auxName, lblName, chirp = chirp, stackFac = stackFac, beta = beta)
 
     # uncomment for processing directory of obs.
     # for file in os.listdir(in_path):

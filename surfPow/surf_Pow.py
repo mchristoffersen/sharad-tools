@@ -2,11 +2,11 @@
 from nadir import *
 import os,sys
 from PIL import Image
-import math
 import numpy as np
-import scipy.misc
 import time
-import matplotlib.pyplot as plt
+
+def blockPrint():
+    sys.stdout = open(os.devnull, 'w')
 
 def main(rgramPath, surfType = 'nadir'):
     '''
@@ -20,12 +20,13 @@ def main(rgramPath, surfType = 'nadir'):
 
     python surf_Pow.py [study_area] [range compressed amplitude data]
 
-    argv[1] is study area within $MARS/targ/xtra/SHARAD/EDR/rangeCompress/
-    argv[2] is single obs. or list of obs. within  $MARS/targ/xtra/SHARAD/EDR/rangeCompress/[study_area]/data/rgram/amp/
+    argv[1] is the verbose setting
+    argv[2] is study area within $MARS/targ/xtra/SHARAD/EDR/rangeCompress/
+    argv[3] is single obs. or list of obs. within  $MARS/targ/xtra/SHARAD/EDR/rangeCompress/[study_area]/data/rgram/amp/
 
     author: Brandon S. Tober
     created: 30January2018
-    updated: 22May2019
+    updated: 03January2020
     '''
     t0 = time.time()                                                                                                        # start time
     fileName = rgramPath.split('/')[-1]
@@ -38,7 +39,6 @@ def main(rgramPath, surfType = 'nadir'):
         navPath = in_path + 'data/geom/' + fileName + '_geom.csv'
     elif dataSet =='stack':
         navPath = in_path + 'data/geom/' + fileName + '_geom_stack.csv'
-    print(dataSet)
 
     navFile = np.genfromtxt(navPath, delimiter = ',', dtype = None)                                                         # open geom nav file for rgram to append surface echo power to each trace                                                 
     amp = np.load(rgramPath)
@@ -49,8 +49,8 @@ def main(rgramPath, surfType = 'nadir'):
     speedlight = 299792458
     shift = navFile[:,12]                                                                                               # receive window opening time shift from EDR aux data
 
-    dem_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/megt_128_merge.tif'                                       # Grab megt and mega,  mola dem and aeroid 
-    aer_path = mars_path + '/code/modl/MRO/simc/test/temp/dem/mega_16.tif'
+    dem_path = '/zippy/MARS/code/modl/simc/test/temp/dem/megt_128_merge.tif'                                       # Grab megt and mega,  mola dem and aeroid 
+    aer_path = '/zippy/MARS/code/modl/simc/test/temp/dem/mega_16.tif'
 
     navdat = GetNav_geom(navPath)                                                                                       # convert x,y,z MRO position vectors to spheroid referenced lat,long, radius
 
@@ -156,8 +156,7 @@ def main(rgramPath, surfType = 'nadir'):
         np.savetxt(out_path + fileName + '_' + surfType + '_geom.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s')
         np.savetxt(out_path + fileName + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', newline = '\n', comments = '', fmt='%.8f')
         try:
-            im = Image.fromarray(imarray[:,::32], 'RGB')                        
-            scipy.misc.imsave(out_path + fileName + '_' + surfType + '.png', im)
+            Image.fromarray(imarray[:,::32], 'RGB').save(out_path + fileName + '_' + dataSet + '_' + surfType + '.jpg')
         except Exception as err:
             print(err)
             
@@ -165,8 +164,7 @@ def main(rgramPath, surfType = 'nadir'):
         np.savetxt(out_path + fileName + '_' + dataSet + '_' + surfType + '_geom.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s')
         np.savetxt(out_path + fileName + '_' + dataSet + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', newline = '\n', comments = '', fmt='%.8f')
         try:
-            im = Image.fromarray(imarray[:,::4], 'RGB')
-            scipy.misc.imsave(out_path + fileName + '_' + dataSet + '_' + surfType + '.png', im)
+            Image.fromarray(imarray, 'RGB').save(out_path + fileName + '_' + dataSet + '_' + surfType + '.jpg')
         except Exception as err:
             print(err)
 
@@ -181,32 +179,34 @@ if __name__ == '__main__':
     # ---------------
     # set to desired parameters
     # ---------------
-    study_area = str(sys.argv[1]) + '/' 
+    verbose = int(sys.argv[1])
+    if verbose == 0:
+        blockPrint()
+    study_area = str(sys.argv[2]) + '/' 
     surfType = 'fret'                                                                                                       # define the desired surface pick = [fret,narid,max]
     window = 50                                                                                                             # define window for computing fret algorithm around window of nadir location - larger window may be used as nadir location does not currently line up well for all obs. larger window may account for this.
     # ---------------
-    mars_path = '/MARS'
-    in_path = mars_path + '/targ/xtra/SHARAD/EDR/rangeCompress/' + study_area
-    out_path = mars_path + '/targ/xtra/SHARAD/EDR/surfPow/' + study_area
-    if os.getcwd().split('/')[1] == 'media':
-        mars_path = '/media/anomalocaris/Swaps' + mars_path
-        in_path = '/media/anomalocaris/Swaps' + in_path
-        out_path = '/media/anomalocaris/Swaps' + out_path
-    elif os.getcwd().split('/')[1] == 'mnt':
-        mars_path = '/mnt/d' + mars_path
-        in_path = '/mnt/d' + in_path
-        out_path = '/mnt/d' + out_path
-    elif os.getcwd().split('/')[1] == 'disk':
-        mars_path = '/disk/qnap-2' + mars_path
-        in_path = '/disk/qnap-2' + in_path
-        out_path = '/disk/qnap-2' + out_path
-    elif os.getcwd().split('/')[1] == 'home':
-        mars_path = '/home/btober/Documents' + mars_path
-        in_path = '/home/btober/Documents' + in_path
-        out_path = '/home/btober/Documents' + out_path
-    else:
-        print('Data path not found')
-        sys.exit()
+    in_path = '/zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/' + study_area
+    out_path = '/zippy/MARS/targ/xtra/SHARAD/EDR/surfPow/' + study_area
+    # if os.getcwd().split('/')[1] == 'media':
+    #     mars_path = '/media/anomalocaris/Swaps' + mars_path
+    #     in_path = '/media/anomalocaris/Swaps' + in_path
+    #     out_path = '/media/anomalocaris/Swaps' + out_path
+    # elif os.getcwd().split('/')[1] == 'mnt':
+    #     mars_path = '/mnt/d' + mars_path
+    #     in_path = '/mnt/d' + in_path
+    #     out_path = '/mnt/d' + out_path
+    # elif os.getcwd().split('/')[1] == 'zippy':
+    #     mars_path = '/disk/qnap-2' + mars_path
+    #     in_path = '/disk/qnap-2' + in_path
+    #     out_path = '/disk/qnap-2' + out_path
+    # elif os.getcwd().split('/')[1] == 'home':
+    #     mars_path = '/home/btober/Documents' + mars_path
+    #     in_path = '/home/btober/Documents' + in_path
+    #     out_path = '/home/btober/Documents' + out_path
+    # else:
+    #     print('Data path not found')
+    #     sys.exit()
 
     # create necessary output directories
     try:
@@ -217,7 +217,7 @@ if __name__ == '__main__':
     # ---------------
     # set up for running on single obs, or list of obs with parallels using sys.argv[1]
     # ---------------
-    rgramPath = sys.argv[2]                                                                                                 # input radargram - range compressed - amplitude output
+    rgramPath = sys.argv[3]                                                                                                 # input radargram - range compressed - amplitude output
     fileName = rgramPath.split('_')[0] + '_' + rgramPath.split('_')[1]                                                      # base fileName
     dataSet = (rgramPath.split('_')[-1]).split('.')[0]                                                                      # data set to use (amp or stack)
     rgramPath = in_path + 'data/rgram/' + dataSet + '/' + rgramPath                                                         # attach input data path to beginning of rgram file name

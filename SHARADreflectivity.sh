@@ -1,41 +1,74 @@
+#!/bin/bash
+
 # wrapper to range compress SHARAD EDRs then calculate surface reflectivity
+
 # inputs - list of SHARAD tracks for which to calculate reflectivity
+
 # ./SHARADreflecitity.sh [number of jobs] [study region] [list_of_tracks.txt]
-# BST - 06DEC2019
 
+#   -v|--v|--ve|--ver|--verb|--verbo|--verbos|--verbose sets the verbose setting to true - print statements executed in python scripts
+#   $1 is the number of jobs to process in parallel at once
+#   $2 is the study region name
+#   $3 is a SHARAD observation or list of observations
 
-# $1 is the number of jobs to process in parallel at once
-# $2 is the study region name
-# $3 is a SHARAD observation or list of observations
+# BST - 01_03_2020
 
-###CODE###
+###VARS###
 # reset bash time counter
 SECONDS=0
+verbose=0
+# verbose flag
+case "$1" in
+-v|--v|--ve|--ver|--verb|--verbo|--verbos|--verbose)
+    verbose=1
+    shift ;;
+esac
+DATE=$(date +"%m_%d_%Y")
+NUMTRACKS=$(wc -l < $3)
 
+##CODE###
 # create necessary directories
 mkdir -p /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/data/rgram/amp
 mkdir /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/data/geom
 mkdir -p /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/browse/tiff
 mkdir -p /zippy/MARS/targ/xtra/SHARAD/EDR/surfPow/$2
 
-echo "Beginning range compression using $1 threads"
+echo "----------------------------------------------------------------"
 echo "Study region: $2"
-echo "----------"
+echo "Number of threads: $1"
+echo "Number of tracks to process: $NUMTRACKS"
+echo "Verbose: $verbose"
+echo "----------------------------------------------------------------"
+echo "Beginning range compression"
+echo "----------------------------------------------------------------"
 
-/usr/local/parallel/bin/parallel -j$1 python3 rangeCompress/code/python/range_Compress.py $2 :::: $3
+cd /zippy/MARS/code/supl/SHARAD/sharad-tools/rangeCompress/code/python
+
+/usr/bin/parallel -j$1 python3 range_Compress.py $verbose $2 :::: $3
+
 echo "Range compression completed"
-echo "----------"
+echo "----------------------------------------------------------------"
 
-find zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$1/data/rgram/amp/ > rc_out_list.txt
+cd /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/data/rgram/amp
+
+# get list of range compressed files for input to surface power script
+find . -name "*.npy" -exec basename \{} \; > /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/rc_list_$DATE.txt
+
+cd /zippy/MARS/code/supl/SHARAD/sharad-tools
+
 echo "Calculating surface reflectivity"
-/usr/local/parallel/bin/parallel -j$1 python3 surfPow/surf_Pow.py $2 :::: rc_out_list.txt
+/usr/bin/parallel -j$1 python3 surfPow/surf_Pow.py $verbose $2 :::: /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/rc_list_$DATE.txt
 echo "Surface reflectivity calculation completed"
-echo "----------"
+echo "----------------------------------------------------------------"
 
 echo "Removing data files"
-rm -r zippy/MARS/targ/SHARAD/EDR/rangeCompress/$1/data/
-rm rc_out_list.txt
-echo "----------"
+rm -r /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/data/
+rm -r /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/browse/
+
+# make/append readme to show that range compression was completed on said date
+echo "$2 range compression completed on $DATE" >> /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/README.txt
+echo "----------------------------------------------------------------"
 
 # display run time
-echo "Runtime: $(($SECONDS / 3600))hrs $((($SECONDS / 60) % 60))min $(($SECONDS % 60))sec"
+echo "Total Runtime: $(($SECONDS / 3600))hrs $((($SECONDS / 60) % 60))min $(($SECONDS % 60))sec"
+echo "----------------------------------------------------------------"

@@ -1,3 +1,4 @@
+#!/bin/bash
 # wrapper to run radar statistical recon. on SHARAD data
 # inputs - SHARAD surface reflectivity
 # ./SHARADrsr.sh list_of_tracks.txt
