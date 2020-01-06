@@ -11,13 +11,13 @@ Date: 03MAY2019
 # import necessary libraries
 import os,sys,time
 import numpy as np
-sys.path.append('..') # Adds higher directory to python modules path.
+sys.path.append('../..') # Adds higher directory to python modules path.
 from rangeCompress.code.python.read_Aux import aux_Parse
 from rangeCompress.code.python.read_Lbl import lbl_Parse
 
 
-in_path =  '/disk/daedalus/sharaddownload/'
-out_path = '/disk/qnap-2/MARS/orig/supl/SHARAD/EDR/nav/'
+in_path =  '/zippy/sharaddownload/'
+out_path = '/zippy/MARS/orig/supl/SHARAD/EDR/nav/'
 
 t_start = time.time()
 bad_files = []
@@ -51,8 +51,8 @@ for root, dirs, files in os.walk(in_path):
                     navDat[:,4] = auxDF['SOLAR_ZENITH_ANGLE'][:]
                     navDat[:,5] = auxDF['SOLAR_LONGITUDE'][:]
 
-                    # save data
-                    np.savetxt(out_path + runName.split('_')[1] + '_' + runName.split('_')[2] + '_nav.csv', navDat, delimiter = ',', newline = '\n', fmt ='%s')
+                    # save data - downsample by taking every 1000th trace for making db manageable
+                    np.savetxt(out_path + runName.split('_')[1] + '_' + runName.split('_')[2] + '_nav.csv', navDat[::1000,:], delimiter = ',', newline = '\n', fmt ='%s')
 
                 except Exception as err:
                     print('--------------------------------')
