@@ -18,11 +18,13 @@ def main(rgramPath, surfType = 'nadir'):
 
     example call:
 
-    python surf_Pow.py [study_area] [range compressed amplitude data]
+    python surf_Pow.py [verbose] [study_area] [surface type] [window size] [range compressed amplitude data file]
 
     argv[1] is the verbose setting
     argv[2] is study area within $MARS/targ/xtra/SHARAD/EDR/rangeCompress/
-    argv[3] is single obs. or list of obs. within  $MARS/targ/xtra/SHARAD/EDR/rangeCompress/[study_area]/data/rgram/amp/
+    argv[3] is the desired surface type to extract the reflectivity of 
+    argv[4] is the desired window size (# of samples), centered on the nadir surface
+    argv[5] is single obs. file or list of obs. files within  $MARS/targ/xtra/SHARAD/EDR/rangeCompress/[study_area]/data/rgram/amp/
 
     author: Brandon S. Tober
     created: 30January2018

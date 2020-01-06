@@ -21,14 +21,14 @@ mkdir -p /zippy/MARS/targ/xtra/SHARAD/rsr/$1
 cd /zippy/MARS/code/xtra/
 
 echo "Beginning RSR"
-echo "----------"
+echo "----------------------------------------------------------------"
 echo "Study region: $1"
 echo "Number of cores: $2"
 echo "Window size: $3"
 echo "Step size: $4"
-echo "----------"
+echo "----------------------------------------------------------------"
 /usr/local/parallel/bin/parallel -j1 python -m rsr.main $1 $2 $3 $4 :::: $5
 echo "RSR completed"
-echo "----------"
+echo "----------------------------------------------------------------"
 # display run time
 echo "Runtime: $(($SECONDS / 3600))hrs $((($SECONDS / 60) % 60))min $(($SECONDS % 60))sec"

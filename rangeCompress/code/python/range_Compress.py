@@ -32,7 +32,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     Example call:  
 
 
-    python range_Compress.py argv[1] argv[2] argv[3] argv[4] argv[5] argv[6]
+    python range_Compress.py [verbose] [study region] [chirp type] [window type] [stacking factor] [sharad obs.]
 
     argv[1] is the verbose setting
     argv[2] is study region
