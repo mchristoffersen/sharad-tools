@@ -47,14 +47,14 @@ def main(rgramPath, surfType = 'nadir'):
     elif dataSet =='stack':
         navPath = in_path + 'data/geom/' + fileName + '_geom_stack.csv'
 
-    navFile = np.genfromtxt(navPath, delimiter = ',', dtype = None)                                                         # open geom nav file for rgram to append surface echo power to each trace                                                 
+    navFile = np.genfromtxt(navPath, delimiter = ',', dtype = None, names = True)                                                         # open geom nav file for rgram to append surface echo power to each trace                                                 
     amp = np.load(rgramPath)
     pow = np.power(amp,2)                                                                                                   # convert amplitude radargram to power (squared amp)                                          
     (r,c) = amp.shape   
     nadbin = np.zeros(c)                                                                                                # empty array to hold pixel location for each trace of nadir location
     binsize = .0375e-6
     speedlight = 299792458
-    shift = navFile[:,12]                                                                                               # receive window opening time shift from EDR aux data
+    shift = navFile['RECEIVE_WINDOW_OPENING_TIME']                                                                                               # receive window opening time shift from EDR aux data
 
     navdat = GetNav_geom(navPath)                                                                                       # convert x,y,z MRO position vectors to spheroid referenced lat,long, radius
 

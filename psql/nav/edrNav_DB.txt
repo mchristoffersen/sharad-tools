@@ -1,11 +1,11 @@
 CREATE TABLE edr.nav(
 	line   TEXT,
 	trace   INT,
-	lat   FLOAT,
 	lon   FLOAT,
+	lat   FLOAT,
 	sza   FLOAT
 );
 
-CREATE INDEX loc ON edr.nav (lat,lon);
+CREATE INDEX loc ON edr.nav (lon,lat);
 CREATE INDEX line ON edr.nav (line);
 CREATE INDEX sza ON edr.nav (sza);

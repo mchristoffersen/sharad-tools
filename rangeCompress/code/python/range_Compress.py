@@ -134,6 +134,10 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     if stackFac != 0:
         geomData_stack = np.zeros((stackCols,13))
 
+    header = """LINE,TRACE,X_MARS_SC_POSITION_VECTOR,Y_MARS_SC_POSITION_VECTOR,Z_MARS_SC_POSITION_VECTOR,SPACECRAFT_ALTITUDE,
+                SUB_SC_EAST_LONGITUDE,SUB_SC_PLANETOCENTRIC_LATITUDE,SUB_SC_PLANETOGRAPHIC_LATITUDE,MARS_SC_RADIAL_VELOCITY,
+                MARS_SC_TANGENTIAL_VELOCITY,SOLAR_ZENITH_ANGLE,RECEIVE_WINDOW_OPENING_TIME"""
+
     #-------------------
     # setup complete; begin range compression
     #------------------- 
@@ -195,7 +199,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
             geomData_stack[_i,0] = int(runName.split('_')[1] + runName.split('_')[2])
             geomData_stack[_i,1] = int(_i)
             geomData_stack[_i,2:] = geomData[int((stackFac*_i) + (((stackFac+1) / 2) - 1)),2:]
-        np.savetxt(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom_stack.csv', geomData_stack, delimiter = ',', newline = '\n', fmt ='%s')
+        np.savetxt(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom_stack.csv', geomData_stack, delimiter = ',', newline = '\n', fmt ='%s', header=header, comments='')
         np.save(out_path + 'data/rgram/stack/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_stack.npy', ampStack)
         print('Stacking complete')
     else:
@@ -204,7 +208,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
 
     # create radargram and save data
     rgram(ampOut, out_path, runName, chirp, windowName, rel = True)
-    np.savetxt(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n', fmt ='%s')
+    np.savetxt(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n', fmt ='%s', header=header, comments='')
     # np.save(out_path + 'data/rgram/comp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_raw.npy', EDRData)
     np.save(out_path + 'data/rgram/amp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_amp.npy', ampOut)
     print('Data output complete')
