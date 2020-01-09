@@ -129,7 +129,7 @@ def main(rgramPath, surfType = 'nadir'):
     surfAmp = np.reshape(amp[surf, np.arange(c)], (c,1))                                                                    # record power in dB
     surfPow = 20 * (np.log10(surfAmp))
     if len(navFile.dtype.names) == 13:                                                                                      # append surf pow values to geom.tab file. this should be the 13th column
-        navFile = np.append(navFile, surfAmp, 1)
+        navFile = np.append(navFile, surfAmp)
 
     elif len(navFile.dtype.names) == 14:                                                                                    # if surfPow with specified surf has already been run and it is being re-run, overwrite 6th column with new pow values
         navFile[:,14] = surfAmp[:,0]
@@ -156,16 +156,16 @@ def main(rgramPath, surfType = 'nadir'):
     imarray[surf, np.arange(c),2] = 0
 
     if dataSet == 'amp':
-        np.savetxt(out_path + fileName + '_' + surfType + '_geom.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s')
-        np.savetxt(out_path + fileName + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', newline = '\n', comments = '', fmt='%.8f')
+        np.savetxt(out_path + fileName + '_' + surfType + '_geom.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s', header=header, comments='')
+        np.savetxt(out_path + fileName + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', newline = '\n', comments = '', fmt='%s')
         try:
             Image.fromarray(imarray[:,::32], 'RGB').save(out_path + fileName + '_' + dataSet + '_' + surfType + '.jpg')
         except Exception as err:
             print(err)
             
     elif dataSet == 'stack':
-        np.savetxt(out_path + fileName + '_' + dataSet + '_' + surfType + '_geom.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s')
-        np.savetxt(out_path + fileName + '_' + dataSet + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', newline = '\n', comments = '', fmt='%.8f')
+        np.savetxt(out_path + fileName + '_' + dataSet + '_' + surfType + '_geom.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s', header=header, comments='')
+        np.savetxt(out_path + fileName + '_' + dataSet + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', newline = '\n', comments = '', fmt='%s')
         try:
             Image.fromarray(imarray, 'RGB').save(out_path + fileName + '_' + dataSet + '_' + surfType + '.jpg')
         except Exception as err:
