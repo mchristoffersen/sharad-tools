@@ -128,7 +128,8 @@ def main(rgramPath, surfType = 'nadir'):
     surf = surf.astype(int)
     surfAmp = np.reshape(amp[surf, np.arange(c)], (c,1))                                                                    # record power in dB
     surfPow = 20 * (np.log10(surfAmp))
-
+    print(len(navFile))
+    sys.exit()
     if navFile.shape[1] == 13:                                                                                              # append surf pow values to geom.tab file. this should be the 13th column
         navFile = np.append(navFile, surfAmp, 1)
 

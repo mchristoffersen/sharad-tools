@@ -63,7 +63,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     BitsPerSample = lblDic['INSTR_MODE_ID']['BitsPerSample']
 
     # toggle on to downsize for testing purposes
-    records = int(records / 1000)
+    records = int(records / 10000)
 
     # presumming is just for visualization purposes
     if stackFac != 0:
@@ -130,13 +130,11 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
             ampStack = np.zeros((3600, stackCols))   
        
 
-    geomData = np.zeros((records,13))
+    geomData = np.zeros((records,13)).astype(str)
     if stackFac != 0:
-        geomData_stack = np.zeros((stackCols,13))
+        geomData_stack = np.zeros((stackCols,13)).astype(str)
 
-    header = """LINE,TRACE,X_MARS_SC_POSITION_VECTOR,Y_MARS_SC_POSITION_VECTOR,Z_MARS_SC_POSITION_VECTOR,SPACECRAFT_ALTITUDE,
-                SUB_SC_EAST_LONGITUDE,SUB_SC_PLANETOCENTRIC_LATITUDE,SUB_SC_PLANETOGRAPHIC_LATITUDE,MARS_SC_RADIAL_VELOCITY,
-                MARS_SC_TANGENTIAL_VELOCITY,SOLAR_ZENITH_ANGLE,RECEIVE_WINDOW_OPENING_TIME"""
+    header = 'LINE,TRACE,X_MARS_SC_POSITION_VECTOR,Y_MARS_SC_POSITION_VECTOR,Z_MARS_SC_POSITION_VECTOR,SPACECRAFT_ALTITUDE,SUB_SC_EAST_LONGITUDE,SUB_SC_PLANETOCENTRIC_LATITUDE,SUB_SC_PLANETOGRAPHIC_LATITUDE,MARS_SC_RADIAL_VELOCITY,MARS_SC_TANGENTIAL_VELOCITY,SOLAR_ZENITH_ANGLE,RECEIVE_WINDOW_OPENING_TIME'
 
     #-------------------
     # setup complete; begin range compression
@@ -173,8 +171,8 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
 
     # create geom array with relavant data for each record
     for _i in range(records):
-        geomData[_i,0] = int(runName.split('_')[1] + runName.split('_')[2])
-        geomData[_i,1] = int(_i)
+        geomData[_i,0] = runName.split('_')[1] + '_' + runName.split('_')[2]
+        geomData[_i,1] = _i
         geomData[_i,2] = auxDF['X_MARS_SC_POSITION_VECTOR'][_i]
         geomData[_i,3] = auxDF['Y_MARS_SC_POSITION_VECTOR'][_i]
         geomData[_i,4] = auxDF['Z_MARS_SC_POSITION_VECTOR'][_i]
@@ -196,8 +194,8 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     if stackFac != 0:
         for _i in range(stackCols):
             ampStack[:,_i] = np.mean(ampOut[:,stackFac*_i:stackFac*(_i+1)], axis = 1)
-            geomData_stack[_i,0] = int(runName.split('_')[1] + runName.split('_')[2])
-            geomData_stack[_i,1] = int(_i)
+            geomData_stack[_i,0] = runName.split('_')[1] + '_' + runName.split('_')[2]
+            geomData_stack[_i,1] = _i
             geomData_stack[_i,2:] = geomData[int((stackFac*_i) + (((stackFac+1) / 2) - 1)),2:]
         np.savetxt(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom_stack.csv', geomData_stack, delimiter = ',', newline = '\n', fmt ='%s', header=header, comments='')
         np.save(out_path + 'data/rgram/stack/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_stack.npy', ampStack)
