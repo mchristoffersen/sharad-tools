@@ -128,12 +128,10 @@ def main(rgramPath, surfType = 'nadir'):
     surf = surf.astype(int)
     surfAmp = np.reshape(amp[surf, np.arange(c)], (c,1))                                                                    # record power in dB
     surfPow = 20 * (np.log10(surfAmp))
-    print(len(navFile))
-    sys.exit()
-    if navFile.shape[1] == 13:                                                                                              # append surf pow values to geom.tab file. this should be the 13th column
+    if len(navFile.dtype.names) == 13:                                                                                      # append surf pow values to geom.tab file. this should be the 13th column
         navFile = np.append(navFile, surfAmp, 1)
 
-    else:                                                                                                                   # if surfPow with specified surf has already been run and it is being re-run, overwrite 6th column with new pow values
+    elif len(navFile.dtype.names) == 14:                                                                                    # if surfPow with specified surf has already been run and it is being re-run, overwrite 6th column with new pow values
         navFile[:,14] = surfAmp[:,0]
 
     maxPow = np.argmax(pow, axis = 0)                                                                                       # find max power in each trace
