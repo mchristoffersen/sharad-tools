@@ -49,7 +49,7 @@ for root, dirs, files in os.walk(in_path):
                     navDat[:,2] = auxDF['SUB_SC_EAST_LONGITUDE'][:]
                     navDat[:,3] = auxDF['SUB_SC_PLANETOCENTRIC_LATITUDE'][:]
                     navDat[:,4] = auxDF['SOLAR_ZENITH_ANGLE'][:]
-                    # save data - downsample by taking every 1000th trace for making db manageable
+                    # save data - downsample by taking every 100th trace for making db manageable
                     np.savetxt(out_path + runName.split('_')[1] + '_' + runName.split('_')[2] + '_nav.csv', navDat[::100,:], delimiter = ',', newline = '\n', fmt ='%s')
 
                 except Exception as err:
