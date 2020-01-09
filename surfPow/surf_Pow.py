@@ -47,14 +47,14 @@ def main(rgramPath, surfType = 'nadir'):
     elif dataSet =='stack':
         navPath = in_path + 'data/geom/' + fileName + '_geom_stack.csv'
 
-    navFile = np.genfromtxt(navPath, delimiter = ',', dtype = None, names = True)                                                         # open geom nav file for rgram to append surface echo power to each trace                                                 
+    navFile = np.genfromtxt(navPath, delimiter = ',', dtype = None)                                                         # open geom nav file for rgram to append surface echo power to each trace                                                 
     amp = np.load(rgramPath)
     pow = np.power(amp,2)                                                                                                   # convert amplitude radargram to power (squared amp)                                          
     (r,c) = amp.shape   
     nadbin = np.zeros(c)                                                                                                # empty array to hold pixel location for each trace of nadir location
     binsize = .0375e-6
     speedlight = 299792458
-    shift = navFile['RECEIVE_WINDOW_OPENING_TIME']                                                                                               # receive window opening time shift from EDR aux data
+    shift = navFile[-1]                                                                                               # receive window opening time shift from EDR aux data
 
     navdat = GetNav_geom(navPath)                                                                                       # convert x,y,z MRO position vectors to spheroid referenced lat,long, radius
 
@@ -128,10 +128,10 @@ def main(rgramPath, surfType = 'nadir'):
     surf = surf.astype(int)
     surfAmp = np.reshape(amp[surf, np.arange(c)], (c,1))                                                                    # record power in dB
     surfPow = 20 * (np.log10(surfAmp))
-    if len(navFile.dtype.names) == 13:                                                                                      # append surf pow values to geom.tab file. this should be the 13th column
+    if navFile.shape[1] == 13:                                                                                      # append surf pow values to geom.tab file. this should be the 13th column
         navFile = np.append(navFile, surfAmp)
 
-    elif len(navFile.dtype.names) == 14:                                                                                    # if surfPow with specified surf has already been run and it is being re-run, overwrite 6th column with new pow values
+    elif navFile.shape[1] == 14:                                                                                    # if surfPow with specified surf has already been run and it is being re-run, overwrite 6th column with new pow values
         navFile[:,14] = surfAmp[:,0]
 
     maxPow = np.argmax(pow, axis = 0)                                                                                       # find max power in each trace
@@ -155,6 +155,7 @@ def main(rgramPath, surfType = 'nadir'):
     imarray[surf, np.arange(c),0] = imarray[surf, np.arange(c),1] = 255                                                     # make index given by fret algorithm yellow
     imarray[surf, np.arange(c),2] = 0
 
+    header = 'LINE,TRACE,X_MARS_SC_POSITION_VECTOR,Y_MARS_SC_POSITION_VECTOR,Z_MARS_SC_POSITION_VECTOR,SPACECRAFT_ALTITUDE,SUB_SC_EAST_LONGITUDE,SUB_SC_PLANETOCENTRIC_LATITUDE,SUB_SC_PLANETOGRAPHIC_LATITUDE,MARS_SC_RADIAL_VELOCITY,MARS_SC_TANGENTIAL_VELOCITY,SOLAR_ZENITH_ANGLE,RECEIVE_WINDOW_OPENING_TIME,SREF'
     if dataSet == 'amp':
         np.savetxt(out_path + fileName + '_' + surfType + '_geom.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s', header=header, comments='')
         np.savetxt(out_path + fileName + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', newline = '\n', comments = '', fmt='%s')
