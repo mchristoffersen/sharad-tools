@@ -5,11 +5,14 @@ import sys, os, time
 Database should be set using commands in sref_bh_nh_DB.txt - run these commands through postgresql database.
 .csv files should be structured as per $MARS/code/supl/SHARAD/sharad-tools/rangeCompress/code/python/labe/geomData.lbl with sref appended in the last column from code $MARS/code/supl/SHARAD/sharad-tools/surfPow/surf_Pow.py
 '''
- 
-def main():
+
+def blockPrint():
+    sys.stdout = open(os.devnull, 'w')
+
+def main(roi):
 	t0 = time.time()
 	#Define our connection string
-	conn_string = "host='localhost' dbname='sharad' user='btober' password='secret'"
+	conn_string = "host='localhost' dbname='sharad' user='postgres' password='postgres'"
 
 	# print the connection string we will use to connect
 	print("Connecting to database\n ->" + (conn_string))
@@ -22,7 +25,7 @@ def main():
 	print("Connected!")
 	print("----------------\n")
 
-	path = '/home/btober/Documents/sref/bh_sh_bt/stack/'
+	path = '/zippy/MARS/targ/xtra/SHARAD/EDR/surfPow/' + roi + '/'
 
 	for filename in os.listdir(path):
 		if(filename.endswith('.csv')):
@@ -30,12 +33,14 @@ def main():
 			print(number)
 			data = open(path + filename)
 			data = data.read().replace("-inf","'-Infinity'").split('\n')
+			# skip header
+			del data[0]
 			dline = data[0].split(',')
 			del data[-1]
-			insstr = "INSERT INTO sref.bh_sh_stack VALUES ({}, {}, {}, {}, {}, {})".format(int(float(dline[0])), int(float(dline[1])), dline[7], dline[6], dline[11], dline[-1])
+			insstr = "INSERT INTO edr.sref VALUES ('{}', {}, {}, {}, {}, {}, '{}', {})".format(roi, dline[0].split('_')[0] + dline[0].split('_')[1], dline[1], dline[2], dline[3], dline[4], dline[5], dline[6])
 			for i in range(1,len(data)):
 				dline = data[i].split(',');
-				insstr = insstr + ",({}, {}, {}, {}, {}, {})".format(int(float(dline[0])), int(float(dline[1])), dline[7], dline[6], dline[11], dline[-1])
+				insstr = insstr + ",('{}', {}, {}, {}, {}, {}, '{}', {})".format(roi, dline[0].split('_')[0] + dline[0].split('_')[1], dline[1], dline[2], dline[3], dline[4], dline[5], dline[6])
 			insstr = insstr + ";"
 			cursor.execute(insstr)
 
@@ -49,4 +54,8 @@ def main():
 	print('--------------------------------')
 
 if __name__ == "__main__":
-	main()
+	verbose = int(sys.argv[1])
+	if verbose == 0:
+		blockPrint()
+	roi = sys.argv[2]
+	main(roi)

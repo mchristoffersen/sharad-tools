@@ -34,25 +34,25 @@ echo "Number of threads: $1"
 echo "Number of tracks to process: $NUMTRACKS"
 echo "Verbose: $verbose"
 echo "----------------------------------------------------------------"
-# echo "Beginning range compression"
-# echo "Chirp type: $CHIRP"
-# echo "Stacking factor: $STACKFAC"
-# echo "Beta: $BETA"
-# echo "----------------------------------------------------------------"
+echo "Beginning range compression"
+echo "Chirp type: $CHIRP"
+echo "Stacking factor: $STACKFAC"
+echo "Beta: $BETA"
+echo "----------------------------------------------------------------"
 
-# cd /zippy/MARS/code/supl/SHARAD/sharad-tools/rangeCompress/code/python
+cd /zippy/MARS/code/supl/SHARAD/sharad-tools/rangeCompress/code/python
 
-# /usr/bin/parallel -j$1 python3 range_Compress.py $verbose $2 $CHIRP $BETA $STACKFAC :::: $3
+/usr/bin/parallel -j$1 python3 range_Compress.py $verbose $2 $CHIRP $BETA $STACKFAC :::: $3
 
-# echo "Range compression completed"
-# echo "----------------------------------------------------------------"
+echo "Range compression completed"
+echo "----------------------------------------------------------------"
 
-# cd /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/data/rgram/amp
+cd /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/data/rgram/amp
 
-# # get list of range compressed files for input to surface power script
-# find . -name "*.npy" -exec basename \{} \; > /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/rc_list_$DATE.txt
+# get list of range compressed files for input to surface power script
+find . -name "*.npy" -exec basename \{} \; > /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/rc_list_$DATE.txt
 
-# cd /zippy/MARS/code/supl/SHARAD/sharad-tools
+cd /zippy/MARS/code/supl/SHARAD/sharad-tools
 
 echo "Calculating surface reflectivity"
 echo "Surface type: $SURFTYPE"
@@ -63,11 +63,17 @@ echo "Surface reflectivity calculation completed"
 echo "----------------------------------------------------------------"
 
 echo "Removing data files"
-# rm -r /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/data/
-# rm -r /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/browse/
+rm -r /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/data/
+rm -r /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/browse/
 
 # make/append readme to show that range compression was completed on said date
 echo "$2 range compression completed on $DATE" >> /zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/$2/README.txt
+echo "----------------------------------------------------------------"
+
+echo "Adding surface reflectivity measurements to postgres database"
+
+python3 psql/sref/sref_psql_import.py $verbose $2
+
 echo "----------------------------------------------------------------"
 
 # display run time

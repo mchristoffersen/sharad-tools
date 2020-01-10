@@ -1,9 +1,11 @@
+
 # import necessary libraries
 from nadir import *
 import os,sys
 from PIL import Image
 import numpy as np
 import time
+import pandas as pd
 
 def blockPrint():
     sys.stdout = open(os.devnull, 'w')
@@ -28,33 +30,34 @@ def main(rgramPath, surfType = 'nadir'):
 
     author: Brandon S. Tober
     created: 30January2018
-    updated: 03January2020
+    updated: 10January2020
     '''
     t0 = time.time()                                                                                                        # start time
     fileName = rgramPath.split('/')[-1]
+    chirp = fileName.split('_')[2]
     fileName = fileName.split('_')[0] + '_' + fileName.split('_')[1]
 
     print('--------------------------------')
     print('Extracting surface power [' + surfType + '] for observation: ' + fileName)
-    
 
     dem_path = '/zippy/MARS/code/modl/simc/test/temp/dem/megt_128_merge.tif'                                       # Grab megt and $
     aer_path = '/zippy/MARS/code/modl/simc/test/temp/dem/mega_16.tif'
-
 
     if dataSet == 'amp':
         navPath = in_path + 'data/geom/' + fileName + '_geom.csv'
     elif dataSet =='stack':
         navPath = in_path + 'data/geom/' + fileName + '_geom_stack.csv'
+    
+    navDat = pd.read_csv(navPath, sep = ',', usecols = (0,1,6,7,11,12))
 
-    navFile = np.genfromtxt(navPath, delimiter = ',', dtype = None)                                                         # open geom nav file for rgram to append surface echo power to each trace                                                 
     amp = np.load(rgramPath)
     pow = np.power(amp,2)                                                                                                   # convert amplitude radargram to power (squared amp)                                          
     (r,c) = amp.shape   
     nadbin = np.zeros(c)                                                                                                # empty array to hold pixel location for each trace of nadir location
     binsize = .0375e-6
-    speedlight = 299792458
-    shift = navFile[-1]                                                                                               # receive window opening time shift from EDR aux data
+    speedlight = 29979245
+
+    shift = navDat['RECEIVE_WINDOW_OPENING_TIME']                                                                      # receive window opening time shift from EDR aux data
 
     navdat = GetNav_geom(navPath)                                                                                       # convert x,y,z MRO position vectors to spheroid referenced lat,long, radius
 
@@ -68,10 +71,9 @@ def main(rgramPath, surfType = 'nadir'):
         if(aer_nadir[i].z == aer.nd):
             aer_nadir[i].z = aer_nadir[i-1].z                                                                           # account for aeroid no data values
         navdat[i].z = navdat[i].z - aer_nadir[i].z                                                                      # MRO elevation above aeroid: subtract out aeroid
-        
         if np.abs(nad_loc[i].z) > 1e10:                                                                                 # account for no data values from mola dem - assign previous value if n.d.
             nad_loc[i].z = nad_loc[i-1].z
- 
+
         nadbin[i] = ((((navdat[i].z-nad_loc[i].z) * 2 / speedlight) - shift[i]) / binsize) + 55                         # take MRO height above aeroid, subtract mola elevation, account for SHARAD receive window opening time shift and convert to pixels ### 55 pixels added to place nadir surface at relatively correct place - need to add ionosphereic correction
         nadbin[i] = nadbin[i] % 3600                                                                                    # take modulo in case pixel is location of nadir is greater then max rgram dimensions
     nadbin = nadbin.astype(int)
@@ -126,13 +128,8 @@ def main(rgramPath, surfType = 'nadir'):
 
     # record surface power in text file and geomdata file
     surf = surf.astype(int)
-    surfAmp = np.reshape(amp[surf, np.arange(c)], (c,1))                                                                    # record power in dB
+    surfAmp = amp[surf,np.arange(c)]
     surfPow = 20 * (np.log10(surfAmp))
-    if navFile.shape[1] == 13:                                                                                      # append surf pow values to geom.tab file. this should be the 13th column
-        navFile = np.append(navFile, surfAmp)
-
-    elif navFile.shape[1] == 14:                                                                                    # if surfPow with specified surf has already been run and it is being re-run, overwrite 6th column with new pow values
-        navFile[:,14] = surfAmp[:,0]
 
     maxPow = np.argmax(pow, axis = 0)                                                                                       # find max power in each trace
     noise_floor = np.mean(pow[:50,:])                                                                                       # define a noise floor from average power of flattened first 50 rows
@@ -155,17 +152,24 @@ def main(rgramPath, surfType = 'nadir'):
     imarray[surf, np.arange(c),0] = imarray[surf, np.arange(c),1] = 255                                                     # make index given by fret algorithm yellow
     imarray[surf, np.arange(c),2] = 0
 
-    header = 'LINE,TRACE,X_MARS_SC_POSITION_VECTOR,Y_MARS_SC_POSITION_VECTOR,Z_MARS_SC_POSITION_VECTOR,SPACECRAFT_ALTITUDE,SUB_SC_EAST_LONGITUDE,SUB_SC_PLANETOCENTRIC_LATITUDE,SUB_SC_PLANETOGRAPHIC_LATITUDE,MARS_SC_RADIAL_VELOCITY,MARS_SC_TANGENTIAL_VELOCITY,SOLAR_ZENITH_ANGLE,RECEIVE_WINDOW_OPENING_TIME,SREF'
+
+    # append sref field to geom data
+    navDat['CHIRP'] = np.repeat(np.array(chirp),c)
+    navDat['SREF'] = surfAmp
+
+    # remove receive window open time from dataframe
+    navDat = navDat.drop(columns = 'RECEIVE_WINDOW_OPENING_TIME')
+
     if dataSet == 'amp':
-        np.savetxt(out_path + fileName + '_' + surfType + '_geom.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s', header=header, comments='')
+        navDat.to_csv(out_path + fileName + '_' + surfType + '_geom.csv', index = False)
         np.savetxt(out_path + fileName + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', newline = '\n', comments = '', fmt='%s')
         try:
             Image.fromarray(imarray[:,::32], 'RGB').save(out_path + fileName + '_' + dataSet + '_' + surfType + '.jpg')
         except Exception as err:
             print(err)
-            
+
     elif dataSet == 'stack':
-        np.savetxt(out_path + fileName + '_' + dataSet + '_' + surfType + '_geom.csv', navFile, delimiter = ',', newline = '\n', fmt= '%s', header=header, comments='')
+        navDat.to_csv(out_path + fileName + '_' + dataSet + '_' + surfType + '_geom.csv', index = False)
         np.savetxt(out_path + fileName + '_' + dataSet + '_' + surfType + '_pow.txt', surfAmp, delimiter=',', newline = '\n', comments = '', fmt='%s')
         try:
             Image.fromarray(imarray, 'RGB').save(out_path + fileName + '_' + dataSet + '_' + surfType + '.jpg')
@@ -192,25 +196,6 @@ if __name__ == '__main__':
     # ---------------
     in_path = '/zippy/MARS/targ/xtra/SHARAD/EDR/rangeCompress/' + study_area
     out_path = '/zippy/MARS/targ/xtra/SHARAD/EDR/surfPow/' + study_area
-    # if os.getcwd().split('/')[1] == 'media':
-    #     mars_path = '/media/anomalocaris/Swaps' + mars_path
-    #     in_path = '/media/anomalocaris/Swaps' + in_path
-    #     out_path = '/media/anomalocaris/Swaps' + out_path
-    # elif os.getcwd().split('/')[1] == 'mnt':
-    #     mars_path = '/mnt/d' + mars_path
-    #     in_path = '/mnt/d' + in_path
-    #     out_path = '/mnt/d' + out_path
-    # elif os.getcwd().split('/')[1] == 'zippy':
-    #     mars_path = '/disk/qnap-2' + mars_path
-    #     in_path = '/disk/qnap-2' + in_path
-    #     out_path = '/disk/qnap-2' + out_path
-    # elif os.getcwd().split('/')[1] == 'home':
-    #     mars_path = '/home/btober/Documents' + mars_path
-    #     in_path = '/home/btober/Documents' + in_path
-    #     out_path = '/home/btober/Documents' + out_path
-    # else:
-    #     print('Data path not found')
-    #     sys.exit()
 
     # create necessary output directories
     try:
@@ -237,19 +222,3 @@ if __name__ == '__main__':
             main(rgramPath, surfType = surfType)
         else:
             print('Surface power extraction [' + surfType + '] of observation ' + fileName + ' already completed!')
-    
-    # ---------------
-    # set up for running on directory on obs at a time - this currently does not work - navdat gets appended to for nadir surface with each obs.
-    # ---------------
-    # for file in os.listdir(in_path + 'data/rgram/amp/'):
-    #     if file.endswith('slc_amp.npy'):
-    #         rgramPath = file
-    #         rgramPath = in_path + 'data/rgram/amp/' + rgramPath
-    #         fileName = rgramPath.split('/')[-1]
-    #         fileName = fileName.split('_')[0] + '_' + fileName.split('_')[1]
-
-    #         if (not os.path.isfile(out_path + fileName + '_' + surfType + '.png')):
-    #             main(rgramPath, surfType = surfType)
-    #         else :
-    #             print('\nSurface power extraction [' + surfType + '] of observation ' + fileName \
-    #         + ' already completed! Moving to next line!')

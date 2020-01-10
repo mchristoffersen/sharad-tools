@@ -10,6 +10,7 @@ from read_Anc import anc_Parse
 from read_Chirp import open_Chirp
 from plotting import rgram
 from read_EDR import EDR_Parse, sci_Decompress
+import warnings
 
 def blockPrint():
     sys.stdout = open(os.devnull, 'w')
@@ -49,6 +50,9 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     Last Updated: 22May2019
     -----------
     """
+    # disable runtime warnings
+    warnings.simplefilter("ignore", category=RuntimeWarning)
+
     t0 = time.time()                                            # start time
     print('--------------------------------')
     print(runName)
@@ -63,7 +67,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     BitsPerSample = lblDic['INSTR_MODE_ID']['BitsPerSample']
 
     # toggle on to downsize for testing purposes
-    records = int(records / 10000)
+    # records = int(records / 10000)
 
     # presumming is just for visualization purposes
     if stackFac != 0:
@@ -139,7 +143,6 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     #-------------------
     # setup complete; begin range compression
     #------------------- 
-
     if chirp =='calib':
         refChirpMF_pad = np.pad(refChirpMF,[(0,0),(0,4096 - refChirpMF.shape[1])], 'constant')      # zeros pad reference chirp to length 4096 prior to range compression to account for missing sample in fourier spectra
         sciPad = np.pad(sci,[(0,4096 - sci.shape[0]),(0,0)],'constant')                             # zero-pad science data to length of 4096
@@ -154,7 +157,6 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
 
         # truncate revised and alternate range compressed vector to 3600
         EDRData = EDRData[:3600,:]
-
     else:
         for _i in range(records):
             #-------------------
@@ -203,7 +205,6 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     else:
         print('No stacking specified')
 
-
     # create radargram and save data
     rgram(ampOut, out_path, runName, chirp, windowName, rel = True)
     np.savetxt(out_path + 'data/geom/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_geom.csv', geomData, delimiter = ',', newline = '\n', fmt ='%s', header=header, comments='')
@@ -211,7 +212,6 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     np.save(out_path + 'data/rgram/amp/' + runName.split('_')[1] + '_' + runName.split('_')[2] + '_' + chirp + '_' + windowName + '_slc_amp.npy', ampOut)
     print('Data output complete')
     
-
     t1 = time.time()        # end time
     print('--------------------------------')
     print('Runtime: ' + str(round((t1 - t0),4)) + ' seconds')

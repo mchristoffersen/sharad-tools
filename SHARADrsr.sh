@@ -4,13 +4,20 @@
 # ./SHARADrsr.sh list_of_tracks.txt
 # BST - 02JAN2020
 
-
+#   -v|--v|--ve|--ver|--verb|--verbo|--verbos|--verbose sets the verbose setting to true - print statements executed in python scripts
 # $1 is the study region name
 # $2 is the number of cores to use to process each track
 # $3 is the window size for rsr
 # $4 is the step size for rsr
 # $5 is a SHARAD surface reflectivity data file, or list of files - geom data with surface reclectivity
 
+verbose=0
+# verbose flag
+case "$1" in
+-v|--v|--ve|--ver|--verb|--verbo|--verbos|--verbose)
+    verbose=1
+    shift ;;
+esac
 ###CODE###
 # reset bash time counter
 SECONDS=0
@@ -26,8 +33,9 @@ echo "Study region: $1"
 echo "Number of cores: $2"
 echo "Window size: $3"
 echo "Step size: $4"
+echo "Verbose: $verbose"
 echo "----------------------------------------------------------------"
-/usr/local/parallel/bin/parallel -j1 python -m rsr.main $1 $2 $3 $4 :::: $5
+/usr/local/parallel/bin/parallel -j1 python -m rsr.main $verbose $1 $2 $3 $4 :::: $5
 echo "RSR completed"
 echo "----------------------------------------------------------------"
 # display run time

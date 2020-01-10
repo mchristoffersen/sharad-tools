@@ -46,23 +46,3 @@ header = 'line,trace,lat,long,sza,sref,sref_dB'
 
 
 np.savetxt(file_out,out,delimiter=',',newline='\n',comments='',header=header,fmt='%s')
-
-
-
-
-
-
-# with open('nh_bh_bt_sza100+_reproject.csv') as f:
-#      mylines = f.read().splitlines()
-
-# newlines=[]
-# for _i in range(1,len(mylines)):
-#      if float( mylines[_i].split(',')[-2]) != float('0.0'):
-#              newlines.append(mylines[_i])
-
-# newlines.insert(0,mylines[0])
-
-# with open('nh_bh_bt_sza100+_reproject_noNull.csv','w') as file:																																							
-# 	for line in newlines:
-# 		file.write(line)
-# 		file.write('\n')

@@ -1,0 +1,16 @@
+CREATE TABLE edr.sref(
+	roi   TEXT,
+	line   TEXT,
+	trace   INT,
+	lon   FLOAT,
+	lat   FLOAT,
+	sza   FLOAT,
+	chirp   TEXT,
+	sref   FLOAT
+);
+
+CREATE INDEX idx_roi_sref ON edr.sref (roi);
+CREATE INDEX idx_chirp_sref ON edr.sref (chirp);
+CREATE INDEX idx_loc_sref ON edr.sref (lon,lat);
+CREATE INDEX idx_line_sref ON edr.sref (line);
+CREATE INDEX idx_sza_sref ON edr.sref (sza);

@@ -35,4 +35,4 @@ echo "----------------------"
 # modify the list to match PDS naming structure
 python psql/sharadList_mod.py /tmp/$fname.csv
 
-echo "query results output to: $/tmp/$fname.csv"
+echo "query results output to: /tmp/$fname.csv"
