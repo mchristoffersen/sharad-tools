@@ -2,6 +2,8 @@
 
 # wrapper to range compress SHARAD EDRs then calculate surface reflectivity
 
+# run in conda py3 environment - conda activate py3
+
 # inputs - list of SHARAD tracks for which to calculate reflectivity
 
 # ./SHARADreflecitity.sh [number of jobs] [study region] [list_of_tracks.txt]

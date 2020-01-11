@@ -1,5 +1,6 @@
 #!/bin/bash
 # wrapper to run radar statistical recon. on SHARAD data
+# run in conda rsr environment - conda activate rsr
 # inputs - SHARAD surface reflectivity
 # ./SHARADrsr.sh list_of_tracks.txt
 # BST - 02JAN2020
@@ -10,6 +11,9 @@
 # $3 is the window size for rsr
 # $4 is the step size for rsr
 # $5 is a SHARAD surface reflectivity data file, or list of files - geom data with surface reclectivity
+
+# example postgres query to get region sref:
+#   COPY(SELECT * FROM edr.sref WHERE roi = 'fuckingBananas' ORDER BY line,trace) to '/tmp/fuckingBananas_sref.csv' WITH (FORMAT CSV, HEADER);
 
 verbose=0
 # verbose flag
@@ -35,7 +39,7 @@ echo "Window size: $3"
 echo "Step size: $4"
 echo "Verbose: $verbose"
 echo "----------------------------------------------------------------"
-/usr/local/parallel/bin/parallel -j1 python -m rsr.main $verbose $1 $2 $3 $4 :::: $5
+python -m rsr.main $verbose $1 $2 $3 $4
 echo "RSR completed"
 echo "----------------------------------------------------------------"
 # display run time
