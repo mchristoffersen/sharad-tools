@@ -6,7 +6,7 @@
 # BST - 02JAN2020
 
 #   -v|--v|--ve|--ver|--verb|--verbo|--verbos|--verbose sets the verbose setting to true - print statements executed in python scripts
-# $1 is the study region name
+# $1 is the study region name - this should be the same name used for this roi's postgres database
 # $2 is the number of cores to use to process each track
 # $3 is the window size for rsr
 # $4 is the step size for rsr

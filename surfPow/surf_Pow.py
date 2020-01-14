@@ -40,7 +40,7 @@ def main(rgramPath, surfType = 'nadir'):
     print('--------------------------------')
     print('Extracting surface power [' + surfType + '] for observation: ' + fileName)
 
-    dem_path = '/zippy/MARS/code/modl/simc/test/temp/dem/megt_128_merge.tif'                                       # Grab megt and $
+    dem_path = '/zippy/MARS/code/modl/simc/test/temp/dem/megt_128_merge.tif'                                       # Grab megt and mega
     aer_path = '/zippy/MARS/code/modl/simc/test/temp/dem/mega_16.tif'
 
     if dataSet == 'amp':

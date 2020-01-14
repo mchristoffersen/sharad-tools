@@ -37,10 +37,10 @@ def main(roi):
 			del data[0]
 			dline = data[0].split(',')
 			del data[-1]
-			insstr = "INSERT INTO edr.sref VALUES ('{}', {}, {}, {}, {}, {}, '{}', {})".format(roi, dline[0].split('_')[0] + dline[0].split('_')[1], dline[1], dline[2], dline[3], dline[4], dline[5], dline[6])
+			insstr = "INSERT INTO sref." + roi + " VALUES ({}, {}, {}, {}, {}, '{}', {})".format(dline[0].split('_')[0] + dline[0].split('_')[1], dline[1], dline[2], dline[3], dline[4], dline[5], dline[6])
 			for i in range(1,len(data)):
 				dline = data[i].split(',');
-				insstr = insstr + ",('{}', {}, {}, {}, {}, {}, '{}', {})".format(roi, dline[0].split('_')[0] + dline[0].split('_')[1], dline[1], dline[2], dline[3], dline[4], dline[5], dline[6])
+				insstr = insstr + ",({}, {}, {}, {}, {}, '{}', {})".format(dline[0].split('_')[0] + dline[0].split('_')[1], dline[1], dline[2], dline[3], dline[4], dline[5], dline[6])
 			insstr = insstr + ";"
 			cursor.execute(insstr)
 

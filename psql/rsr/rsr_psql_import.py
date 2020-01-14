@@ -35,11 +35,11 @@ def main(roi):
             del data[0]
             del data[-1]
             dline = data[0].split(',')
-            insstr = "INSERT INTO edr.rsr VALUES ('{}', {}, {}, {}, {}, {}, '{}', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(roi, dline[0].split('_')[0] + dline[0].split('_')[1], dline[1], dline[2], dline[3], dline[4], dline[5], dline[6], dline[7], dline[8], dline[9], dline[10], dline[11], dline[12], dline[13], dline[14], dline[15], dline[16], dline[17], dline[18], dline[19])
+            insstr = "INSERT INTO rsr." + roi + " VALUES ({}, {}, {}, {},'{}', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(dline[0].split('_')[0] + dline[0].split('_')[1], dline[1], dline[2], dline[3], dline[4], dline[5], dline[6], dline[7], dline[8], dline[9], dline[10], dline[11], dline[12], dline[13], dline[14], dline[15], dline[16], dline[17], dline[18])
             for i in range(1,len(data)):
                 if ('nan' not in data[i]):
                     dline = data[i].split(',');
-                    insstr = insstr + ",('{}', {}, {}, {}, {}, {}, '{}', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(roi, dline[0].split('_')[0] + dline[0].split('_')[1], dline[1], dline[2], dline[3], dline[4], dline[5], dline[6], dline[7], dline[8], dline[9], dline[10], dline[11], dline[12], dline[13], dline[14], dline[15], dline[16], dline[17], dline[18], dline[19])                    
+                    insstr = insstr + ",({}, {}, {}, {},'{}', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(dline[0].split('_')[0] + dline[0].split('_')[1], dline[1], dline[2], dline[3], dline[4], dline[5], dline[6], dline[7], dline[8], dline[9], dline[10], dline[11], dline[12], dline[13], dline[14], dline[15], dline[16], dline[17], dline[18])                    
             insstr = insstr + ";"
             cursor.execute(insstr)
     conn.commit()

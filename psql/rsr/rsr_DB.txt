@@ -1,7 +1,13 @@
-CREATE TABLE edr.rsr(
-	roi   TEXT,
+# template for creating rsr roi postgres database
+# replace rsr with your study region name (eg. hv for hebrus vales)
+# easiest way to create this database is to ctrl+f roi and replace
+# all with your roi name then copy and execute within postgres terminal
+# this needs to be completed before running psql_import.py scripts
+# create a different table within rsr for each roi rsr study
+
+
+CREATE TABLE rsr.roi(
 	line   TEXT,
-	trace   INT,
 	lon   FLOAT,
 	lat   FLOAT,
 	sza   FLOAT,
@@ -18,14 +24,13 @@ CREATE TABLE edr.rsr(
 	xa   INT,
 	xb   INT,
 	xo   FLOAT,
-	window   INT,
+	wind   INT,
 	step   INT
 );
 
-CREATE INDEX idx_window_rsr ON edr.rsr (window);
-CREATE INDEX idx_step_rsr ON edr.rsr (step);
-CREATE INDEX idx_roi_rsr ON edr.rsr (roi);
-CREATE INDEX idx_chirp_rsr ON edr.rsr (chirp);
-CREATE INDEX idx_loc_rsr ON edr.rsr (lon,lat);
-CREATE INDEX idx_line_rsr ON edr.rsr (line);
-CREATE INDEX idx_sza_rsr ON edr.rsr (sza);
+CREATE INDEX idx_wind_roi ON rsr.roi (wind);
+CREATE INDEX idx_step_roi ON rsr.roi (step);
+CREATE INDEX idx_chirp_roi ON rsr.roi (chirp);
+CREATE INDEX idx_loc_roi ON rsr.roi (lon,lat);
+CREATE INDEX idx_line_roi ON rsr.roi (line);
+CREATE INDEX idx_sza_roi ON rsr.roi (sza);

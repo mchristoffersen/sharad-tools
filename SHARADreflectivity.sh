@@ -10,7 +10,7 @@
 
 #   -v|--v|--ve|--ver|--verb|--verbo|--verbos|--verbose sets the verbose setting to true - print statements executed in python scripts
 #   $1 is the number of jobs to process in parallel at once
-#   $2 is the study region name
+#   $2 is the study region name - this should be the same name used for this roi's postgres database
 #   $3 is a SHARAD observation or list of observations
 
 # BST - 01_03_2020
