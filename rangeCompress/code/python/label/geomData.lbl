@@ -1,6 +1,6 @@
 /* GEOM table information */
 OBJECT = TABLE
-    COLUMNS = 10
+    COLUMNS = 13
     INTERCHANGE_FORMAT = ASCII
     DESCRIPTION = "Geographic, geometric, and ionospheric properties at each radargram column."
 	

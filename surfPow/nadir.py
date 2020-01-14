@@ -207,6 +207,8 @@ def GetNav_geom(navfile):
   navdat_raw = f.read()
   f.close()
   navdat_raw = navdat_raw.split('\n')
+  del navdat_raw[0]
+  del navdat_raw[-1]
   navdat_raw = filter(None,navdat_raw)
   navdat = Path()
   for i in navdat_raw:

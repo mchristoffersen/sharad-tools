@@ -1,0 +1,22 @@
+# template for creating sref roi postgres database
+# replace roi with your study region name (eg. hv for hebrus vales)
+# easiest way to create this database is to ctrl+f roi and replace
+# all with your roi name then copy and execute within postgres terminal
+# this needs to be completed before running psql_import.py scripts
+# create a different table within rsr for each roi roi study
+
+
+CREATE TABLE sref.roi(
+	line   TEXT,
+	trace   INT,
+	lon   FLOAT,
+	lat   FLOAT,
+	sza   FLOAT,
+	chirp   TEXT,
+	sref   FLOAT
+);
+
+CREATE INDEX idx_chirp_roi ON sref.roi (chirp);
+CREATE INDEX idx_loc_roi ON sref.roi (lon,lat);
+CREATE INDEX idx_line_roi ON sref.roi (line);
+CREATE INDEX idx_sza_roi ON sref.roi (sza);
