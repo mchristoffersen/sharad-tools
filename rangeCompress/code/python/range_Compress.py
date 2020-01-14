@@ -67,7 +67,7 @@ def main(EDRName, auxName, lblName, chirp = 'calib', stackFac = None, beta = 0):
     BitsPerSample = lblDic['INSTR_MODE_ID']['BitsPerSample']
 
     # toggle on to downsize for testing purposes
-    # records = int(records / 10000)
+    # records = int(records / 100)
 
     # presumming is just for visualization purposes
     if stackFac != 0:

@@ -4,5 +4,5 @@ BETA=0			# beta value for kaiser window [0 = rectangular, 5 Similar to a Hamming
 STACKFAC=0		# stack factor - if nonzero, should be odd so center trace can be chosen for nav data
 
 # surface power config
-WINDOW=50		# number of samples to use for windowing
+WINDOW=50		# total number of samples to use for windowing
 SURFTYPE='fret'                                                                                                       # define the desired surface pick = [fret,narid,max]

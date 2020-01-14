@@ -8,10 +8,10 @@ Database should be set using commands in sref_bh_nh_DB.txt - run these commands 
 .csv files should be structured as per $MARS/code/supl/SHARAD/sharad-tools/rangeCompress/code/python/labe/geomData.lbl with sref appended in the last column from code $MARS/code/supl/SHARAD/sharad-tools/surfPow/surf_Pow.py
 '''
  
-def main():
+def main(roi):
     t0 = time.time()
     #Define our connection string
-    conn_string = "host='localhost' dbname='sharad' user='btober' password='secret'"
+    conn_string = "host='localhost' dbname='sharad' user='postgres' password='postgres'"
 
     # print the connection string we will use to connect
     print("Connecting to database\n ->" + (conn_string))
@@ -23,7 +23,9 @@ def main():
     cursor = conn.cursor()
     print("Connected!")
     print("----------------\n")
-    path = '/home/btober/Documents/MARS/targ/xtra/SHARAD/rsr/bh_sh_bt/'
+
+    path = '/zippy/MARS/targ/xtra/SHARAD/EDR/rsr/' + roi + '/'
+
     for filename in os.listdir(path):
         if(filename.endswith('.csv')):
             number = filename.split('_')[0] + filename.split('_')[1]
@@ -33,11 +35,11 @@ def main():
             del data[0]
             del data[-1]
             dline = data[0].split(',')
-            insstr = "INSERT INTO rsr.bh_sh VALUES ({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(number, int(float(dline[0])), float(dline[2]), float(dline[1]), float(dline[3]), float(dline[4]), float(dline[5]), float(dline[6]), float(dline[7]), float(dline[11]), float(dline[8]), float(dline[10]), float(dline[9]), float(dline[12]), int(float(dline[13])), int(float(dline[14])), float(dline[15]))
+            insstr = "INSERT INTO edr.rsr VALUES ('{}', {}, {}, {}, {}, {}, '{}', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(roi, dline[0].split('_')[0] + dline[0].split('_')[1], dline[1], dline[2], dline[3], dline[4], dline[5], dline[6], dline[7], dline[8], dline[9], dline[10], dline[11], dline[12], dline[13], dline[14], dline[15], dline[16], dline[17], dline[18], dline[19])
             for i in range(1,len(data)):
                 if ('nan' not in data[i]):
                     dline = data[i].split(',');
-                    insstr = insstr + ",({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(number, int(float(dline[0])), float(dline[2]), float(dline[1]), float(dline[3]), float(dline[4]), float(dline[5]), float(dline[6]), float(dline[7]), float(dline[11]), float(dline[8]), float(dline[10]), float(dline[9]), float(dline[12]), int(float(dline[13])), int(float(dline[14])), float(dline[15]))                    
+                    insstr = insstr + ",('{}', {}, {}, {}, {}, {}, '{}', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(roi, dline[0].split('_')[0] + dline[0].split('_')[1], dline[1], dline[2], dline[3], dline[4], dline[5], dline[6], dline[7], dline[8], dline[9], dline[10], dline[11], dline[12], dline[13], dline[14], dline[15], dline[16], dline[17], dline[18], dline[19])                    
             insstr = insstr + ";"
             cursor.execute(insstr)
     conn.commit()
@@ -49,4 +51,8 @@ def main():
     print('--------------------------------')
 
 if __name__ == "__main__":
-	main()
+	verbose = int(sys.argv[1])
+	if verbose == 0:
+		blockPrint()
+	roi = sys.argv[2]
+	main(roi)

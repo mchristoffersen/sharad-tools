@@ -26,9 +26,6 @@ esac
 # reset bash time counter
 SECONDS=0
 
-# create necessary directories
-mkdir -p /zippy/MARS/targ/xtra/SHARAD/rsr/$1
-
 cd /zippy/MARS/code/xtra/
 
 echo "Beginning RSR"
@@ -41,6 +38,11 @@ echo "Verbose: $verbose"
 echo "----------------------------------------------------------------"
 python -m rsr.main $verbose $1 $2 $3 $4
 echo "RSR completed"
+echo "----------------------------------------------------------------"
+echo "Adding surface reflectivity measurements to postgres database"
+
+cd /zippy/MARS/code/supl/SHARAD/sharad-tools/
+python3 psql/rsr/rsr_psql_import.py $verbose $1
 echo "----------------------------------------------------------------"
 # display run time
 echo "Runtime: $(($SECONDS / 3600))hrs $((($SECONDS / 60) % 60))min $(($SECONDS % 60))sec"

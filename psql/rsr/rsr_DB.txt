@@ -1,0 +1,31 @@
+CREATE TABLE edr.rsr(
+	roi   TEXT,
+	line   TEXT,
+	trace   INT,
+	lon   FLOAT,
+	lat   FLOAT,
+	sza   FLOAT,
+	chirp   TEXT,
+    a   FLOAT,
+    chisqr   FLOAT,
+	crl   FLOAT,
+	mu   FLOAT,
+	pc   FLOAT,
+	pc_pn   FLOAT,
+	pn   FLOAT,
+	pt   FLOAT,
+	s   FLOAT,
+	xa   INT,
+	xb   INT,
+	xo   FLOAT,
+	window   INT,
+	step   INT
+);
+
+CREATE INDEX idx_window_rsr ON edr.rsr (window);
+CREATE INDEX idx_step_rsr ON edr.rsr (step);
+CREATE INDEX idx_roi_rsr ON edr.rsr (roi);
+CREATE INDEX idx_chirp_rsr ON edr.rsr (chirp);
+CREATE INDEX idx_loc_rsr ON edr.rsr (lon,lat);
+CREATE INDEX idx_line_rsr ON edr.rsr (line);
+CREATE INDEX idx_sza_rsr ON edr.rsr (sza);

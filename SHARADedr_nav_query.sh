@@ -10,7 +10,7 @@
 
 # if multiple study regions are being investigated, run queries separately then join lists afterwards
 
-# may want to move file from /tmp/ afterwards to /zippy/MARS/orig/supl/SHARAD/EDR/ - can't do this as user postgres
+# may want to move file from /tmp/ afterwards to /zippy/MARS/targ/xtra/SHARAD/EDR/ - can't do this as user postgres
 
 # BST - 01_08_2020
 
@@ -18,7 +18,7 @@
 echo "Enter longitude and latitude bounds in increasing order"
 read -p 'longitude 1: ' lon1
 read -p 'longitude 2: ' lon2
-read -p 'latitude 2: ' lat1
+read -p 'latitude 1: ' lat1
 read -p 'latitude 2: ' lat2
 echo "----------------------"
 echo "Entered coordinates: ($lon1,$lat1), ($lon2,$lat2)"
