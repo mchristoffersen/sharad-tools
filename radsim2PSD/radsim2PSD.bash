@@ -39,8 +39,8 @@ while read line; do
    newsim="${prefix}_sim.png"
    
    # The input files need some editing to work properly during the merge, this generates a couple of temporary PNG files
-   # Also, cropping to reduce file sizes, because currently ImageMagick can't compress PSDs. Currently, it doesn't crop anything.
-   # It's in the format x[heigth]+[x-position]+[y-position]. For example, x1000+0+2150 works well for certain NPLD profiles.
+   # Cropping reduces file sizes, because currently ImageMagick can't compress PSDs. The format is x[heigth]+[x-position]+[y-position].
+   # For example, x3600+0+0 doesn't crop anything, x1000+0+2150 works well for certain NPLD profiles.
    comm1="magick convert ${oldsim} -crop x3600+0+0 -define png:color-type=2 ${newsim}"
    comm2="magick convert ${oldrad} -crop x3600+0+0 -define png:color-type=2 ${newrad}"
 
