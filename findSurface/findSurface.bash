@@ -65,9 +65,16 @@ fi
 mkdir -p ${study_area}
 while read profile; do
   profile=${profile#*_}  # Extract the profile number after s_ or S_
-	rad_path=$(find ${rad_dir_path} -type f -name "*${profile}_RGRAM.IMG")
-	nav_path=$(find ${nav_dir_path} -type f -name "*${profile}_geom_nadir.csv")
-	echo "python findSurface.py ${study_area} ${window_size} ${smoothing_width} ${rad_path} ${nav_path}" >> tmp_command_list
+  rad_path=$(find ${rad_dir_path} -type f -name "*${profile}_RGRAM.IMG")
+  nav_path=$(find ${nav_dir_path} -type f -name "*${profile}_geom_nadir.csv")
+  if [[ -z "${rad_path}" ]]; then
+    echo "Warning: Radagram ${profile} is missing"
+  elif [[ -z "${nav_path}" ]]; then
+    echo "Warning: simc nav ${profile} is missing"
+  else
+    echo "Preparing ${profile}..."
+    echo "python findSurface.py ${study_area} ${window_size} ${smoothing_width} ${rad_path} ${nav_path}" >> tmp_command_list
+  fi
 done < ${profile_list}
 
 # Use GNU Parallel to run the Python

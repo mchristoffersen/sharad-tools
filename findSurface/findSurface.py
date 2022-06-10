@@ -42,6 +42,7 @@ window_narrow = int(mavg_size/2)  # Second pass window size
 # Read the radargram
 data = np.fromfile(rad_path, dtype="float32")
 c = len(data)//r  # Calculate number of traces
+data[data <= 0] = 1e-10  # Turn 0 or negative values into very tiny ones
 data = np.reshape(data, (r, c))  # Reshape data into a typical radargram
 data_dB = 10 * np.log10(data)  # Turn radargram amplitude into power (dB)
 
@@ -49,6 +50,7 @@ data_dB = 10 * np.log10(data)  # Turn radargram amplitude into power (dB)
 # Read the simc nav file
 nav_data = pd.read_csv(nav_path, sep = ',')  # Read Lat, Lon, predicted nadir surface location from simc nav output file
 nad_sample = nav_data['sample'].astype(int)  # Get predicted nadir sample number
+nad_sample[nadsample < 0] = 1800  # Place negative semaple numbers into the middle of the radargram
 
 
 # Find max power surface return near predicted nadir location
@@ -62,14 +64,14 @@ tmp = 0
 
 try:
     for i in range(c):  # Cycle through every trace
-        if (nad_sample[i] - (window // 2) < 0):  # Case where surface is near the top of the radargram
-            maxp_wind_init[:,i] = data_dB[0 : (nad_sample[i] + (window // 2)),i]
-        elif (nad_sample[i] + (window // 2) > r):  # Case where surface is near the bottom of the radargram
-            maxp_wind_init[:,i] = data_dB[(nad_sample[i] - (window // 2)) : r]
+        if (nad_sample[i] - int(window / 2) < 0):  # Case where surface is near the top of the radargram
+            maxp_wind_init[0 : (nad_sample[i] + int(window / 2)),i] = data_dB[0 : (nad_sample[i] + int(window / 2)),i]
+        elif (nad_sample[i] + int(window / 2) > r):  # Case where surface is near the bottom of the radargram
+            maxp_wind_init[(nad_sample[i] - int(window / 2)) : r,i] = data_dB[(nad_sample[i] - int(window / 2)) : r,i]
         else: # Case where window does not reach top or bottom of the radargram
-            maxp_wind_init[:,i] = data_dB[(nad_sample[i] - (window // 2)) : (nad_sample[i] + (window // 2)),i]
+            maxp_wind_init[:,i] = data_dB[(nad_sample[i] - int(window / 2)) : (nad_sample[i] + int(window / 2)),i]
 
-    sample_maxp_init = nad_sample + np.argmax(maxp_wind_init, axis = 0) - (window // 2)  # Find actual location of max power samples
+    sample_maxp_init = nad_sample + np.argmax(maxp_wind_init, axis = 0) - int(window / 2)  # Find actual location of max power samples
 
     sample_maxp_smooth = np.convolve(sample_maxp_init, np.ones((mavg_size,))/mavg_size, mode='same').astype(int)  # Moving average to smooth out the jitter
     for i in range(mavg_size//2):  # Correct the first and last mavg_size/2 samples because they were averaged to zeroes
@@ -77,18 +79,18 @@ try:
         sample_maxp_smooth[(c-i-1)] = (sample_maxp_smooth[(c-i-1)] * (mavg_size/(mavg_size//2+i+1))).astype(int)  # Last mavg_size/2 samples
 
     for i in range(c):  # Cycle through every trace a second time with a narrow window
-        if (sample_maxp_smooth[i] - (window_narrow // 2) < 0):  # Case where surface is near the top of the radargram
-            maxp_wind_final[:,i] = data_dB[0 : (sample_maxp_smooth[i] + (window_narrow // 2)),i]
-        elif (sample_maxp_smooth[i] + (window_narrow // 2) > r):  # Case where surface is near the bottom of the radargram
-            maxp_wind_final[:,i] = data_dB[(sample_maxp_smooth[i] - (window_narrow // 2)) : r]
+        if (sample_maxp_smooth[i] - int(window_narrow // 2) < 0):  # Case where surface is near the top of the radargram
+            maxp_wind_final[0 : (sample_maxp_smooth[i] + int(window_narrow // 2)),i] = data_dB[0 : (sample_maxp_smooth[i] + int(window_narrow // 2)),i]
+        elif (sample_maxp_smooth[i] + int(window_narrow // 2) > r):  # Case where surface is near the bottom of the radargram
+            maxp_wind_final[(sample_maxp_smooth[i] - int(window_narrow // 2)) : r,i] = data_dB[(sample_maxp_smooth[i] - int(window_narrow // 2)) : r,i]
         else: # Case where window does not reach top or bottom of the radargram
-            maxp_wind_final[:,i] = data_dB[(sample_maxp_smooth[i] - (window_narrow // 2)) : (sample_maxp_smooth[i] + (window_narrow // 2)),i]
+            maxp_wind_final[:,i] = data_dB[(sample_maxp_smooth[i] - int(window_narrow // 2)) : (sample_maxp_smooth[i] + int(window_narrow // 2)),i]
 
-    sample_maxp_final = sample_maxp_smooth + np.argmax(maxp_wind_final, axis = 0) - (window_narrow // 2)  # Find actual location of max power samples
+    sample_maxp_final = sample_maxp_smooth + np.argmax(maxp_wind_final, axis = 0) - int(window_narrow // 2)  # Find actual location of max power samples
 
 except Exception as err:
     print(err)
-    print('Fucking bananas!')
+    print('Profile ' + profile + ': Fucking bananas!')
 
 nav_data['sample'] = sample_maxp_final  # Substitute sample locations
 
@@ -102,16 +104,15 @@ nav_data.to_csv(study_area + '/s_' + profile + '_geom_nadir_maxp.csv', index = F
 
 # The following code is for test purposes
 
-maxPow = np.argmax(data_dB, axis = 0)  # Find max power in each trace
-noise_floor = np.median(data_dB[:50,:])  # Define a noise floor from average power of flattened first 50 rows
-rangedB = data_dB - noise_floor  # Scale image array by max pixel to create jpg output with fret index
-maxdB = np.amax(rangedB, axis = 0)
-ampScale = rangedB / maxdB * 255
-ampScale[np.where(ampScale < 0)] = 0.
-ampScale[np.where(ampScale > 255)] = 255.
+noise_floor = np.median(data_dB[:20,:])  # Find a noise floor from median power of first 20 rows
+data_dB_scaled = data_dB - noise_floor  # Scale image array by noise floor
+maxdB = np.median(np.amax(data_dB_scaled, axis = 0))  # Find a maximum power from median of maximum power of each trace
+data_dB_im = data_dB_scaled / maxdB * 255  # Scale image by maximum power and 255 to turn into a grayscale image
+data_dB_im[np.where(data_dB_im < 0)] = 0.  # Get rid of negative pixel values
+data_dB_im[np.where(data_dB_im > 255)] = 255.  # Get rid of pixel values over 255
 
 imarray = np.zeros((r,c,3), 'uint8')  # Create empty surf index and power arrays
-imarray[:,:,0] = imarray[:,:,1] = imarray[:,:,2] = ampScale[:,:]  # Create surf index image - show scaled radargram as base
+imarray[:,:,0] = imarray[:,:,1] = imarray[:,:,2] = data_dB_im[:,:]  # Add scaled radargram grayscale image as base
 
 # Indicate first pass max power along track as blue
 imarray[sample_maxp_init, np.arange(c),0] = 0
