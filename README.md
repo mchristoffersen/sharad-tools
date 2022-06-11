@@ -7,7 +7,7 @@ This repo holds tools for working with SHARAD data.
 
  ## findSurface
  A python script with to automatically pick the surface based on clutter simulation output files.
- It has Bash wrapper to run multithreaded batches.
+ It has a Bash wrapper to run multithreaded batches.
  
  ## firstReturn
  A set of python sripts for extracting the firt return power (reflectivity) from SHARAD tracks -- old
