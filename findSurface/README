@@ -7,17 +7,20 @@ Authors: Stefano Nerozzi
 Q&A
 
 Why findSurface?
-The processing of SHARAD radargrams isn't always perfect, often due to lingering ionospheric delays.
-Any discrepancy between the predicted and actual surface location may cause issues down the processing and analysis line, such as distortions in depth corrected radargrams.
 The purpose of findSurface is to correct the trace-by-trace location of the the predicted (nadir return) surface location.
-This script is also useful to generate accurate auto-picked surface horizons for further analysis.
+The processing of SHARAD radargrams isn't always perfect, often due to ionospheric under- or over-correction.
+Any discrepancy between the predicted and actual surface location may cause issues down the processing and analysis line, such as distortions in depth corrected radargrams. This script is also useful to generate an accurate auto-picked surface horizon.
+
+
 
 How does it work?
 findSurface employs a two-pass technique.
 First, it looks for the maximum power sample within a specified time window centered on the predicted nadir surface return location.
-Then, a running average of a specified width smoothes out the inevitable jitter caused by the first pass.
-Finally, it runs a second pass with a narrow window of (smoothing width)/2 samples to recover some of the high-frequency detail lost in the smoothing.
-The choice of (smoothing width)/2 samples for the second pass window was found empirically.
+Then, a running average of a specified width smoothes out the inevitable jitter caused by the first pass. findSurface calculates the discrepancy between the smoothed surface and the predicted one and uses it to generate a variable width window for the second pass.
+The larger the discrepancy and smoothing width, the larger the second-pass window.
+Finally, findSurface runs a second pass to recover some of the high-frequency detail lost in the smoothing.
+The two-pass method captures long-wavelength discrepancies and short-wavelength topographic relief, and removes most of the jitter caused by
+strong subsurface reflectors and clutter.
 
 Which data does it process?
 Currently, the script digests only PDS USSHARAD profiles and simc nadir return navigation file outputs.

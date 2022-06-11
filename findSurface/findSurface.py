@@ -24,19 +24,18 @@ Updated: 10/Jun/2022
 
 # Read and set up arguments
 study_area = sys.argv[1]
-window = int(sys.argv[2])
+win_init = int(sys.argv[2])
 mavg_size = int(sys.argv[3])
 rad_path = sys.argv[4]
 nav_path = sys.argv[5]
 
+
 # Initialize some constants and parameters
-sample_size = 37.5e-9  # 37.5 ns
-speedlight = 29979245  # Unicorns
 r = 3600  # Rows = samples in a trace
 c = 0  # Columns = Traces in a radargram
 profile = rad_path.split('/')[-1]  # Extract file name
 profile = profile.split('_')[1]  # Extract profile number
-window_narrow = int(mavg_size/2)  # Second pass window size
+win_final = win_init  # Initialize second pass window size
 
 
 # Read the radargram
@@ -44,49 +43,46 @@ data = np.fromfile(rad_path, dtype="float32")
 c = len(data)//r  # Calculate number of traces
 data[data <= 0] = 1e-10  # Turn 0 or negative values into very tiny ones
 data = np.reshape(data, (r, c))  # Reshape data into a typical radargram
-data_dB = 10 * np.log10(data)  # Turn radargram amplitude into power (dB)
+data_dB = 10 * np.log10(data)  # Change data scale from linear to dB
 
 
 # Read the simc nav file
 nav_data = pd.read_csv(nav_path, sep = ',')  # Read Lat, Lon, predicted nadir surface location from simc nav output file
-nad_sample = nav_data['sample'].astype(int)  # Get predicted nadir sample number
-nad_sample[nadsample < 0] = 1800  # Place negative semaple numbers into the middle of the radargram
+nad_sample = nav_data['sample'].astype('int')  # Get predicted nadir sample number
+nad_sample[nad_sample < 0] = 1800  # Place negative sample numbers into the middle of the radargram
 
 
 # Find max power surface return near predicted nadir location
-maxp_wind_init = np.zeros(((window//2)*2,c))  # Initialize the first pass search window, corrects odd values
-maxp_wind_final = np.zeros(((window_narrow//2)*2,c))  # Initialize the second pass search window, correct odd values
-sample_maxp_init = np.zeros(c)  # Initialize max power sample location array, initial pass
-sample_maxp_smooth = np.zeros(c)  # Initialize max power sample location array, smoothed by moving avg
-sample_maxp_final = np.zeros(c)  # Initialize max power sample location array, final pass
-new_sample = np.zeros(c)
-tmp = 0
+sample_maxp_init = np.zeros(c).astype('int')  # Initialize max power sample location array, initial pass
+sample_maxp_smooth = np.zeros(c).astype('int')  # Initialize max power sample location array, smoothed by moving avg
+sample_maxp_final = np.zeros(c).astype('int')  # Initialize max power sample location array, final pass
+
 
 try:
     for i in range(c):  # Cycle through every trace
-        if (nad_sample[i] - int(window / 2) < 0):  # Case where surface is near the top of the radargram
-            maxp_wind_init[0 : (nad_sample[i] + int(window / 2)),i] = data_dB[0 : (nad_sample[i] + int(window / 2)),i]
-        elif (nad_sample[i] + int(window / 2) > r):  # Case where surface is near the bottom of the radargram
-            maxp_wind_init[(nad_sample[i] - int(window / 2)) : r,i] = data_dB[(nad_sample[i] - int(window / 2)) : r,i]
+        if (nad_sample[i] - int(win_init / 2) < 0):  # Case where surface is near the top of the radargram
+            sample_maxp_init[i] = np.argmax(data_dB[0 : (nad_sample[i] + int(win_init / 2)),i], axis = 0)
+        elif (nad_sample[i] + int(win_init / 2) > r):  # Case where surface is near the bottom of the radargram
+            sample_maxp_init[i] = np.argmax(data_dB[(nad_sample[i] - int(win_init / 2)) : r,i], axis = 0)
         else: # Case where window does not reach top or bottom of the radargram
-            maxp_wind_init[:,i] = data_dB[(nad_sample[i] - int(window / 2)) : (nad_sample[i] + int(window / 2)),i]
-
-    sample_maxp_init = nad_sample + np.argmax(maxp_wind_init, axis = 0) - int(window / 2)  # Find actual location of max power samples
+            sample_maxp_init[i] = np.argmax(data_dB[(nad_sample[i] - int(win_init / 2)) : (nad_sample[i] + int(win_init / 2)),i], axis = 0)
+        sample_maxp_init[i] = int(nad_sample[i] + sample_maxp_init[i] - (win_init / 2))  # Find actual location of max power samples
 
     sample_maxp_smooth = np.convolve(sample_maxp_init, np.ones((mavg_size,))/mavg_size, mode='same').astype(int)  # Moving average to smooth out the jitter
     for i in range(mavg_size//2):  # Correct the first and last mavg_size/2 samples because they were averaged to zeroes
         sample_maxp_smooth[i] = (sample_maxp_smooth[i] * (mavg_size/(mavg_size//2+i))).astype(int)  # First mavg_size/2 samples
         sample_maxp_smooth[(c-i-1)] = (sample_maxp_smooth[(c-i-1)] * (mavg_size/(mavg_size//2+i+1))).astype(int)  # Last mavg_size/2 samples
 
-    for i in range(c):  # Cycle through every trace a second time with a narrow window
-        if (sample_maxp_smooth[i] - int(window_narrow // 2) < 0):  # Case where surface is near the top of the radargram
-            maxp_wind_final[0 : (sample_maxp_smooth[i] + int(window_narrow // 2)),i] = data_dB[0 : (sample_maxp_smooth[i] + int(window_narrow // 2)),i]
-        elif (sample_maxp_smooth[i] + int(window_narrow // 2) > r):  # Case where surface is near the bottom of the radargram
-            maxp_wind_final[(sample_maxp_smooth[i] - int(window_narrow // 2)) : r,i] = data_dB[(sample_maxp_smooth[i] - int(window_narrow // 2)) : r,i]
-        else: # Case where window does not reach top or bottom of the radargram
-            maxp_wind_final[:,i] = data_dB[(sample_maxp_smooth[i] - int(window_narrow // 2)) : (sample_maxp_smooth[i] + int(window_narrow // 2)),i]
+    win_final = np.abs(nad_sample - sample_maxp_smooth)*2 + mavg_size//2
 
-    sample_maxp_final = sample_maxp_smooth + np.argmax(maxp_wind_final, axis = 0) - int(window_narrow // 2)  # Find actual location of max power samples
+    for i in range(c):  # Cycle through every trace a second time with a narrow window
+        if (nad_sample[i] - int(win_final[i] / 2) < 0):  # Case where surface is near the top of the radargram
+            sample_maxp_final[i] = np.argmax(data_dB[0 : (nad_sample[i] + int(win_final[i] / 2)),i], axis = 0)
+        elif (nad_sample[i] + int(win_final[i] / 2) > r):  # Case where surface is near the bottom of the radargram
+            sample_maxp_final[i] = np.argmax(data_dB[(nad_sample[i] - int(win_final[i] / 2)) : r,i], axis = 0)
+        else: # Case where window does not reach top or bottom of the radargram
+            sample_maxp_final[i] = np.argmax(data_dB[(nad_sample[i] - int(win_final[i] / 2)) : (nad_sample[i] + int(win_final[i] / 2)),i], axis = 0)
+        sample_maxp_final[i] = int(nad_sample[i] + sample_maxp_final[i] - (win_final[i] / 2))  # Find actual location of max power samples
 
 except Exception as err:
     print(err)
@@ -103,7 +99,7 @@ nav_data.to_csv(study_area + '/s_' + profile + '_geom_nadir_maxp.csv', index = F
 
 
 # The following code is for test purposes
-
+'''
 noise_floor = np.median(data_dB[:20,:])  # Find a noise floor from median power of first 20 rows
 data_dB_scaled = data_dB - noise_floor  # Scale image array by noise floor
 maxdB = np.median(np.amax(data_dB_scaled, axis = 0))  # Find a maximum power from median of maximum power of each trace
@@ -131,6 +127,6 @@ imarray[nad_sample, np.arange(c),2] = 0
 
 im = Image.fromarray(imarray)
 im.save(study_area + "/" + profile +".png")
-
+'''
 
 print("Done processing profile " + profile)

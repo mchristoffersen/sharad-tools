@@ -68,12 +68,12 @@ while read profile; do
   rad_path=$(find ${rad_dir_path} -type f -name "*${profile}_RGRAM.IMG")
   nav_path=$(find ${nav_dir_path} -type f -name "*${profile}_geom_nadir.csv")
   if [[ -z "${rad_path}" ]]; then
-    echo "Warning: Radagram ${profile} is missing"
+    echo "Warning: Radagram ${profile} is missing" | tee -a ${study_area}/log
   elif [[ -z "${nav_path}" ]]; then
-    echo "Warning: simc nav ${profile} is missing"
+    echo "Warning: simc nav ${profile} is missing" | tee -a ${study_area}/log
   else
-    echo "Preparing ${profile}..."
-    echo "python findSurface.py ${study_area} ${window_size} ${smoothing_width} ${rad_path} ${nav_path}" >> tmp_command_list
+    echo "Preparing ${profile}..."  | tee -a ${study_area}/log
+    echo "python findSurface.py ${study_area} ${window_size} ${smoothing_width} ${rad_path} ${nav_path} | tee -a ${study_area}/log" >> tmp_command_list
   fi
 done < ${profile_list}
 
@@ -83,4 +83,4 @@ parallel -j ${ncpu} --no-notice < tmp_command_list
 # Cleanup
 rm -f tmp_command_list
 
-echo "All done!"
+echo "All done! Everything is in: $PWD/${study_area}/"
