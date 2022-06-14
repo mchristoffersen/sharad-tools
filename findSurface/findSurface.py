@@ -97,6 +97,8 @@ nav_data['lon'] = nav_data['lon'].map(lambda x: '%.6f' % x)  # Keep original flo
 nav_data['elev_IAU2000'] = nav_data['elev_IAU2000'].map(lambda x: '%.3f' % x)  # Keep original float precision because pandas is stupid
 nav_data.to_csv(study_area + '/s_' + profile + '_geom_nadir_maxp.csv', index = False)
 
+# Export Seisware horizon
+
 
 # The following code is for test purposes
 '''
