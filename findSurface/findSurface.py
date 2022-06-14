@@ -28,6 +28,7 @@ win_init = int(sys.argv[2])
 mavg_size = int(sys.argv[3])
 rad_path = sys.argv[4]
 nav_path = sys.argv[5]
+seis_flag = sys.argv[6]
 
 
 # Initialize some constants and parameters
@@ -98,6 +99,12 @@ nav_data['elev_IAU2000'] = nav_data['elev_IAU2000'].map(lambda x: '%.3f' % x)  #
 nav_data.to_csv(study_area + '/s_' + profile + '_geom_nadir_maxp.csv', index = False)
 
 # Export Seisware horizon
+if (seis_flag == "y"):
+    seis_data = pd.DataFrame(index=range(c))  # Create new dataframe with one row for each trace
+    seis_data['profile'] = ('s_' + profile)  # Assign the same profile name for each row
+    seis_data['trace'] = range(c)  # Write trace number
+    seis_data['surf_twt'] = nav_data['sample']* 37.5e-9 *1e4  # Multiply sample by 37.5 ns and then by the 1e4 fake time multiplier for Seisware
+    seis_data.to_csv(study_area + '/s_' + profile + '_surf.csv', index = False)
 
 
 # The following code is for test purposes
