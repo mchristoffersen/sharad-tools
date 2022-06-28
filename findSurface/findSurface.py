@@ -19,7 +19,7 @@ python findSurface.py [study_area] [window_size] [smoothing_width] [rad_path] [n
 
 Author: Stefano Nerozzi
 Created: 08/Jun/2022
-Updated: 10/Jun/2022
+Updated: 28/Jun/2022
 '''
 
 # Read and set up arguments
@@ -49,7 +49,7 @@ data_dB = 10 * np.log10(data)  # Change data scale from linear to dB
 
 # Read the simc nav file
 nav_data = pd.read_csv(nav_path, sep = ',')  # Read Lat, Lon, predicted nadir surface location from simc nav output file
-nad_sample = nav_data['sample'].astype('int')  # Get predicted nadir sample number
+nad_sample = nav_data['NadirLine'].astype('int')  # Get predicted nadir sample number
 nad_sample[nad_sample < 0] = 1800  # Place negative sample numbers into the middle of the radargram
 
 
@@ -89,29 +89,30 @@ except Exception as err:
     print(err)
     print('Profile ' + profile + ': Fucking bananas!')
 
-nav_data['sample'] = sample_maxp_final  # Substitute sample locations
+nav_data['NadirLine'] = sample_maxp_final  # Substitute sample locations
 
 
-# Export simc-like nav file with new sample locations
-nav_data['lat'] = nav_data['lat'].map(lambda x: '%.6f' % x)  # Keep original float precision because pandas is stupid
-nav_data['lon'] = nav_data['lon'].map(lambda x: '%.6f' % x)  # Keep original float precision because pandas is stupid
-nav_data['elev_IAU2000'] = nav_data['elev_IAU2000'].map(lambda x: '%.3f' % x)  # Keep original float precision because pandas is stupid
-nav_data.to_csv(study_area + '/s_' + profile + '_geom_nadir_maxp.csv', index = False)
+# Export cluttersim-like nav file with new sample locations
+nav_data['SpacecraftLat'] = nav_data['SpacecraftLat'].map(lambda x: '%.6f' % x)  # Keep original float precision because pandas is stupid
+nav_data['SpacecraftLon'] = nav_data['SpacecraftLon'].map(lambda x: '%.6f' % x)  # Keep original float precision because pandas is stupid
+nav_data['NadirHgt'] = nav_data['NadirHgt'].map(lambda x: '%.3f' % x)  # Keep original float precision because pandas is stupid
+nav_data.to_csv(study_area + '/s_' + profile + '_nadir_maxp_rtrn.csv', index = False)
 
 # Export Seisware horizon
 if (seis_flag == "y"):
     seis_data = pd.DataFrame(index=range(c))  # Create new dataframe with one row for each trace
-    seis_data['profile'] = ('s_' + profile)  # Assign the same profile name for each row
-    seis_data['trace'] = range(c)  # Write trace number
-    seis_data['surf_twt'] = nav_data['sample']* 37.5e-9 *1e4  # Multiply sample by 37.5 ns and then by the 1e4 fake time multiplier for Seisware
-    seis_data.to_csv(study_area + '/s_' + profile + '_surf.csv', index = False)
+    seis_data['Line Name'] = ('S_' + profile)  # Assign the same profile name for each row
+    seis_data['Shot'] = range(1, c+1)  # Use shot, not trace, because trace is for 3D volumes
+    seis_data['Time'] = nav_data['NadirLine'] * 37.5e-2  # Multiply sample by 37.5 ns, then by the 1e4 fake time multiplier for Seisware, and 1e3 to get ms
+    seis_data['Horizon Name'] = 'autopicked_surface'
+    seis_data.to_csv(study_area + '/seisware_surface/S_' + profile + '_surf.csv', index = False)  #, sep=' '
 
 
 # The following code is for test purposes
 '''
 noise_floor = np.median(data_dB[:20,:])  # Find a noise floor from median power of first 20 rows
 data_dB_scaled = data_dB - noise_floor  # Scale image array by noise floor
-maxdB = np.median(np.amax(data_dB_scaled, axis = 0))  # Find a maximum power from median of maximum power of each trace
+maxdB = np.median(np.amax(data_dB_scaled, axis = 0))  # Calculate radargram maximum power from median of maximum power of each trace
 data_dB_im = data_dB_scaled / maxdB * 255  # Scale image by maximum power and 255 to turn into a grayscale image
 data_dB_im[np.where(data_dB_im < 0)] = 0.  # Get rid of negative pixel values
 data_dB_im[np.where(data_dB_im > 255)] = 255.  # Get rid of pixel values over 255

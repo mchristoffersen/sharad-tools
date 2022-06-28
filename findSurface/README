@@ -23,14 +23,14 @@ The two-pass method captures long-wavelength discrepancies and short-wavelength 
 strong subsurface reflectors and clutter.
 
 Which data does it process?
-Currently, the script digests only PDS USSHARAD profiles and simc nadir return navigation file outputs.
+Currently, the script digests only PDS USSHARAD profiles and PDS clutter simulation "rtrn" navigation files.
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
 ARGUMENTS
 
 The script requires 7 arguments. All seven are mandatory. No spaces!
-Usage: ./findSurface.bash -a <area_name> -w <window_size> -s <smoothing_width> -l <profile_list> -r <radargram_files_path> -n <nav_files_path> -c <cpus>
+Usage: ./findSurface.bash -a <area_name> -w <window_size> -s <smoothing_width> -l <profile_list> -r <radargram_files_path> -n <nav_files_path> -f <y/n seisware output flag> -c <cpus>
 Example: ./findSurface.bash -a test_sn -w 24 -s 12 -l ./list -r /home/stefano/sharad-tools/findSurface/test/ -n /home/stefano/sharad-tools/findSurface/test/ -c 6
 
 -a  Arbitrary name of study area.
