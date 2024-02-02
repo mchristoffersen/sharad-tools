@@ -36,11 +36,12 @@ Example: ./findSurface.bash -a test_sn -w 24 -s 12 -l ./list -r /home/stefano/sh
 -a  Arbitrary name of study area.
 
 -w  Size of the maximum power search window in number of samples. There are trade-offs, a size of 20-30 samples works well.
-	Small windows work well in locations with lots of clutter and where the surface is not the strongest return.
+    Small windows work well in locations with lots of clutter and where the surface is not the strongest return.
     Larger windows can find the surface where the discrepancy between predicted and actual surface location is large.
-	The value should be an even number. If it isn't, the script rounds it down to an even number.
+    The value should be an even number. If it isn't, the script rounds it down to an even number.
 	
 -s  Smoothing width for the running average.
+    I typically use half the size of the search window.
 
 -l  Path to file containing a list of profile numbers to process, in the PDS format s_01294501. The prefix "s" is case insensitive.
 
@@ -48,11 +49,10 @@ Example: ./findSurface.bash -a test_sn -w 24 -s 12 -l ./list -r /home/stefano/sh
     The script uses the find command to look for the files, so it doesn't care about the sub-directory structure as long as the files are there.
 
 -n  Path to a directory containing the simc "_geom_nadir.csv" files.
-	The script uses the find command to look for the files, so it doesn't care about the sub-directory structure as long as the files are there.
+    The script uses the find command to look for the files, so it doesn't care about the sub-directory structure as long as the files are there.
 
 -c  This is the number of cpu threads that the script will use when processing radargrams.
-	My advice is to look up how many physical CPUs your system has with "cat /proc/cpuinfo".
-	Our systems have at least 4 physical CPUs. Keep in mind that Intel cpus use hyperthreading, artificially "doubling" the number of threads.
+    My advice is to look up how many physical CPUs your system has with "cat /proc/cpuinfo".
 	
 -------------------------------------------------------------------------------------------------------------------------------------
 
