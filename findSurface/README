@@ -16,11 +16,9 @@ Any discrepancy between the predicted and actual surface location may cause issu
 How does it work?
 findSurface employs a two-pass technique.
 First, it looks for the maximum power sample within a specified time window centered on the predicted nadir surface return location.
-Then, a running average of a specified width smoothes out the inevitable jitter caused by the first pass. findSurface calculates the discrepancy between the smoothed surface and the predicted one and uses it to generate a variable width window for the second pass.
-The larger the discrepancy and smoothing width, the larger the second-pass window.
-Finally, findSurface runs a second pass to recover some of the high-frequency detail lost in the smoothing.
-The two-pass method captures long-wavelength discrepancies and short-wavelength topographic relief, and removes most of the jitter caused by
-strong subsurface reflectors and clutter.
+Then, a running average of a specified width smoothes out the inevitable jitter caused by the first pass. findSurface calculates the discrepancy between the smoothed surface and the predicted one and applies a smoothed shift to the latter.
+Finally, findSurface runs a second pass with half the first pass window width to recover some of the high-frequency detail lost in the smoothing.
+The two-pass method captures long-wavelength discrepancies and short-wavelength topographic relief, and removes most of the jitter caused by strong subsurface reflectors and clutter.
 
 Which data does it process?
 Currently, the script digests only PDS USSHARAD profiles and PDS clutter simulation "rtrn" navigation files.
@@ -35,12 +33,12 @@ Example: ./findSurface.bash -a test_sn -w 24 -s 12 -l ./list -r /home/stefano/sh
 
 -a  Arbitrary name of study area.
 
--w  Size of the maximum power search window in number of samples. There are trade-offs, a size of 20-30 samples works well.
+-w  Size of the maximum power search window in number of samples. There are trade-offs, a size of 12-24 samples works well.
     Small windows work well in locations with lots of clutter and where the surface is not the strongest return.
     Larger windows can find the surface where the discrepancy between predicted and actual surface location is large.
     The value should be an even number. If it isn't, the script rounds it down to an even number.
 	
--s  Smoothing width for the running average.
+-s  Smoothing length (number of traces) for the running average.
     I typically use half the size of the search window.
 
 -l  Path to file containing a list of profile numbers to process, in the PDS format s_01294501. The prefix "s" is case insensitive.
