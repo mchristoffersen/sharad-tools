@@ -1,0 +1,64 @@
+Guide to findSurface
+
+Authors: Stefano Nerozzi
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+Q&A
+
+Why findSurface?
+The purpose of findSurface is to correct the trace-by-trace location of the the predicted (nadir return) surface location.
+The processing of SHARAD radargrams isn't always perfect, often due to ionospheric under- or over-correction.
+Any discrepancy between the predicted and actual surface location may cause issues down the processing and analysis line, such as distortions in depth corrected radargrams. This script is also useful to generate an accurate auto-picked surface horizon.
+
+
+
+How does it work?
+findSurface employs a two-pass technique.
+First, it looks for the maximum power sample within a specified time window centered on the predicted nadir surface return location.
+Then, a running average of a specified width smoothes out the inevitable jitter caused by the first pass. findSurface calculates the discrepancy between the smoothed surface and the predicted one and applies a smoothed shift to the latter.
+Finally, findSurface runs a second pass with half the first pass window width to recover some of the high-frequency detail lost in the smoothing.
+The two-pass method captures long-wavelength discrepancies and short-wavelength topographic relief, and removes most of the jitter caused by strong subsurface reflectors and clutter.
+
+Which data does it process?
+Currently, the script digests only PDS USSHARAD profiles and PDS clutter simulation "rtrn" navigation files.
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+ARGUMENTS
+
+The script requires 7 arguments. All seven are mandatory. No spaces!
+Usage: ./findSurface.bash -a <area_name> -w <window_size> -s <smoothing_width> -l <profile_list> -r <radargram_files_path> -n <nav_files_path> -f <y/n seisware output flag> -c <cpus>
+Example: ./findSurface.bash -a test_sn -w 24 -s 12 -l ./list -r /home/stefano/sharad-tools/findSurface/test/ -n /home/stefano/sharad-tools/findSurface/test/ -c 6
+
+-a  Arbitrary name of study area.
+
+-w  Size of the maximum power search window in number of samples. There are trade-offs, a size of 12-24 samples works well.
+    Small windows work well in locations with lots of clutter and where the surface is not the strongest return.
+    Larger windows can find the surface where the discrepancy between predicted and actual surface location is large.
+    The value should be an even number. If it isn't, the script rounds it down to an even number.
+	
+-s  Smoothing length (number of traces) for the running average.
+    I typically use half the size of the search window.
+
+-l  Path to file containing a list of profile numbers to process, in the PDS format s_01294501. The prefix "s" is case insensitive.
+
+-r  Path to a directory containing the PDS radargram .IMG files.
+    The script uses the find command to look for the files, so it doesn't care about the sub-directory structure as long as the files are there.
+
+-n  Path to a directory containing the simc "_geom_nadir.csv" files.
+    The script uses the find command to look for the files, so it doesn't care about the sub-directory structure as long as the files are there.
+
+-c  This is the number of cpu threads that the script will use when processing radargrams.
+    My advice is to look up how many physical CPUs your system has with "cat /proc/cpuinfo".
+	
+-------------------------------------------------------------------------------------------------------------------------------------
+
+DEPENDENCIES
+
+The Bash side of findSurface relies on GNU Parallel for multi-threading.
+The Python side of findSurface has the following dependencies:
+numpy
+pandas
+matplotlib
+scipy
