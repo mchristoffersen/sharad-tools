@@ -74,7 +74,7 @@ if [[ ${seis_flag} == "y" ]]; then
 fi
 while read profile; do
   profile=${profile#*_}  # Extract the profile number after s_ or S_
-  rad_path=$(find ${rad_dir_path} -type f -name "*${profile}_RGRAM.IMG")
+  rad_path=$(find ${rad_dir_path} -type f -name "*${profile}_rgram.img")
   nav_path=$(find ${nav_dir_path} -type f -name "*${profile}_rtrn.csv")
   if [[ -z "${rad_path}" ]]; then
     echo "Warning: Radagram ${profile} is missing" | tee -a ${study_area}/log
